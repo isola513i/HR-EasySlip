@@ -1,0 +1,64 @@
+// ════════════════════════════════════════════════════════════════
+// Seed: SystemConfig (editable by HRMG via Org Settings UI)
+// ────────────────────────────────────────────────────────────────
+// Values stored as Json — can be string, number, or object.
+// Keys follow `domain.category.name` namespacing.
+// ════════════════════════════════════════════════════════════════
+
+import type { PrismaClient } from '@prisma/client';
+
+type ConfigEntry = {
+  key: string;
+  value: unknown;
+  description: string;
+};
+
+const DEFAULTS: ConfigEntry[] = [
+  // ─── Leave: half-day windows ───
+  { key: 'leave.halfday.morning_start', value: '09:00', description: 'เวลาเริ่มครึ่งเช้า (HH:mm)' },
+  { key: 'leave.halfday.morning_end', value: '13:00', description: 'เวลาสิ้นสุดครึ่งเช้า' },
+  { key: 'leave.halfday.afternoon_start', value: '13:00', description: 'เวลาเริ่มครึ่งบ่าย' },
+  { key: 'leave.halfday.afternoon_end', value: '18:00', description: 'เวลาสิ้นสุดครึ่งบ่าย' },
+
+  // ─── Leave: quota limits ───
+  { key: 'leave.sick.max_paid_days', value: 30, description: 'วันลาป่วยสูงสุดที่ได้ค่าจ้าง (Thai Labor 2025)' },
+  { key: 'leave.personal.max_days', value: 3, description: 'วันลากิจธุระจำเป็นสูงสุด/ปี (Thai Labor 2025)' },
+  { key: 'leave.annual.full_year_days', value: 6, description: 'สิทธิ์ลาพักร้อนเต็มปี หลังครบ 1 ปี' },
+  { key: 'leave.annual.rounding_step', value: 0.5, description: 'Step สำหรับ round-down (ครึ่งวัน)' },
+  { key: 'leave.annual.days_in_year_basis', value: 365, description: 'จำนวนวันฐานสำหรับ prorate' },
+  { key: 'leave.maternity.days', value: 98, description: 'วันลาคลอด (รวมก่อน/หลังคลอด)' },
+
+  // ─── Payroll: cut-off ───
+  { key: 'payroll.cutoff.day_of_month', value: 25, description: 'วันปิดรอบ (ล็อก record)' },
+
+  // ─── Attendance: policy ───
+  { key: 'attendance.late_threshold_minutes', value: 15, description: 'เวลาสาย (นาที) ที่จะ flag' },
+  { key: 'attendance.gps.capture_enabled', value: true, description: 'เก็บ GPS ตอน clock in/out (log only)' },
+  { key: 'attendance.gps.enforce_geofence', value: false, description: 'Phase 1 ไม่บังคับ geofence' },
+
+  // ─── PDPA ───
+  { key: 'pdpa.consent.current_version', value: '1.0.0', description: 'Version ปัจจุบันของ PDPA consent' },
+  { key: 'pdpa.audit_log.retention_days', value: 90, description: 'Audit log retention (ข้อมูลย้อนหลัง)' },
+];
+
+export async function seedSystemConfig(
+  prisma: PrismaClient,
+  updatedByUserId: string,
+): Promise<void> {
+  for (const entry of DEFAULTS) {
+    await prisma.systemConfig.upsert({
+      where: { key: entry.key },
+      create: {
+        key: entry.key,
+        value: entry.value as never,
+        description: entry.description,
+        updatedBy: updatedByUserId,
+      },
+      update: {
+        value: entry.value as never,
+        description: entry.description,
+        updatedBy: updatedByUserId,
+      },
+    });
+  }
+}

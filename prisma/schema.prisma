@@ -1,0 +1,439 @@
+// ════════════════════════════════════════════════════════════════
+// EasySlip Internal HR System — Prisma Schema (MVP Phase 1)
+// Scope: Attendance & Leave Management + Foundation (RBAC, Audit, PDPA)
+// Stack: PostgreSQL (NeonDB) + Prisma + Bun
+// Last updated: 2026-04-21
+// ════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "relationJoins"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm, citext]
+}
+
+// ────────────────────────────────────────────────────────────────
+// IDENTITY & RBAC
+// ────────────────────────────────────────────────────────────────
+
+enum Role {
+  EMPLOYEE
+  MANAGER
+  HR_AUTHORIZED
+  HRMG
+  CEO
+  CTO
+  COO
+  ADMIN
+}
+
+enum EmploymentStatus {
+  PROBATION
+  ACTIVE
+  SUSPENDED
+  RESIGNED
+  TERMINATED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique @db.Citext
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDisabled    Boolean   @default(false)
+
+  employee  Employee?
+  sessions  Session[]
+  accounts  Account[]
+  auditLogs AuditLog[]      @relation("AuditActor")
+  consents  ConsentRecord[]
+
+  @@index([email])
+}
+
+// NextAuth v5 models (Passwordless / Magic Link)
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Employee {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  employeeCode     String           @unique // e.g. ES0042 (reference ของ Empeo)
+  firstNameTh      String
+  lastNameTh       String
+  firstNameEn      String?
+  lastNameEn       String?
+  phone            String?
+  roles            Role[]           @default([EMPLOYEE])
+  departmentId     String?
+  positionId       String?
+  managerId        String?
+  hireDate         DateTime         @db.Date
+  probationEndDate DateTime?        @db.Date
+  employmentStatus EmploymentStatus @default(PROBATION)
+  terminationDate  DateTime?        @db.Date
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  department   Department? @relation(fields: [departmentId], references: [id])
+  position     Position?   @relation(fields: [positionId], references: [id])
+  manager      Employee?   @relation("ManagerTree", fields: [managerId], references: [id])
+  subordinates Employee[]  @relation("ManagerTree")
+
+  attendanceRecords AttendanceRecord[]
+  leaveRequests     LeaveRequest[]       @relation("LeaveRequester")
+  leaveApprovals    LeaveRequest[]       @relation("LeaveApprover")
+  leaveQuotas       LeaveQuota[]
+  cashOutRecords    AnnualLeaveCashOut[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([managerId])
+  @@index([employmentStatus])
+  @@index([hireDate])
+}
+
+model Department {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  code      String       @unique
+  parentId  String?
+  parent    Department?  @relation("DeptTree", fields: [parentId], references: [id])
+  children  Department[] @relation("DeptTree")
+  employees Employee[]
+}
+
+model Position {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  level     Int        @default(1)
+  employees Employee[]
+}
+
+// ────────────────────────────────────────────────────────────────
+// ATTENDANCE
+// ────────────────────────────────────────────────────────────────
+
+enum ClockType {
+  IN
+  OUT
+}
+
+enum WorkLocation {
+  OFFICE
+  WFH
+  ON_SITE
+}
+
+model AttendanceRecord {
+  id             String       @id @default(cuid())
+  employeeId     String
+  clockType      ClockType
+  clockedAt      DateTime // stored as UTC
+  workLocation   WorkLocation @default(OFFICE)
+  latitude       Decimal?     @db.Decimal(9, 6) // GPS log only (no geofence)
+  longitude      Decimal?     @db.Decimal(9, 6)
+  gpsAccuracyM   Float?
+  deviceId       String?
+  ipAddress      String?
+  note           String?      @db.Text
+  isBackfilled   Boolean      @default(false)
+  backfillReason String?
+  backfilledBy   String? // userId ของ HRMG ที่แก้
+  payrollCycleId String?
+  createdAt      DateTime     @default(now())
+
+  employee     Employee      @relation(fields: [employeeId], references: [id])
+  payrollCycle PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
+
+  @@index([employeeId, clockedAt])
+  @@index([payrollCycleId])
+}
+
+// ────────────────────────────────────────────────────────────────
+// LEAVE MANAGEMENT
+// ────────────────────────────────────────────────────────────────
+
+enum LeaveType {
+  SICK
+  PERSONAL
+  ANNUAL
+  LEAVE_WITHOUT_PAY
+  MATERNITY // 98 days unified (Empeo จัดการแยก ประกันสังคม)
+  STERILIZATION
+  ORDINATION
+  MILITARY
+  FUNERAL
+}
+
+enum LeaveStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  WITHDRAWN
+}
+
+enum LeaveHalfDay {
+  FULL
+  MORNING // 09:00 - 13:00
+  AFTERNOON // 13:00 - 18:00
+}
+
+model LeaveRequest {
+  id             String       @id @default(cuid())
+  employeeId     String
+  leaveType      LeaveType
+  startDate      DateTime     @db.Date
+  endDate        DateTime     @db.Date
+  halfDay        LeaveHalfDay @default(FULL)
+  daysRequested  Decimal      @db.Decimal(4, 2)
+  reason         String       @db.Text
+  attachmentUrl  String?
+  status         LeaveStatus  @default(PENDING)
+  approverId     String?
+  approvedAt     DateTime?
+  rejectedReason String?
+  payrollCycleId String?
+  quotaLockedId  String?
+
+  // SICK > 30 auto-convert chain:
+  // parent = original SICK (max 30 days), child = LWP overflow
+  parentRequestId String?
+  parent          LeaveRequest?  @relation("RequestChain", fields: [parentRequestId], references: [id])
+  children        LeaveRequest[] @relation("RequestChain")
+  autoGenerated   Boolean        @default(false) // true = system-generated overflow
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employee     Employee      @relation("LeaveRequester", fields: [employeeId], references: [id])
+  approver     Employee?     @relation("LeaveApprover", fields: [approverId], references: [id])
+  payrollCycle PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
+  quotaLock    LeaveQuota?   @relation("QuotaDebit", fields: [quotaLockedId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([startDate, endDate])
+  @@index([approverId, status])
+  @@index([payrollCycleId])
+  @@index([parentRequestId])
+}
+
+model LeaveQuota {
+  id            String    @id @default(cuid())
+  employeeId    String
+  leaveType     LeaveType
+  quotaYear     Int
+  eligibleFrom  DateTime  @db.Date
+  allocatedDays Decimal   @db.Decimal(5, 2)
+  usedDays      Decimal   @default(0) @db.Decimal(5, 2)
+  pendingDays   Decimal   @default(0) @db.Decimal(5, 2)
+  isProrated    Boolean   @default(false)
+  prorateBasis  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  employee        Employee       @relation(fields: [employeeId], references: [id])
+  debitedRequests LeaveRequest[] @relation("QuotaDebit")
+
+  @@unique([employeeId, leaveType, quotaYear])
+  @@index([quotaYear])
+}
+
+// Year-end unused ANNUAL → cash-out (NO carry-over)
+// Also used when employee resigns mid-year (prorate ตาม terminationDate)
+model AnnualLeaveCashOut {
+  id           String       @id @default(cuid())
+  employeeId   String
+  year         Int
+  unusedDays   Decimal      @db.Decimal(5, 2)
+  trigger      CashOutReason @default(YEAR_END)
+  exportStatus ExportStatus @default(PENDING)
+  exportedAt   DateTime?
+  empeoBatchId String?
+  computedAt   DateTime     @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, year])
+  @@index([exportStatus])
+}
+
+enum CashOutReason {
+  YEAR_END
+  RESIGNATION
+  TERMINATION
+}
+
+enum ExportStatus {
+  PENDING
+  EXPORTED
+  FAILED
+}
+
+// Public Holidays (HR manual config — ไม่ sync API ภายนอก)
+model PublicHoliday {
+  id            String   @id @default(cuid())
+  year          Int
+  date          DateTime @unique @db.Date
+  name          String
+  nameEn        String?
+  isSubstituted Boolean  @default(false) // วันหยุดชดเชย
+  createdBy     String // userId ของ HRMG
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([year])
+}
+
+// ────────────────────────────────────────────────────────────────
+// PAYROLL CUT-OFF (Empeo Integration — Event-only, schema ready)
+// ────────────────────────────────────────────────────────────────
+
+enum PayrollCycleStatus {
+  OPEN
+  LOCKED
+  EXPORTED
+}
+
+model PayrollCycle {
+  id            String             @id @default(cuid())
+  year          Int
+  month         Int // 1-12
+  cycleStart    DateTime           @db.Date // prev month 26
+  cycleEnd      DateTime           @db.Date // this month 25
+  cutOffAt      DateTime // 25 23:59:59 TH
+  status        PayrollCycleStatus @default(OPEN)
+  lockedAt      DateTime?
+  lockedBy      String? // HRMG userId
+  exportedAt    DateTime?
+  exportFileUrl String?
+
+  attendance   AttendanceRecord[]
+  leaves       LeaveRequest[]
+  outboxEvents PayrollOutboxEvent[]
+
+  @@unique([year, month])
+  @@index([status])
+}
+
+model PayrollOutboxEvent {
+  id             String    @id @default(cuid())
+  payrollCycleId String
+  eventType      String // "leave.approved" | "attendance.finalized" | "annual_leave.cashout"
+  aggregateId    String
+  payload        Json
+  idempotencyKey String    @unique
+  status         String    @default("PENDING") // PENDING | CONSUMED | FAILED
+  attempts       Int       @default(0)
+  lastError      String?   @db.Text
+  createdAt      DateTime  @default(now())
+  consumedAt     DateTime?
+
+  payrollCycle PayrollCycle @relation(fields: [payrollCycleId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([payrollCycleId])
+}
+
+// ────────────────────────────────────────────────────────────────
+// PDPA & AUDIT
+// ────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String? // null = system (cron/auto)
+  action     String // "leave.approve" | "attendance.backfill" | ...
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?  @db.Text
+  reason     String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+}
+
+model ConsentRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  purpose     String // "PDPA-EmployeeData-v1"
+  version     String // "1.0.0"
+  granted     Boolean
+  grantedAt   DateTime?
+  withdrawnAt DateTime?
+  ipAddress   String?
+  userAgent   String?   @db.Text
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, purpose])
+}
+
+// ────────────────────────────────────────────────────────────────
+// SYSTEM CONFIG (Key-value, editable by HRMG)
+// ────────────────────────────────────────────────────────────────
+//
+// Seeded defaults (see seed.ts):
+//   leave.halfday.morning_start     : "09:00"
+//   leave.halfday.morning_end       : "13:00"
+//   leave.halfday.afternoon_start   : "13:00"
+//   leave.halfday.afternoon_end     : "18:00"
+//   leave.sick.max_paid_days        : 30
+//   leave.personal.max_days         : 3
+//   leave.annual.full_year_days     : 6
+//   leave.annual.rounding_step      : 0.5
+//   leave.annual.days_in_year_basis : 365
+//   leave.maternity.days            : 98
+//   payroll.cutoff.day_of_month     : 25
+//
+model SystemConfig {
+  key         String   @id
+  value       Json
+  description String?
+  updatedBy   String
+  updatedAt   DateTime @updatedAt
+}
