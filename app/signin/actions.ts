@@ -32,6 +32,7 @@ export async function sendMagicLink(
     await signIn("resend", {
       email: parsed.data.email,
       redirect: false,
+      redirectTo: "/",
     });
     return {
       status: "sent",

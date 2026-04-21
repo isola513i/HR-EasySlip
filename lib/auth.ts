@@ -34,7 +34,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         include: { employee: true },
       });
       if (!full) return true;
-      if (full.isDisabled) return false;
+      // Return URL string to trigger clean redirect with error code.
+      // Returning literal `false` causes NextAuth v5 beta to throw an
+      // unhandled AccessDenied error instead of redirecting.
+      if (full.isDisabled) return "/signin?error=AccessDenied";
       const emp = full.employee;
       if (
         emp &&
@@ -42,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number],
         )
       ) {
-        return false;
+        return "/signin?error=AccessDenied";
       }
       return true;
     },
