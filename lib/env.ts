@@ -1,0 +1,62 @@
+import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+const boolish = (dflt?: "true" | "false") => {
+  const base = z.enum(["true", "false"]);
+  const withDefault = dflt ? base.default(dflt) : base;
+  return withDefault.transform((v) => v === "true");
+};
+
+export const env = createEnv({
+  server: {
+    DATABASE_URL: z.string().url(),
+    DIRECT_URL: z.string().url(),
+    AUTH_SECRET: z.string().min(32),
+    AUTH_URL: z.string().url().optional(),
+    AUTH_TRUST_HOST: boolish().optional(),
+    RESEND_API_KEY: z.string().min(1),
+    EMAIL_FROM: z.string().min(1),
+    CUTOFF_DAY_OF_MONTH: z.coerce.number().int().min(1).max(31).default(25),
+    ANNUAL_LEAVE_FULL_YEAR_DAYS: z.coerce.number().int().default(6),
+    ROUNDING_STEP: z.coerce.number().default(0.5),
+    DAYS_IN_YEAR_BASIS: z.coerce.number().int().default(365),
+    EMPEO_EXPORT_OUTPUT_DIR: z.string().default("./tmp/empeo-exports"),
+    FEATURE_MAGIC_LINK_ENABLED: boolish("true"),
+    FEATURE_PDPA_CONSENT_REQUIRED: boolish("true"),
+    FEATURE_GPS_CAPTURE_ENABLED: boolish("true"),
+    FEATURE_AUDIT_LOG_ENABLED: boolish("true"),
+    LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+    SEED_DEMO_DATA: boolish("false"),
+  },
+  client: {
+    NEXT_PUBLIC_APP_NAME: z.string().default("EasySlip HR"),
+    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+    NEXT_PUBLIC_DEFAULT_TIMEZONE: z.string().default("Asia/Bangkok"),
+    NEXT_PUBLIC_DEFAULT_LOCALE: z.string().default("th-TH"),
+  },
+  runtimeEnv: {
+    DATABASE_URL: process.env.DATABASE_URL,
+    DIRECT_URL: process.env.DIRECT_URL,
+    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_URL: process.env.AUTH_URL,
+    AUTH_TRUST_HOST: process.env.AUTH_TRUST_HOST,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    CUTOFF_DAY_OF_MONTH: process.env.CUTOFF_DAY_OF_MONTH,
+    ANNUAL_LEAVE_FULL_YEAR_DAYS: process.env.ANNUAL_LEAVE_FULL_YEAR_DAYS,
+    ROUNDING_STEP: process.env.ROUNDING_STEP,
+    DAYS_IN_YEAR_BASIS: process.env.DAYS_IN_YEAR_BASIS,
+    EMPEO_EXPORT_OUTPUT_DIR: process.env.EMPEO_EXPORT_OUTPUT_DIR,
+    FEATURE_MAGIC_LINK_ENABLED: process.env.FEATURE_MAGIC_LINK_ENABLED,
+    FEATURE_PDPA_CONSENT_REQUIRED: process.env.FEATURE_PDPA_CONSENT_REQUIRED,
+    FEATURE_GPS_CAPTURE_ENABLED: process.env.FEATURE_GPS_CAPTURE_ENABLED,
+    FEATURE_AUDIT_LOG_ENABLED: process.env.FEATURE_AUDIT_LOG_ENABLED,
+    LOG_LEVEL: process.env.LOG_LEVEL,
+    SEED_DEMO_DATA: process.env.SEED_DEMO_DATA,
+    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_DEFAULT_TIMEZONE: process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE,
+    NEXT_PUBLIC_DEFAULT_LOCALE: process.env.NEXT_PUBLIC_DEFAULT_LOCALE,
+  },
+  emptyStringAsUndefined: true,
+});
