@@ -1,0 +1,64 @@
+# ==========================================================================
+# EasySlip HR System — .gitignore
+# Merged: Next.js 15 defaults + Bun + Prisma + env-secret protection
+# ==========================================================================
+
+# ----- Env secrets — NEVER commit -----
+.env
+.env.local
+.env*.local
+
+# ----- Dependencies -----
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ----- Next.js -----
+/.next/
+/out/
+next-env.d.ts
+
+# ----- Production build -----
+/build
+/dist
+
+# ----- Turbo / caches -----
+.turbo/
+.cache/
+tmp/
+
+# ----- Prisma local dev artefacts -----
+/prisma/migrations/dev.db*
+
+# ----- TypeScript -----
+*.tsbuildinfo
+
+# ----- Vercel -----
+.vercel
+
+# ----- Testing / coverage -----
+/coverage
+
+# ----- Logs -----
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+bun-debug.log*
+
+# ----- OS -----
+.DS_Store
+Thumbs.db
+
+# ----- IDE / misc — keep .claude/settings.json, exclude local overrides -----
+.claude/settings.local.json
+.vscode/
+.idea/
+*.swp
+*.pem
