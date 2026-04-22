@@ -8,6 +8,10 @@ export const GET = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
-  const request = await getDetail(ctx.params.id);
+  const request = await getDetail(ctx.params.id, {
+    userId: caller.userId,
+    employeeId: caller.employeeId!,
+    roles: caller.roles,
+  });
   return apiOk(request);
 });

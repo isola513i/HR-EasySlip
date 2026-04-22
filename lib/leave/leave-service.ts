@@ -222,7 +222,10 @@ export async function getMyLeaveRequests(
   return { items, total, page: filters.page, perPage: filters.perPage };
 }
 
-export async function getLeaveRequestDetail(id: string) {
+export async function getLeaveRequestDetail(
+  id: string,
+  caller: { employeeId: string; roles: Role[] },
+) {
   const request = await prisma.leaveRequest.findUnique({
     where: { id },
     include: {
@@ -232,6 +235,7 @@ export async function getLeaveRequestDetail(id: string) {
           firstNameTh: true,
           lastNameTh: true,
           employeeCode: true,
+          managerId: true,
         },
       },
       approver: {
@@ -242,6 +246,17 @@ export async function getLeaveRequestDetail(id: string) {
 
   if (!request) {
     throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+  }
+
+  // Ownership check: owner, approver, direct manager, or HR
+  const isOwner = request.employeeId === caller.employeeId;
+  const isApprover = request.approverId === caller.employeeId;
+  const isManager = request.employee.managerId === caller.employeeId;
+  const isHR = caller.roles.some((r) =>
+    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
+  );
+  if (!isOwner && !isApprover && !isManager && !isHR) {
+    throw new DomainError(ErrorCodes.NOT_OWNER, {}, 403);
   }
 
   return request;

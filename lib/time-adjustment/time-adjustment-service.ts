@@ -70,7 +70,7 @@ export async function getMyRequests(
   return { items, total, page: filters.page, perPage: filters.perPage };
 }
 
-export async function getDetail(id: string) {
+export async function getDetail(id: string, caller: Caller) {
   const request = await prisma.timeAdjustmentRequest.findUnique({
     where: { id },
     include: {
@@ -80,6 +80,7 @@ export async function getDetail(id: string) {
           firstNameTh: true,
           lastNameTh: true,
           employeeCode: true,
+          managerId: true,
         },
       },
       approver: {
@@ -91,6 +92,16 @@ export async function getDetail(id: string) {
 
   if (!request) {
     throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+  }
+
+  // Ownership check: owner, direct manager, or HR
+  const isOwner = request.employeeId === caller.employeeId;
+  const isManager = request.employee.managerId === caller.employeeId;
+  const isHR = caller.roles.some((r) =>
+    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
+  );
+  if (!isOwner && !isManager && !isHR) {
+    throw new DomainError(ErrorCodes.NOT_OWNER, {}, 403);
   }
 
   return request;
@@ -113,8 +124,9 @@ export async function withdrawRequest(
     throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
   }
 
-  const updated = await prisma.timeAdjustmentRequest.delete({
+  const updated = await prisma.timeAdjustmentRequest.update({
     where: { id },
+    data: { status: "REJECTED", rejectedReason: "withdrawn-by-owner" },
   });
 
   await writeAuditLog({
@@ -123,6 +135,7 @@ export async function withdrawRequest(
     entityType: "TimeAdjustmentRequest",
     entityId: id,
     before: request,
+    after: updated,
     ipAddress: meta.ip,
     userAgent: meta.userAgent,
   });
@@ -174,6 +187,20 @@ export async function approveRequest(
       throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
     }
 
+    // Block self-approval
+    if (request.employeeId === caller.employeeId) {
+      throw new DomainError("SELF_APPROVAL_NOT_ALLOWED", {}, 403);
+    }
+
+    // Verify caller is direct manager of requester
+    const subordinate = await tx.employee.findFirst({
+      where: { id: request.employeeId, managerId: caller.employeeId },
+      select: { id: true },
+    });
+    if (!subordinate) {
+      throw new DomainError(ErrorCodes.NOT_APPROVER, {}, 403);
+    }
+
     // Auto-create AttendanceRecord
     const attendance = await tx.attendanceRecord.create({
       data: {
@@ -222,35 +249,54 @@ export async function rejectRequest(
   input: TimeAdjReject,
   meta: RequestMeta,
 ) {
-  const request = await prisma.timeAdjustmentRequest.findUnique({
-    where: { id },
+  return prisma.$transaction(async (tx) => {
+    const request = await tx.timeAdjustmentRequest.findUnique({
+      where: { id },
+    });
+
+    if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+    if (request.status !== "PENDING") {
+      throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
+    }
+
+    // Block self-rejection
+    if (request.employeeId === caller.employeeId) {
+      throw new DomainError("SELF_APPROVAL_NOT_ALLOWED", {}, 403);
+    }
+
+    // Verify caller is direct manager of requester
+    const subordinate = await tx.employee.findFirst({
+      where: { id: request.employeeId, managerId: caller.employeeId },
+      select: { id: true },
+    });
+    if (!subordinate) {
+      throw new DomainError(ErrorCodes.NOT_APPROVER, {}, 403);
+    }
+
+    const updated = await tx.timeAdjustmentRequest.update({
+      where: { id },
+      data: {
+        status: "REJECTED",
+        approverId: caller.employeeId,
+        rejectedReason: input.reason,
+      },
+    });
+
+    await writeAuditLog(
+      {
+        actorId: caller.userId,
+        action: "time_adjustment.reject",
+        entityType: "TimeAdjustmentRequest",
+        entityId: id,
+        before: request,
+        after: updated,
+        reason: input.reason,
+        ipAddress: meta.ip,
+        userAgent: meta.userAgent,
+      },
+      tx,
+    );
+
+    return updated;
   });
-
-  if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
-  if (request.status !== "PENDING") {
-    throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
-  }
-
-  const updated = await prisma.timeAdjustmentRequest.update({
-    where: { id },
-    data: {
-      status: "REJECTED",
-      approverId: caller.employeeId,
-      rejectedReason: input.reason,
-    },
-  });
-
-  await writeAuditLog({
-    actorId: caller.userId,
-    action: "time_adjustment.reject",
-    entityType: "TimeAdjustmentRequest",
-    entityId: id,
-    before: request,
-    after: updated,
-    reason: input.reason,
-    ipAddress: meta.ip,
-    userAgent: meta.userAgent,
-  });
-
-  return updated;
 }
