@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 import {
   sendMagicLink,
@@ -14,7 +15,11 @@ import {
 
 const initialState: SignInActionState = { status: "idle" };
 
-export function SignInForm() {
+interface Props {
+  dict: Dictionary["signin"];
+}
+
+export function SignInForm({ dict }: Props) {
   const [state, formAction, isPending] = useActionState(
     sendMagicLink,
     initialState,
@@ -24,13 +29,13 @@ export function SignInForm() {
     return (
       <div className="space-y-3 text-sm">
         <p>
-          ส่ง magic link ไปที่ <strong>{state.email}</strong> แล้ว
+          {dict.magicLinkSent} <strong>{state.email}</strong>
         </p>
         <Link
           href="/signin/check-email"
           className="text-primary underline underline-offset-4"
         >
-          ดูรายละเอียดเพิ่มเติม
+          {dict.moreDetails}
         </Link>
       </div>
     );
@@ -39,14 +44,14 @@ export function SignInForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">อีเมล</Label>
+        <Label htmlFor="email">{dict.emailLabel}</Label>
         <Input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
           required
-          placeholder="name@company.co.th"
+          placeholder={dict.emailPlaceholder}
           disabled={isPending}
         />
         {state.status === "error" && state.message ? (
@@ -54,7 +59,7 @@ export function SignInForm() {
         ) : null}
       </div>
       <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "กำลังส่ง..." : "ส่ง magic link"}
+        {isPending ? dict.submitting : dict.submitButton}
       </Button>
     </form>
   );

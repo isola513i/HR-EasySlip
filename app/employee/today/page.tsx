@@ -3,27 +3,38 @@
 // Mobile-first PWA entry point (Day 3+)
 // ════════════════════════════════════════════════════════════════
 
-import { auth, signOut } from "@/lib/auth";
+import type { Metadata } from "next";
+import { signOut } from "@/lib/auth";
+import { requireRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { getDictionary } from "@/lib/i18n/dictionaries";
 
-export const metadata = { title: "วันนี้ · EasySlip HR" };
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getDictionary(locale);
+  return { title: t.employee.todayTitle };
+}
 
 export default async function EmployeeTodayPage() {
-  const session = await auth();
-  const emp = session?.user.employee;
+  const user = await requireRoles(EMPLOYEE_ROLES);
+  const locale = await getLocale();
+  const t = getDictionary(locale);
 
   return (
     <main className="min-h-dvh px-5 py-8">
       <div className="mx-auto max-w-md space-y-6">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">วันนี้</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t.employee.todayTitle}
+          </h1>
           <p className="text-muted-foreground text-sm">
-            สวัสดี {emp?.firstNameTh} {emp?.lastNameTh} ({emp?.employeeCode})
+            {t.common.greeting} {user.firstNameTh} {user.lastNameTh} ({user.employeeCode})
           </p>
         </header>
 
         <div className="bg-card rounded-xl border p-6 text-sm shadow-sm">
           <p className="text-muted-foreground">
-            ยังไม่ได้ลงเวลาเข้างาน (stub — จะ build จริง Day 3+)
+            {t.employee.notClockedIn}
           </p>
         </div>
 
@@ -37,7 +48,7 @@ export default async function EmployeeTodayPage() {
             type="submit"
             className="text-destructive text-sm underline underline-offset-4"
           >
-            ออกจากระบบ
+            {t.common.signOut}
           </button>
         </form>
       </div>

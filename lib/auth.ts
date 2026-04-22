@@ -4,6 +4,12 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
+import {
+  magicLinkHtml,
+  magicLinkText,
+} from "@/lib/email/magic-link-template";
+import { logAuthEvent } from "@/lib/audit/logger";
+import { signInAttemptLimiter } from "@/lib/security/rate-limit";
 
 const BLOCKED_EMPLOYMENT_STATUSES = [
   "SUSPENDED",
@@ -29,9 +35,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Resend({
       apiKey: env.RESEND_API_KEY,
       from: env.EMAIL_FROM,
+      async sendVerificationRequest({ identifier: to, url, provider }) {
+        const { host } = new URL(url);
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${provider.apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: provider.from,
+            to,
+            subject: `เข้าสู่ระบบ EasySlip HR · Sign in to ${host}`,
+            html: magicLinkHtml({ url, host }),
+            text: magicLinkText({ url, host }),
+          }),
+        });
+        if (!res.ok) {
+          throw new Error(
+            "Resend error: " + JSON.stringify(await res.json()),
+          );
+        }
+      },
     }),
   ],
-  session: { strategy: "database" },
+  session: {
+    strategy: "database",
+    // Session expires after 8 hours of inactivity (1 work day).
+    // NextAuth refreshes the expiry on every request, so active
+    // users stay signed in. Idle sessions are cleaned up.
+    maxAge: 8 * 60 * 60, // 8 hours in seconds
+    // Refresh session expiry every 30 minutes of activity
+    updateAge: 30 * 60, // 30 minutes in seconds
+  },
   pages: {
     signIn: "/signin",
     verifyRequest: "/signin/check-email",
@@ -41,15 +77,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user }) {
       if (!user?.id) return true;
 
+      // Account lockout: block after 5 failed attempts in 15 minutes
+      const lockout = signInAttemptLimiter.check(user.id);
+      if (!lockout.success) {
+        logAuthEvent("auth.blocked", user.id, {
+          reason: "Account locked: too many sign-in attempts",
+        }).catch(() => {});
+        return "/signin?error=AccessDenied";
+      }
+
       const full = await prisma.user.findUnique({
         where: { id: user.id },
         include: { employee: true },
       });
       if (!full) return true;
-      // Return URL string to trigger clean redirect with error code.
-      // Returning literal `false` causes NextAuth v5 beta to throw an
-      // unhandled AccessDenied error instead of redirecting.
-      if (full.isDisabled) return "/signin?error=AccessDenied";
+
+      if (full.isDisabled) {
+        logAuthEvent("auth.blocked", user.id, {
+          reason: "Account disabled",
+        }).catch(() => {});
+        return "/signin?error=AccessDenied";
+      }
       const emp = full.employee;
       if (
         emp &&
@@ -57,8 +105,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number],
         )
       ) {
+        logAuthEvent("auth.blocked", user.id, {
+          reason: `Employment status: ${emp.employmentStatus}`,
+        }).catch(() => {});
         return "/signin?error=AccessDenied";
       }
+
+      // Success — log sign-in (fire-and-forget)
+      logAuthEvent("auth.signin", user.id).catch(() => {});
       return true;
     },
     async session({ session, user }) {

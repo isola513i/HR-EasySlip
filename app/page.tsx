@@ -10,8 +10,8 @@
 
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-
-const HR_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
+import { HR_ROLES } from "@/lib/security/rbac";
+import type { Role } from "@prisma/client";
 
 export default async function RootPage() {
   const session = await auth();
@@ -20,9 +20,9 @@ export default async function RootPage() {
     redirect("/signin");
   }
 
-  const roles = session.user.employee?.roles ?? [];
+  const roles = (session.user.employee?.roles ?? []) as Role[];
 
-  if (roles.some((r) => HR_ROLES.includes(r as (typeof HR_ROLES)[number]))) {
+  if (roles.some((r) => (HR_ROLES as readonly string[]).includes(r))) {
     redirect("/hr/overview");
   }
   if (roles.includes("MANAGER")) {

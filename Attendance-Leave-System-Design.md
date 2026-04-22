@@ -9,6 +9,9 @@
 > 6. Probation Day 1: SICK 30, PERSONAL 3, LWP; ANNUAL 6 วัน **หลังครบ 1 ปีพอดี** + prorated
 > 7. WFH Attendance: GPS log เท่านั้น ไม่ geofence
 > 8. Strict RBAC: income/benefit data → HR_AUTHORIZED, CEO, CTO, COO, HRMG เท่านั้น
+> 9. MATERNITY: 120 วัน (ค่าจ้าง 60 วัน), ลารวดเดียว — ส.ป.ส. พนง.ติดต่อเอง
+> 10. Shifts: 2 กะ (เช้า 08-17 / เย็น 17-02) + เวลาต่างกัน จ.-ศ. vs ส.-อา.
+> 11. Cut-off override: CEO, CTO, COO, HRMG, HR_AUTHORIZED ทั้งหมด
 
 ---
 
@@ -203,14 +206,16 @@ model AttendanceRecord {
 
 enum LeaveType {
   SICK                // ลาป่วย (30/year, Day 1)
-  PERSONAL            // ลากิจ (3/year, Day 1)
+  PERSONAL            // ลากิจ + ลาฉุกเฉิน (3/year, Day 1)
   ANNUAL              // ลาพักร้อน (6/year หลังครบ 1 ปี, prorated)
   LEAVE_WITHOUT_PAY   // ลาไม่รับค่าจ้าง (Day 1, unlimited)
-  MATERNITY           // ลาคลอด (98 วัน ตาม ม.41)
-  STERILIZATION       // ลาทำหมัน (ตามแพทย์ระบุ)
-  ORDINATION          // ลาอุปสมบท
+  MATERNITY           // ลาคลอด (120 วัน, ค่าจ้าง 60 วัน, ลารวดเดียว)
+  PATERNITY           // ลาช่วยภารยาคลอด (ค่าจ้าง 50%)
+  CHILD_CARE          // ลาเลี้ยงดูบุตร (15 วัน, 50%, ต้องมีใบรับรองแพทย์)
+  ORDINATION          // ลาบวช
   MILITARY            // ลารับราชการทหาร
-  FUNERAL             // ลางานศพ (policy ภายใน)
+  FUNERAL             // ลางานขาวดำ
+  TRAINING            // ลาฝึกอบรม
 }
 
 enum LeaveStatus {
@@ -511,16 +516,19 @@ available = allocated - used - pending
 
 ### 3.2 Quota Grant Rules (ตาม Business Logic)
 
-| Leave Type | Day 1 (Hire Date) | หลังครบ 1 ปี | Reset ปีถัดไป |
-|---|---|---|---|
-| SICK | 30 | 30 | 30 (1 ม.ค.) |
-| PERSONAL | 3 | 3 | 3 (1 ม.ค.) |
-| LEAVE_WITHOUT_PAY | unlimited | unlimited | — |
-| ANNUAL | **0** | **6 prorated จาก anniversary date** | 6 (1 ม.ค.) |
-| MATERNITY | 98 (per event) | 98 | reset per pregnancy event |
-| ORDINATION | per policy | per policy | per event |
-| STERILIZATION | per doctor cert | per doctor cert | per event |
-| MILITARY | per call-up | per call-up | per event |
+| Leave Type | Day 1 (Hire Date) | หลังครบ 1 ปี | Reset ปีถัดไป | ค่าจ้าง |
+|---|---|---|---|---|
+| SICK | 30 | 30 | 30 (1 ม.ค.) | 100% |
+| PERSONAL | 3 (รวมฉุกเฉิน) | 3 | 3 (1 ม.ค.) | 100% |
+| LEAVE_WITHOUT_PAY | unlimited | unlimited | — | 0% |
+| ANNUAL | **0** | **6 prorated จาก anniversary** | 6 (1 ม.ค.) | 100% |
+| MATERNITY | 120 (per event) | 120 | per event | **60 วันแรก 100%**, ที่เหลือ ส.ป.ส. (พนง.ติดต่อเอง) |
+| PATERNITY | per policy | per policy | per event | **50%** |
+| CHILD_CARE | 15 (per event) | 15 | per event | **50%** (ต้องมีใบรับรองแพทย์) |
+| ORDINATION | per policy | per policy | per event | per policy |
+| MILITARY | per call-up | per call-up | per event | per policy |
+| FUNERAL | per event | per event | per event | 100% |
+| TRAINING | per event | per event | per event | 100% |
 
 ### 3.3 Annual Leave Prorate Algorithm (Core Logic)
 
@@ -745,8 +753,8 @@ export async function submitLeaveRequest(input: SubmitInput, actorId: string) {
 
 | Edge Case | Handling |
 |---|---|
-| ลา SICK เกิน 30 วัน/ปี | ส่วนเกิน auto-convert → LEAVE_WITHOUT_PAY (ต้อง confirm HR) |
-| ลาคลอดคาบปี | allocate ตามปีที่ startDate อยู่, ไม่ prorate |
+| ลา SICK เกิน 30 วัน/ปี | **ไม่ auto-convert** — UI แจ้งเตือนว่าเกินโควต้า, HR ต้อง manual เลือกว่าจะใช้โควต้าประเภทไหน |
+| ลาคลอด | 120 วัน ลารวดเดียว (continuous block), ค่าจ้าง 60 วัน; คาบปี → allocate ตามปีที่ startDate อยู่ |
 | ลาย้อนหลังหลัง cut-off | block โดย `assertCycleOpen`; HR override ผ่าน `/attendance/:id` + reason |
 | ลาข้าม anniversary (เช่น ลา 10-20 เม.ย. ตอนที่ anniversary = 15 เม.ย.) | ในช่วงก่อน 15 → unavailable; แยก request 2 ใบ หรือ block |
 | พนักงานลาออกก่อนใช้ annual | trigger `AnnualLeaveCashOut` ที่ `terminationDate` (prorate ถึงวันออก) |
@@ -755,31 +763,74 @@ export async function submitLeaveRequest(input: SubmitInput, actorId: string) {
 
 ---
 
-## 4. ⚠️ จุดที่ยังต้อง Clarify (ห้ามเดาแทน)
+## 4. Clarification Log (Resolved 2026-04-22)
 
-| # | ประเด็น | Impact |
-|---|---|---|
-| 1 | **Empeo CSV format spec** (column order, encoding, delimiter, leave type code mapping) | Payroll export จะ dev ไม่ได้ถ้าไม่มี spec |
-| 2 | **Rounding policy** สำหรับ prorate — ปัดลง 0.5 หรือ 0.25 หรือ 1.0? (ตัวอย่างใช้ 0.5 ปัดลง) | กระทบสิทธิ์พนักงาน |
-| 3 | **ลา SICK เกิน 30 วัน** — auto-convert เป็น LWP หรือต้อง manual? | flow ต่างกันมาก |
-| 4 | **Public holiday source** — ตั้งเองโดย HR หรือ sync จาก API ภายนอก? | กระทบ `calculateWorkingDays` |
-| 5 | **Resigned employee prorate** — คืนเงินตามสัดส่วนที่ทำงานจริงในปีนั้น หรือ flat? | ตัวอย่าง: hire 2025-04-15, resign 2027-06-30 → prorate annual 2027 ยังไง? |
-| 6 | **Cut-off override** — ใครมีสิทธิ์ override? CEO เท่านั้น หรือ HRMG ก็ได้? | RBAC rule |
-| 7 | **MATERNITY 98 วัน** — จ่ายบริษัท 45 วันแรก ส่วนที่เหลือประกันสังคม — ระบบต้อง flag แยกไหม? | Payroll boundary — น่าจะอยู่ฝั่ง Empeo |
-| 8 | **Leave ครึ่งวัน** — กำหนดช่วงเวลาเช้า/บ่ายตายตัว (9-13 / 13-18) หรือ configurable? | UX + working days calc |
+| # | ประเด็น | คำตอบ | Action |
+|---|---|---|---|
+| 1 | **Empeo CSV format spec** | มีหลายไฟล์ (เงินเดือน, เวลาเข้า-ออก, ข้อมูลสำนักงาน) — ต้อง clarify ว่าต้องการไฟล์ตัวไหน | ⏳ ยังต้อง follow up — ขอตัวอย่างไฟล์จากทีม HR/Empeo |
+| 2 | **Rounding policy** | ใช้ครึ่งวัน 0.5 กับ 1 วันเท่านั้น | ✅ ยืนยัน step = 0.5, round down |
+| 3 | **ลา SICK เกิน 30 วัน** | **ไม่ Auto** — HR ต้อง manual เพราะขึ้นอยู่กับว่าสิทธิ์การลาส่วนไหนจะหมดโควต้าก่อน; LWP ไม่มีกำหนดวัน | ✅ ลบ auto-convert logic; UI แจ้งเตือนแต่ไม่บังคับ |
+| 4 | **Public holiday source** | ทำ 2 แบบ (HR manual + API sync) เพื่อความยืดหยุ่น | ✅ รองรับทั้ง manual CRUD + optional API import |
+| 5 | **Resigned employee cash-out** | คืนเงินตามโควต้าที่เหลือในแต่ละปี เป็นรายวัน ฐาน/30 | ✅ formula: `unusedDays × (baseSalary / 30)` — ค่าจ้างอยู่ฝั่ง Empeo, ระบบส่งแค่ `unusedDays` |
+| 6 | **Cut-off override** | CEO, CTO, COO, HRMG, HR_AUTHORIZED ทั้งหมด (ยังไม่มีตำแหน่งแยกเฉพาะ) | ✅ RBAC: `requireRoles([CEO, CTO, COO, HRMG, HR_AUTHORIZED])` |
+| 7 | **MATERNITY** | **120 วัน** (ไม่ใช่ 98), ได้ค่าจ้าง 60 วัน; ส.ป.ส. 50% 90 วันหลังคลอด (บุตรคนที่ 1-2, พนง.ติดต่อเอง); ลาเลี้ยงดูบุตรเพิ่ม 15 วัน (50% ค่าจ้าง) กรณีเด็กป่วยหนัก/ภาวะพิเศษ (ต้องมีใบรับรองแพทย์); ลารวดเดียว (continuous block) | ✅ ดู Section 4.1 |
+| 8 | **Shift & ครึ่งวัน** | 2 กะ — ดู Section 4.2 | ✅ ต้องเพิ่ม Shift model ใน schema |
+
+### 4.1 Leave Types (Updated)
+
+ประเภทการลาที่ยืนยันแล้ว (เปลี่ยนจาก schema เดิม):
+
+| Enum | ชื่อไทย | โควต้า/ปี | หมายเหตุ |
+|---|---|---|---|
+| `SICK` | ลาป่วย | 30 วัน (Day 1) | เกิน 30 → HR manual convert ไม่ auto |
+| `PERSONAL` | ลากิจ (รวมลาฉุกเฉิน) | 3 วัน (Day 1) | |
+| `ANNUAL` | ลาพักร้อน | 6 วัน (หลังครบ 1 ปี, prorated) | ไม่ทบปี → cash-out |
+| `LEAVE_WITHOUT_PAY` | ลาไม่รับค่าจ้าง | ไม่จำกัด (Day 1) | |
+| `MATERNITY` | ลาคลอด | 120 วัน (per event) | ค่าจ้าง 60 วัน; ลารวดเดียว (continuous) |
+| `PATERNITY` | ลาช่วยภารยาคลอด | per policy | ค่าจ้าง 50% |
+| `CHILD_CARE` | ลาเลี้ยงดูบุตร | 15 วัน (per event) | ค่าจ้าง 50%; ต้องมีใบรับรองแพทย์ (เด็กป่วยหนัก/ภาวะพิเศษ) |
+| `ORDINATION` | ลาบวช | per event | |
+| `MILITARY` | ลารับราชการทหาร | per call-up | |
+| `FUNERAL` | ลางานขาวดำ | per event | |
+| `TRAINING` | ลาฝึกอบรม | per event | |
+
+**เปลี่ยนจาก schema เดิม:**
+- ❌ ลบ `STERILIZATION` (ไม่ได้กล่าวถึง)
+- ✅ เพิ่ม `PATERNITY` (ลาช่วยภารยาคลอด 50%)
+- ✅ เพิ่ม `CHILD_CARE` (ลาเลี้ยงดูบุตร 15 วัน 50%, ต้องมีใบรับรองแพทย์)
+- ✅ เพิ่ม `TRAINING` (ลาฝึกอบรม)
+- ✅ `MATERNITY` เปลี่ยนจาก 98 → 120 วัน, ค่าจ้าง 60 วัน
+
+### 4.2 Shift System (New)
+
+บริษัทมี 2 กะการทำงาน + เวลาต่างกันระหว่างวันธรรมดา vs สุดสัปดาห์:
+
+| กะ | วันจันทร์-ศุกร์ | วันเสาร์-อาทิตย์ (WFH) | พัก |
+|---|---|---|---|
+| **เช้า (MORNING)** | 08:00–17:00 | 08:00–16:00 | 1 ชม. (11:30-12:30 หรือ 12:30-13:30) |
+| **เย็น (EVENING)** | 17:00–02:00 (+1) | 16:00–00:00 | 1 ชม. (20:30-21:30 หรือ 21:30-22:30) |
+
+**กฎพัก:** 1 ชม. ตามตกลง แต่ต้องไม่เกิน 4 ชม.แรกของการทำงาน
+
+**ครึ่งวัน:** ลาได้ 0.5 วัน — ครึ่งแรกหรือครึ่งหลังของกะ (แบ่งตามเวลาพัก)
+
+**Schema impact:** ต้องเพิ่ม `WorkShift` enum + shift assignment ใน Employee หรือ config table
 
 ---
 
 ## 5. Next Steps
 
 **DO**
-- Clarify ข้อ 1-8 ข้างต้นกับ HR ก่อน generate migration
-- เริ่ม scaffold Prisma schema + migrate แรกไปก่อน (core tables)
+- ⏳ Follow up ข้อ 1: ขอตัวอย่าง Empeo CSV จากทีม HR (เงินเดือน / เวลาเข้า-ออก / ข้อมูลสำนักงาน — ต้องการไฟล์ไหน?)
+- Migrate Prisma schema: เพิ่ม `PATERNITY`, `CHILD_CARE`, `TRAINING` ใน LeaveType, ลบ `STERILIZATION`, เพิ่ม WorkShift
+- Update MATERNITY จาก 98 → 120 วันใน seed + SystemConfig
 - เขียน unit test สำหรับ `computeAnnualLeaveGrant` ด้วย test cases ของ worked example
 - Set up cron (`@vercel/cron` หรือ pg_cron) สำหรับ daily quota tick
+- Implement shift-aware half-day calculation (แบ่งตามเวลาพักของแต่ละกะ)
 
 **DON'T**
 - อย่า implement Empeo export ก่อน format spec มา — waste effort
-- อย่า hardcode rounding step ใน logic — ทำเป็น config ใน `app_config` table
+- อย่า hardcode rounding step ใน logic — ทำเป็น config ใน `SystemConfig` table
 - อย่ารวม salary/income field ใน table ใน scope นี้ — แยก feature + แยก table
 - อย่าปล่อยให้ pending quota leak (ถ้า request ถูก REJECTED/WITHDRAWN ต้อง decrement pending)
+- อย่า auto-convert SICK > 30 → LWP — ต้อง manual โดย HR เท่านั้น
