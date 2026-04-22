@@ -1,0 +1,14 @@
+import { withApiHandler } from "@/lib/api/with-api-handler";
+import { apiOk } from "@/lib/api/response";
+import { verifyCronAuth } from "@/lib/system/cron-auth";
+import { resetYearEnd } from "@/lib/leave/leave-quota-service";
+
+export const POST = withApiHandler(async (req) => {
+  const authError = verifyCronAuth(req);
+  if (authError) return authError;
+
+  const year = new Date().getFullYear() - 1; // reset previous year
+  const result = await resetYearEnd(year);
+
+  return apiOk(result);
+});

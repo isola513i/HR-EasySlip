@@ -129,11 +129,13 @@ model Employee {
   manager            Employee?        @relation("ManagerTree", fields: [managerId], references: [id])
   subordinates       Employee[]       @relation("ManagerTree")
 
-  attendanceRecords  AttendanceRecord[]
-  leaveRequests      LeaveRequest[]    @relation("LeaveRequester")
-  leaveApprovals     LeaveRequest[]    @relation("LeaveApprover")
-  leaveQuotas        LeaveQuota[]
-  cashOutRecords     AnnualLeaveCashOut[]
+  attendanceRecords      AttendanceRecord[]
+  timeAdjRequests        TimeAdjustmentRequest[] @relation("TimeAdjRequester")
+  timeAdjApprovals       TimeAdjustmentRequest[] @relation("TimeAdjApprover")
+  leaveRequests          LeaveRequest[]    @relation("LeaveRequester")
+  leaveApprovals         LeaveRequest[]    @relation("LeaveApprover")
+  leaveQuotas            LeaveQuota[]
+  cashOutRecords         AnnualLeaveCashOut[]
 
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
@@ -195,9 +197,44 @@ model AttendanceRecord {
 
   employee       Employee       @relation(fields: [employeeId], references: [id])
   payrollCycle   PayrollCycle?  @relation(fields: [payrollCycleId], references: [id])
+  timeAdjustment TimeAdjustmentRequest?  // populated when record was auto-created from approved adjustment
 
   @@index([employeeId, clockedAt])
   @@index([payrollCycleId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// TIME ADJUSTMENT REQUEST (พนักงานขอเพิ่มเวลาเข้า/ออกที่ลืมลง)
+// ─────────────────────────────────────────────────────────────
+
+enum TimeAdjustmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model TimeAdjustmentRequest {
+  id             String                 @id @default(cuid())
+  employeeId     String
+  clockType      ClockType              // IN หรือ OUT — ขาไหนที่ขอเพิ่ม
+  requestedAt    DateTime               // เวลาที่พนักงานอ้างว่าเข้า/ออก
+  reason         String                 @db.Text
+  attachmentUrl  String?                // รูปถ่ายหลักฐาน (required by HR policy)
+  status         TimeAdjustmentStatus   @default(PENDING)
+  approverId     String?
+  approvedAt     DateTime?
+  rejectedReason String?
+  attendanceId   String?                // FK → AttendanceRecord ที่ auto-insert หลัง approve
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  employee       Employee               @relation("TimeAdjRequester", fields: [employeeId], references: [id])
+  approver       Employee?              @relation("TimeAdjApprover", fields: [approverId], references: [id])
+  attendance     AttendanceRecord?      @relation(fields: [attendanceId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([approverId, status])
+  @@index([createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -433,6 +470,24 @@ model ConsentRecord {
 | PATCH | `/attendance/:recordId` | backfill/correct (body: reason mandatory) | HRMG; block if cycle LOCKED |
 | POST | `/attendance/finalize-cycle` | finalize ก่อน cut-off | HRMG |
 
+### 2.2b Time Adjustment Request (ขอเพิ่มเวลาเข้า-ออก)
+
+| Method | Path | Purpose | Guard |
+|---|---|---|---|
+| POST | `/attendance/adjustment` | ขอเพิ่มเวลา (body: clockType, requestedAt, reason, attachment) | EMPLOYEE (self) |
+| GET | `/attendance/adjustment/me` | ดูคำขอของตัวเอง | EMPLOYEE |
+| GET | `/attendance/adjustment/:id` | detail | owner / approver / HR |
+| PATCH | `/attendance/adjustment/:id/withdraw` | ถอนคำขอก่อน approve | owner |
+| GET | `/attendance/adjustment/pending` | queue รอ approve (ทีมตัวเอง) | MANAGER |
+| POST | `/attendance/adjustment/:id/approve` | อนุมัติ → auto-insert AttendanceRecord | approver only |
+| POST | `/attendance/adjustment/:id/reject` | ปฏิเสธ (body: reason) | approver only |
+
+**Flow:**
+1. พนักงานลืมลงเวลา → กดขอเพิ่มเวลา (เลือกขา IN/OUT + ระบุเวลา + อัพรูปหลักฐาน + เหตุผล)
+2. ระบบสร้าง `TimeAdjustmentRequest` status=PENDING → แจ้ง Approver
+3. Approver กด approve → ระบบ auto-create `AttendanceRecord` (isBackfilled=true, backfillReason="time-adjustment-approved") + link FK กลับ
+4. Reject → บันทึก rejectedReason + แจ้งพนักงาน
+
 ### 2.3 Leave — Employee
 
 | Method | Path | Purpose | Guard |
@@ -470,9 +525,25 @@ model ConsentRecord {
 |---|---|---|---|
 | GET | `/payroll/cycles` | list cycles | HRMG |
 | POST | `/payroll/cycles/:id/lock` | ปิดรอบ (cut-off) | HRMG, CEO override |
-| POST | `/payroll/cycles/:id/export` | generate Empeo CSV | HR_AUTHORIZED |
-| GET | `/payroll/cycles/:id/export/download` | download CSV | HR_AUTHORIZED |
+| POST | `/payroll/cycles/:id/export/timestamps` | generate Empeo timestamp CSV/XLSX | HR_AUTHORIZED |
+| GET | `/payroll/cycles/:id/export/timestamps/download` | download timestamp file | HR_AUTHORIZED |
 | POST | `/payroll/cashout/:year/export` | export annual leave cashout CSV | HR_AUTHORIZED |
+
+#### 2.6.1 Empeo Timestamp Export Format (ยืนยันจาก HR + TemplateTimeStamps.xlsx)
+
+ไฟล์เวลาเข้า-ออกงาน — ใช้กรณีพนักงานลืมลงเวลา (format: `.xlsx` หรือ `.csv`)
+
+| Column | Header | Type | Example |
+|---|---|---|---|
+| A | ชื่อบริษัท | string | บริษัท โกไฟว์ จำกัด |
+| B | รหัสพนักงาน | string | 12345 |
+| C | วันที่ (d/M/yyyy) | date | 1/1/2024 |
+| D | เวลา (H:mm) | time | 8:30 น. |
+
+**หมายเหตุ:**
+- 1 row = 1 การทาบบัตร (ไม่แยก IN/OUT ใน column — Empeo จัดการ pair เอง)
+- ไฟล์ข้อมูลการลาไม่ต้อง export — Empeo สรุปให้เป็น Excel เอง (ลาทุกประเภท, ขาดงาน, สาย, โควต้าคงเหลือ)
+- Template อยู่ที่ `TemplateTimeStamps.xlsx` ใน repo root
 
 ### 2.7 Audit & Consent
 
@@ -767,7 +838,7 @@ export async function submitLeaveRequest(input: SubmitInput, actorId: string) {
 
 | # | ประเด็น | คำตอบ | Action |
 |---|---|---|---|
-| 1 | **Empeo CSV format spec** | มีหลายไฟล์ (เงินเดือน, เวลาเข้า-ออก, ข้อมูลสำนักงาน) — ต้อง clarify ว่าต้องการไฟล์ตัวไหน | ⏳ ยังต้อง follow up — ขอตัวอย่างไฟล์จากทีม HR/Empeo |
+| 1 | **Empeo CSV format spec** | ไฟล์เวลาเข้า-ออกงาน (.xlsx/.csv): `ชื่อบริษัท, รหัสพนักงาน, วันที่ (d/M/yyyy), เวลา (H:mm)` — ใช้กรณีพนักงานลืมลงเวลา; ไฟล์ข้อมูลการลาไม่มีแยก — Empeo สรุปเป็น Excel เอง (ลาทุกประเภท, ขาดงาน, สาย, โควต้าคงเหลือ) | ✅ ได้ template `TemplateTimeStamps.xlsx` + ต้องเพิ่ม Time Adjustment Request feature |
 | 2 | **Rounding policy** | ใช้ครึ่งวัน 0.5 กับ 1 วันเท่านั้น | ✅ ยืนยัน step = 0.5, round down |
 | 3 | **ลา SICK เกิน 30 วัน** | **ไม่ Auto** — HR ต้อง manual เพราะขึ้นอยู่กับว่าสิทธิ์การลาส่วนไหนจะหมดโควต้าก่อน; LWP ไม่มีกำหนดวัน | ✅ ลบ auto-convert logic; UI แจ้งเตือนแต่ไม่บังคับ |
 | 4 | **Public holiday source** | ทำ 2 แบบ (HR manual + API sync) เพื่อความยืดหยุ่น | ✅ รองรับทั้ง manual CRUD + optional API import |
@@ -821,8 +892,10 @@ export async function submitLeaveRequest(input: SubmitInput, actorId: string) {
 ## 5. Next Steps
 
 **DO**
-- ⏳ Follow up ข้อ 1: ขอตัวอย่าง Empeo CSV จากทีม HR (เงินเดือน / เวลาเข้า-ออก / ข้อมูลสำนักงาน — ต้องการไฟล์ไหน?)
-- Migrate Prisma schema: เพิ่ม `PATERNITY`, `CHILD_CARE`, `TRAINING` ใน LeaveType, ลบ `STERILIZATION`, เพิ่ม WorkShift
+- ✅ ~~Follow up ข้อ 1~~ — ได้ template แล้ว (`TemplateTimeStamps.xlsx`)
+- Migrate Prisma schema: เพิ่ม `PATERNITY`, `CHILD_CARE`, `TRAINING` ใน LeaveType, ลบ `STERILIZATION`, เพิ่ม WorkShift, เพิ่ม `TimeAdjustmentRequest` model
+- Implement Time Adjustment Request flow (submit → approve → auto-insert AttendanceRecord)
+- Implement Empeo timestamp export (CSV/XLSX ตาม format ใน Section 2.6.1)
 - Update MATERNITY จาก 98 → 120 วันใน seed + SystemConfig
 - เขียน unit test สำหรับ `computeAnnualLeaveGrant` ด้วย test cases ของ worked example
 - Set up cron (`@vercel/cron` หรือ pg_cron) สำหรับ daily quota tick

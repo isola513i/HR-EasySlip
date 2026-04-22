@@ -41,11 +41,34 @@ const securityHeaders = [
   },
 ];
 
+// Relaxed CSP for Scalar API docs (CDN scripts/styles)
+const docsSecurityHeaders = securityHeaders.map((h) => {
+  if (h.key !== "Content-Security-Policy") return h;
+  return {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+      "img-src 'self' data: blob:",
+      "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; "),
+  };
+});
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: "/api/docs",
+        headers: docsSecurityHeaders,
+      },
+      {
+        source: "/((?!api/docs).*)",
         headers: securityHeaders,
       },
     ];
