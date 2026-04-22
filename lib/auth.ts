@@ -33,6 +33,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter,
   providers: [
     Resend({
+      id: "email",
       apiKey: env.RESEND_API_KEY,
       from: env.EMAIL_FROM,
       async sendVerificationRequest({ identifier: to, url, provider }) {
