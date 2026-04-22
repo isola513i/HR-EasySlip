@@ -1,13 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from "@/components/shared/sw-registrar";
+import { Toaster } from "@/components/ui/sonner";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
-const geistSans = Geist({
+const notoSansThai = localFont({
+  src: "../public/fonts/NotoSansThai-Variable.ttf",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  display: "swap",
+  weight: "100 900",
 });
 
 const geistMono = Geist_Mono({
@@ -38,7 +42,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#18181b",
+  themeColor: "#1e3a8a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -58,9 +62,10 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${notoSansThai.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Toaster position="bottom-center" />
         <ServiceWorkerRegistrar />
       </body>
     </html>

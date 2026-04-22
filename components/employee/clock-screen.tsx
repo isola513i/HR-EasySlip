@@ -1,0 +1,136 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import { Clock, MapPin, Check } from "lucide-react";
+import { StatusPill } from "@/components/shared/status-pill";
+import { MobileTopbar } from "@/components/shared/mobile-topbar";
+import { cn } from "@/lib/utils";
+
+type ClockState = "idle" | "clocking" | "done";
+type LocationType = "OFFICE" | "WFH" | "ON_SITE";
+
+const locations: { key: LocationType; label: string }[] = [
+  { key: "OFFICE", label: "Office" },
+  { key: "WFH", label: "Work from home" },
+  { key: "ON_SITE", label: "On-site" },
+];
+
+export function ClockScreen() {
+  const [state, setState] = useState<ClockState>("idle");
+  const [location, setLocation] = useState<LocationType>("OFFICE");
+  const [clockedTime, setClockedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state === "clocking") {
+      const timer = setTimeout(() => {
+        const now = new Date();
+        setClockedTime(
+          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+        );
+        setState("done");
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
+
+  const handleClock = useCallback(() => {
+    if (state === "idle") setState("clocking");
+  }, [state]);
+
+  const locationLabel =
+    location === "OFFICE" ? "the office" : location === "WFH" ? "home" : "on-site";
+
+  return (
+    <>
+      <MobileTopbar title="Clock in/out" backHref="/employee/today" />
+
+      <div className="flex flex-col gap-4 p-4">
+        {/* GPS preview card */}
+        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+          <div className="relative grid h-[140px] place-items-center border-b border-border bg-gradient-to-br from-[var(--es-neutral-50)] to-[var(--es-neutral-200)]">
+            <svg className="absolute inset-0 opacity-50" width="100%" height="100%" viewBox="0 0 340 140">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <line key={`h${i}`} x1="0" y1={i * 14} x2="340" y2={i * 14} stroke="#cbd3dd" strokeWidth="0.6" />
+              ))}
+              {Array.from({ length: 14 }).map((_, i) => (
+                <line key={`v${i}`} x1={i * 26} y1="0" x2={i * 26} y2="140" stroke="#cbd3dd" strokeWidth="0.6" />
+              ))}
+            </svg>
+            <div className="relative">
+              <div className="grid size-9 place-items-center rounded-full bg-[var(--es-accent-600)] shadow-[0_0_0_8px_rgba(61,70,204,0.18)]">
+                <MapPin className="size-[18px] text-white" />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between px-4 py-3.5">
+            <div>
+              <div className="text-[13px] font-medium">EasySlip HQ</div>
+              <div className="font-mono text-[11px] text-muted-foreground">13.7563°N, 100.5018°E</div>
+            </div>
+            <StatusPill tone="success">Accuracy ±8 m</StatusPill>
+          </div>
+        </div>
+
+        {/* Location picker */}
+        <div>
+          <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Work location today
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {locations.map((loc) => {
+              const sel = location === loc.key;
+              return (
+                <button
+                  key={loc.key}
+                  onClick={() => setLocation(loc.key)}
+                  className={cn(
+                    "rounded-[10px] px-2 py-3 text-left text-[13px] font-medium transition-colors",
+                    sel
+                      ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)] text-[var(--es-accent-700)]"
+                      : "border border-[var(--es-neutral-300)] bg-card text-foreground hover:bg-muted",
+                  )}
+                >
+                  <div className="text-[10px] uppercase tracking-widest opacity-70">{loc.key}</div>
+                  {loc.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Clock action */}
+        {state === "done" ? (
+          <div className="rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
+            <div className="mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
+              <Check className="size-[26px] text-white" />
+            </div>
+            <div className="text-lg font-bold text-[var(--es-success-700)]">Clock-in recorded</div>
+            <div className="tabular-nums mt-1 text-[28px] font-bold">{clockedTime}</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              Clocked in at {locationLabel} · GPS ±8 m
+            </div>
+          </div>
+        ) : (
+          <button
+            disabled={state === "clocking"}
+            onClick={handleClock}
+            className={cn(
+              "flex min-h-[110px] flex-col items-center justify-center gap-1.5 rounded-[20px] text-[22px] font-bold text-white shadow-[0_8px_24px_rgba(61,70,204,0.35)] transition-colors",
+              state === "clocking"
+                ? "bg-[var(--es-accent-700)]"
+                : "bg-[var(--es-accent-600)] hover:bg-[var(--es-accent-700)]",
+            )}
+          >
+            <Clock className="size-7" />
+            {state === "clocking" ? "Recording..." : "Clock in"}
+            <span className="text-xs font-medium opacity-85">Tap to clock in</span>
+          </button>
+        )}
+
+        <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
+          GPS location is recorded for attendance verification only. No geofencing is enforced.
+        </p>
+      </div>
+    </>
+  );
+}
