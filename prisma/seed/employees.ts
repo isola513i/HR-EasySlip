@@ -258,6 +258,22 @@ const EMPLOYEES: SeedEmployee[] = [
     employmentStatus: 'SUSPENDED',
     managerCode: 'ES0009',
   },
+
+  // ─── Test: SUSPENDED block ───
+  {
+    code: 'ES0099',
+    email: 'dev.v001+suspended@gmail.com',
+    firstNameTh: 'ณัฐภัทร์',
+    lastNameTh: 'หลำนุ้ย',
+    firstNameEn: 'Nattapat',
+    lastNameEn: 'Lamnui',
+    roles: ['EMPLOYEE'],
+    departmentCode: 'ENG',
+    positionName: 'Junior Developer',
+    hireDate: '2024-01-15',
+    employmentStatus: 'SUSPENDED',
+    managerCode: 'ES0006',
+  },
 ];
 
 export type EmployeeRecord = {

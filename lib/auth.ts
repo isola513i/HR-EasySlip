@@ -11,8 +11,20 @@ const BLOCKED_EMPLOYMENT_STATUSES = [
   "TERMINATED",
 ] as const;
 
+const adapter = {
+  ...PrismaAdapter(prisma),
+  // The default Prisma adapter uses `session.delete()` which throws when
+  // the record doesn't exist. This happens when the signIn callback rejects
+  // a user (e.g. SUSPENDED) after NextAuth already attempted session creation.
+  // Using `deleteMany` avoids the "record not found" error.
+  deleteSession: async (sessionToken: string) => {
+    await prisma.session.deleteMany({ where: { sessionToken } });
+    return null;
+  },
+};
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter,
   providers: [
     Resend({
       apiKey: env.RESEND_API_KEY,
