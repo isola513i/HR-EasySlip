@@ -6,7 +6,7 @@ import { requireApiRoles } from "@/lib/security/rbac";
 import { CycleListSchema } from "@/lib/payroll/schemas";
 import { listCycles } from "@/lib/payroll/payroll-service";
 
-const CYCLE_ROLES = ["HRMG"] as const;
+const CYCLE_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
 
 export const GET = withApiHandler(async (req) => {
   const caller = await requireApiRoles(CYCLE_ROLES);

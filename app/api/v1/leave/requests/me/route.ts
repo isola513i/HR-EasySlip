@@ -4,7 +4,7 @@ import { apiPaginated } from "@/lib/api/response";
 import { parseSearchParams } from "@/lib/api/validate";
 import { requireApiRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { LeaveFiltersSchema } from "@/lib/leave/schemas";
-import { getMyLeaveRequests } from "@/lib/leave/leave-service";
+import { getMyLeaveRequests } from "@/lib/leave/leave-query-service";
 
 export const GET = withApiHandler(async (req) => {
   const caller = await requireApiRoles(EMPLOYEE_ROLES);

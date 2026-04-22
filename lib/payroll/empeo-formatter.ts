@@ -6,6 +6,9 @@
 
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
+
+const BANGKOK_TZ = "Asia/Bangkok";
 
 const COMPANY_NAME = "บริษัท โกไฟว์ จำกัด";
 const CSV_HEADER = "\uFEFFชื่อบริษัท,รหัสพนักงาน,วันที่ (d/M/yyyy),เวลา (H:mm)";
@@ -43,8 +46,9 @@ export function formatTimestampsToCSV(records: TimestampRecord[]): string {
   const lines = [CSV_HEADER];
 
   for (const r of records) {
-    const date = format(r.clockedAt, "d/M/yyyy");
-    const time = format(r.clockedAt, "H:mm") + " น.";
+    const bkkTime = new TZDate(r.clockedAt, BANGKOK_TZ);
+    const date = format(bkkTime, "d/M/yyyy");
+    const time = format(bkkTime, "H:mm") + " น.";
     lines.push(`${COMPANY_NAME},${r.employeeCode},${date},${time}`);
   }
 

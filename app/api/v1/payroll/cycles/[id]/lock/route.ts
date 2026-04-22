@@ -4,7 +4,7 @@ import { apiOk } from "@/lib/api/response";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { lockCycle } from "@/lib/payroll/payroll-service";
 
-const LOCK_ROLES = ["HRMG", "CEO"] as const;
+const LOCK_ROLES = ["HRMG", "CEO", "CTO", "COO"] as const;
 
 export const POST = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiRoles(LOCK_ROLES);

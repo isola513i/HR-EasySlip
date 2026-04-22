@@ -41,9 +41,9 @@ export async function calculateWorkingDays(
     workingDays++;
   }
 
-  // Half-day: if only 1 working day and half-day selected
-  if (halfDay !== "FULL" && workingDays >= 1) {
-    return workingDays - 0.5;
+  // Half-day only applies to single-day leave
+  if (halfDay !== "FULL" && workingDays === 1) {
+    return 0.5;
   }
 
   return workingDays;

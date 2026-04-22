@@ -4,7 +4,7 @@ import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { LeavePreviewSchema } from "@/lib/leave/schemas";
-import { previewLeave } from "@/lib/leave/leave-service";
+import { previewLeave } from "@/lib/leave/leave-query-service";
 
 export const POST = withApiHandler(async (req) => {
   const caller = await requireApiRoles(EMPLOYEE_ROLES);

@@ -186,8 +186,8 @@ export async function finalizeCycle(
 ) {
   const now = new Date();
   const cycle = await prisma.payrollCycle.findFirst({
-    where: { status: "OPEN", cycleEnd: { gte: now } },
-    orderBy: { cycleEnd: "asc" },
+    where: { status: "OPEN" },
+    orderBy: { cycleEnd: "desc" },
   });
 
   if (!cycle) {

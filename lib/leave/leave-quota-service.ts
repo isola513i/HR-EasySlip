@@ -94,7 +94,7 @@ export async function resetYearEnd(year: number) {
 
   const cashOuts = [];
   for (const q of quotas) {
-    const unused = q.allocatedDays.minus(q.usedDays);
+    const unused = q.allocatedDays.minus(q.usedDays).minus(q.pendingDays);
     if (unused.gt(0)) {
       const cashOut = await prisma.annualLeaveCashOut.upsert({
         where: {
