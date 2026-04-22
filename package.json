@@ -52,7 +52,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "bun-types": "^1.3.13",
-    "prisma": "^6",
+    "prisma": "^7",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^6"
