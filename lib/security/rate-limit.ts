@@ -31,8 +31,41 @@ export function createRateLimiter(name: string, config: RateLimitConfig) {
   const store = getStore(name);
 
   return {
-    /** Returns { success: true } if allowed, { success: false, retryAfterMs } if blocked */
+    /**
+     * Check if blocked AND record the attempt in one call.
+     * Use for limiters that count all requests (e.g. magicLinkLimiter).
+     */
     check(key: string): { success: boolean; retryAfterMs?: number } {
+      const blocked = this.peek(key);
+      if (!blocked.success) return blocked;
+      this.record(key);
+      return { success: true };
+    },
+
+    /**
+     * Check if the key is currently blocked — does NOT record an attempt.
+     * Use this at the start of a flow to gate access without incrementing.
+     */
+    peek(key: string): { success: boolean; retryAfterMs?: number } {
+      const now = Date.now();
+      const windowStart = now - config.windowMs;
+      const entry = store.get(key);
+      if (!entry) return { success: true };
+
+      const active = entry.timestamps.filter((t) => t > windowStart);
+      if (active.length >= config.maxRequests) {
+        const oldest = active[0]!;
+        const retryAfterMs = oldest + config.windowMs - now;
+        return { success: false, retryAfterMs };
+      }
+      return { success: true };
+    },
+
+    /**
+     * Record a failed attempt without checking the limit.
+     * Use after a validated failure (e.g. blocked sign-in) to increment the counter.
+     */
+    record(key: string): void {
       const now = Date.now();
       const windowStart = now - config.windowMs;
 
@@ -41,18 +74,8 @@ export function createRateLimiter(name: string, config: RateLimitConfig) {
         entry = { timestamps: [] };
         store.set(key, entry);
       }
-
-      // Prune expired timestamps
       entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
-
-      if (entry.timestamps.length >= config.maxRequests) {
-        const oldest = entry.timestamps[0]!;
-        const retryAfterMs = oldest + config.windowMs - now;
-        return { success: false, retryAfterMs };
-      }
-
       entry.timestamps.push(now);
-      return { success: true };
     },
 
     /** Clean up stale entries (call periodically if needed) */

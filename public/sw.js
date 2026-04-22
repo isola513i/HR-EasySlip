@@ -45,6 +45,15 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// ── Message: handle sign-out cache purge (PDPA compliance) ──
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "CLEAR_AUTH_CACHE") {
+    caches.delete(CACHE_NAME).then(() => {
+      event.ports[0]?.postMessage({ success: true });
+    });
+  }
+});
+
 // ── Fetch: network-first for navigations, cache-first for assets ──
 self.addEventListener("fetch", (event) => {
   const { request } = event;
@@ -54,8 +63,19 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.pathname.startsWith("/api/")) return;
 
-  // Navigation requests: network first → cache fallback
+  // PDPA: Never cache auth-required pages — prevents data leak on shared devices
+  const PROTECTED_PATHS = ["/hr", "/employee", "/manager", "/profile"];
+  const isProtected = PROTECTED_PATHS.some((p) => url.pathname.startsWith(p));
+
+  // Navigation requests: network first → cache fallback (skip protected paths)
   if (request.mode === "navigate") {
+    if (isProtected) {
+      // Always fetch from network — never cache authenticated HR pages
+      event.respondWith(
+        fetch(request).catch(() => caches.match("/signin") || fetch("/signin"))
+      );
+      return;
+    }
     event.respondWith(
       fetch(request)
         .then((response) => {

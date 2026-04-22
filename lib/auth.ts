@@ -77,11 +77,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async signIn({ user }) {
       if (!user?.id) return true;
 
-      // Account lockout: block after 5 failed attempts in 15 minutes
-      const lockout = signInAttemptLimiter.check(user.id);
+      // Account lockout: peek (check without counting) — only record on actual failures
+      const lockout = signInAttemptLimiter.peek(user.id);
       if (!lockout.success) {
         logAuthEvent("auth.blocked", user.id, {
-          reason: "Account locked: too many sign-in attempts",
+          reason: "Account locked: too many failed sign-in attempts",
         }).catch(() => {});
         return "/signin?error=AccessDenied";
       }
@@ -93,6 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!full) return true;
 
       if (full.isDisabled) {
+        signInAttemptLimiter.record(user.id); // count this failure
         logAuthEvent("auth.blocked", user.id, {
           reason: "Account disabled",
         }).catch(() => {});
@@ -105,6 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number],
         )
       ) {
+        signInAttemptLimiter.record(user.id); // count this failure
         logAuthEvent("auth.blocked", user.id, {
           reason: `Employment status: ${emp.employmentStatus}`,
         }).catch(() => {});

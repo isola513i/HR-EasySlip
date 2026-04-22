@@ -39,8 +39,9 @@ export async function employeeScope(
   }
 
   if (!caller.employeeId) {
-    // No employee record linked — restrict to nothing
-    return { employeeId: "" };
+    // No employee record linked — return impossible filter (zero rows guaranteed)
+    // "" could match rows with empty-string IDs; { in: [] } always returns nothing
+    return { employeeId: { in: [] } };
   }
 
   // Manager: own + direct subordinates
