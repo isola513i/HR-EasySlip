@@ -1,17 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
+import { IBM_Plex_Sans_Thai, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from "@/components/shared/sw-registrar";
 import { Toaster } from "@/components/ui/sonner";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
-const notoSansThai = localFont({
-  src: "../public/fonts/NotoSansThai-Variable.ttf",
+const ibmPlexSansThai = IBM_Plex_Sans_Thai({
   variable: "--font-geist-sans",
+  subsets: ["thai", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
-  weight: "100 900",
 });
 
 const geistMono = Geist_Mono({
@@ -62,7 +61,7 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body
-        className={`${notoSansThai.variable} ${geistMono.variable} antialiased`}
+        className={`${ibmPlexSansThai.variable} ${geistMono.variable} antialiased`}
       >
         {children}
         <Toaster position="bottom-center" />
