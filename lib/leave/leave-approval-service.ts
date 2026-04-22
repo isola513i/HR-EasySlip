@@ -5,18 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import type { Role } from "@prisma/client";
-
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
-}
+import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function getPendingForApprover(
   caller: Caller,
@@ -153,12 +142,21 @@ export async function bulkDecision(
   reason: string | undefined,
   meta: RequestMeta,
 ) {
-  const results = [];
+  const results: { id: string; ok: boolean; error?: string }[] = [];
   for (const id of ids) {
-    if (decision === "APPROVED") {
-      results.push(await approveLeaveRequest(caller, id, meta));
-    } else {
-      results.push(await rejectLeaveRequest(caller, id, reason ?? "", meta));
+    try {
+      if (decision === "APPROVED") {
+        await approveLeaveRequest(caller, id, meta);
+      } else {
+        await rejectLeaveRequest(caller, id, reason ?? "", meta);
+      }
+      results.push({ id, ok: true });
+    } catch (err) {
+      results.push({
+        id,
+        ok: false,
+        error: err instanceof Error ? err.message : "Unknown error",
+      });
     }
   }
   return results;

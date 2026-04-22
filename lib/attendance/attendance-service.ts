@@ -6,25 +6,17 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import type { Role } from "@prisma/client";
+import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ClockInput, AttendanceFilters, BackfillInput } from "./schemas";
 
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
+interface ClockMeta extends RequestMeta {
   deviceId?: string;
 }
 
 export async function clockInOut(
   caller: Caller,
   input: ClockInput,
-  meta: RequestMeta,
+  meta: ClockMeta,
 ) {
   const clockedAt = new Date();
   await assertCycleOpen(clockedAt, caller.roles);
@@ -184,7 +176,7 @@ export async function finalizeCycle(
   caller: Caller,
   meta: RequestMeta,
 ) {
-  const now = new Date();
+  // Find the most recent open cycle and delegate to payroll-service
   const cycle = await prisma.payrollCycle.findFirst({
     where: { status: "OPEN" },
     orderBy: { cycleEnd: "desc" },
@@ -194,21 +186,7 @@ export async function finalizeCycle(
     throw new DomainError("NO_OPEN_CYCLE", { message: "No open payroll cycle found" });
   }
 
-  const updated = await prisma.payrollCycle.update({
-    where: { id: cycle.id },
-    data: { status: "LOCKED", lockedAt: now, lockedBy: caller.userId },
-  });
-
-  await writeAuditLog({
-    actorId: caller.userId,
-    action: "payroll.cycle_locked",
-    entityType: "PayrollCycle",
-    entityId: cycle.id,
-    before: cycle,
-    after: updated,
-    ipAddress: meta.ip,
-    userAgent: meta.userAgent,
-  });
-
-  return updated;
+  // Delegate to payroll service (single source of truth for cycle locking)
+  const { lockCycle } = await import("@/lib/payroll/payroll-service");
+  return lockCycle(caller, cycle.id, meta);
 }

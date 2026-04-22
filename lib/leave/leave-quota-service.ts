@@ -6,18 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { computeAnnualLeaveGrant } from "./annual-quota-engine";
-import type { Role } from "@prisma/client";
-
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
-}
+import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function getMyQuota(employeeId: string, year?: number) {
   const quotaYear = year ?? new Date().getFullYear();

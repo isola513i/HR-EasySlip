@@ -5,19 +5,8 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import type { Role } from "@prisma/client";
+import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { TimeAdjSubmit, TimeAdjFilters } from "./schemas";
-
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
-}
 
 export async function submitRequest(
   caller: Caller,

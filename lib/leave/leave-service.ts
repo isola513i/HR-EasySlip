@@ -8,19 +8,8 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { calculateWorkingDays } from "./working-days";
-import type { Role } from "@prisma/client";
+import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { LeaveRequestInput } from "./schemas";
-
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
-}
 
 export async function submitLeaveRequest(
   caller: Caller,

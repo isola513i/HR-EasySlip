@@ -5,7 +5,7 @@ import { generateTimestampExport } from "@/lib/payroll/empeo-formatter";
 
 const EXPORT_ROLES = ["HR_AUTHORIZED", ...HR_ROLES] as const;
 
-export const POST = withApiHandler(async (_req, ctx) => {
+const handleExport = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiRoles(EXPORT_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -20,17 +20,5 @@ export const POST = withApiHandler(async (_req, ctx) => {
   });
 });
 
-export const GET = withApiHandler(async (_req, ctx) => {
-  const caller = await requireApiRoles(EXPORT_ROLES);
-  if (caller instanceof NextResponse) return caller;
-
-  const csv = await generateTimestampExport(ctx.params.id);
-
-  return new NextResponse(csv, {
-    status: 200,
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="timestamps-${ctx.params.id}.csv"`,
-    },
-  });
-});
+export const POST = handleExport;
+export const GET = handleExport;

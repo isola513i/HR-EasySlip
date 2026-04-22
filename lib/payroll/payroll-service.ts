@@ -5,18 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import type { Role } from "@prisma/client";
-
-interface Caller {
-  userId: string;
-  employeeId: string;
-  roles: Role[];
-}
-
-interface RequestMeta {
-  ip: string;
-  userAgent: string;
-}
+import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function listCycles(year?: number, status?: string) {
   return prisma.payrollCycle.findMany({

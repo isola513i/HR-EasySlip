@@ -32,7 +32,14 @@ export async function assertCycleOpen(
     select: { id: true, status: true },
   });
 
-  if (cycle && cycle.status !== "OPEN") {
+  if (!cycle) {
+    throw new DomainError("NO_CYCLE", {
+      message: "No payroll cycle covers this date",
+      date: date.toISOString(),
+    });
+  }
+
+  if (cycle.status !== "OPEN") {
     throw new DomainError(ErrorCodes.CYCLE_LOCKED, {
       cycleId: cycle.id,
       status: cycle.status,
