@@ -4,7 +4,7 @@ import { apiOk } from "@/lib/api/response";
 import { parseSearchParams } from "@/lib/api/validate";
 import { requireApiRoles, MANAGER_ROLES } from "@/lib/security/rbac";
 import { TeamCalendarSchema } from "@/lib/leave/schemas";
-import { getTeamCalendar } from "@/lib/leave/leave-approval-service";
+import { getTeamCalendar } from "@/lib/leave/leave-query-service";
 
 export const GET = withApiHandler(async (req) => {
   const caller = await requireApiRoles(MANAGER_ROLES);
@@ -15,7 +15,7 @@ export const GET = withApiHandler(async (req) => {
 
   const { month, year } = parseSearchParams(req, TeamCalendarSchema);
   const calendar = await getTeamCalendar(
-    { userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles },
+    { employeeId: caller.employeeId },
     month,
     year,
   );

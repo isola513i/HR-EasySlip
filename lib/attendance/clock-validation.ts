@@ -1,7 +1,3 @@
-// ════════════════════════════════════════════════════════════════
-// Clock Validation — prevent duplicate clock-in/out per day
-// ════════════════════════════════════════════════════════════════
-
 import { prisma } from "@/lib/prisma";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 

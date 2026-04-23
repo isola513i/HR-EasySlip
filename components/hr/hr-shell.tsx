@@ -4,6 +4,7 @@ import {
   LayoutGrid,
   Users,
   CalendarDays,
+  CalendarCheck,
   ShieldCheck,
   Scroll,
   Settings,
@@ -39,6 +40,12 @@ const navItems: (NavItem | NavGroup)[] = [
     icon: Clock,
     label: "Attendance",
   },
+  {
+    key: "holidays",
+    href: "/hr/holidays",
+    icon: CalendarCheck,
+    label: "Public Holidays",
+  },
   { group: "Compliance" },
   {
     key: "audit",
@@ -66,6 +73,7 @@ const pageTitles: Record<string, string> = {
   "/hr/employees": "Employees",
   "/hr/leave-calendar": "Leave Calendar",
   "/hr/attendance": "Attendance",
+  "/hr/holidays": "Public Holidays",
   "/hr/audit": "Audit Log",
   "/hr/pdpa": "PDPA Consent",
   "/hr/settings": "Settings",

@@ -41,7 +41,7 @@ export async function approveLeaveRequest(
   id: string,
   meta: RequestMeta,
 ) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const request = await tx.leaveRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
     if (request.status !== "PENDING") {
@@ -83,6 +83,13 @@ export async function approveLeaveRequest(
 
     return updated;
   });
+
+  // Fire-and-forget notification to employee
+  import("@/lib/email/leave-notification-sender")
+    .then((m) => m.notifyLeaveDecision(id, "APPROVED"))
+    .catch(console.error);
+
+  return result;
 }
 
 export async function rejectLeaveRequest(
@@ -91,7 +98,7 @@ export async function rejectLeaveRequest(
   reason: string,
   meta: RequestMeta,
 ) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const request = await tx.leaveRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
     if (request.status !== "PENDING") {
@@ -133,6 +140,13 @@ export async function rejectLeaveRequest(
 
     return updated;
   });
+
+  // Fire-and-forget notification to employee
+  import("@/lib/email/leave-notification-sender")
+    .then((m) => m.notifyLeaveDecision(id, "REJECTED"))
+    .catch(console.error);
+
+  return result;
 }
 
 export async function bulkDecision(
@@ -162,39 +176,3 @@ export async function bulkDecision(
   return results;
 }
 
-export async function getTeamCalendar(
-  caller: Caller,
-  month: number,
-  year: number,
-) {
-  const subordinates = await prisma.employee.findMany({
-    where: { managerId: caller.employeeId },
-    select: { id: true },
-  });
-  const employeeIds = [caller.employeeId, ...subordinates.map((s) => s.id)];
-
-  const startDate = new Date(year, month - 1, 1);
-  const endDate = new Date(year, month, 0); // last day of month
-
-  const requests = await prisma.leaveRequest.findMany({
-    where: {
-      employeeId: { in: employeeIds },
-      status: { in: ["PENDING", "APPROVED"] },
-      startDate: { lte: endDate },
-      endDate: { gte: startDate },
-    },
-    include: {
-      employee: {
-        select: {
-          id: true,
-          firstNameTh: true,
-          lastNameTh: true,
-          employeeCode: true,
-        },
-      },
-    },
-    orderBy: { startDate: "asc" },
-  });
-
-  return requests;
-}

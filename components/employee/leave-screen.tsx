@@ -1,31 +1,42 @@
 "use client";
 
-import { useState } from "react";
 import { Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
+import { useLeaveForm } from "@/hooks/use-leave-form";
 
-type LeaveType = "SICK" | "PERSONAL" | "ANNUAL" | "LWP";
-type HalfDay = "FULL" | "MORNING" | "AFTERNOON";
-
-const leaveTypes = [
-  { key: "SICK" as const, label: "Sick", sub: "Sick leave", balance: "28 / 30" },
-  { key: "PERSONAL" as const, label: "Personal", sub: "Personal leave", balance: "2 / 3" },
-  { key: "ANNUAL" as const, label: "Annual", sub: "Annual leave", balance: "4 / 4" },
-  { key: "LWP" as const, label: "LWP", sub: "Leave without pay", balance: "∞" },
+const LEAVE_TYPES = [
+  { key: "SICK" as const, label: "Sick", sub: "Sick leave" },
+  { key: "PERSONAL" as const, label: "Personal", sub: "Personal leave" },
+  { key: "ANNUAL" as const, label: "Annual", sub: "Annual leave" },
+  { key: "LEAVE_WITHOUT_PAY" as const, label: "LWP", sub: "Leave without pay" },
 ];
 
-const durations = [
+const DURATIONS = [
   { key: "FULL" as const, label: "Full day", sub: "Full day" },
   { key: "MORNING" as const, label: "Morning", sub: "09:00–13:00" },
   { key: "AFTERNOON" as const, label: "Afternoon", sub: "13:00–18:00" },
 ];
 
 export function LeaveScreen() {
-  const [type, setType] = useState<LeaveType>("SICK");
-  const [half, setHalf] = useState<HalfDay>("FULL");
+  const {
+    leaveType, setLeaveType, halfDay, setHalfDay,
+    startDate, setStartDate, endDate, setEndDate,
+    reason, setReason, preview, isSubmitting,
+    isLoadingQuotas, quotaError, submit, getBalance,
+  } = useLeaveForm();
+
+  const handleSubmit = async () => {
+    try {
+      const result = await submit();
+      if (result) toast.success("Request submitted. Awaiting manager approval.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit");
+    }
+  };
 
   return (
     <>
@@ -36,62 +47,42 @@ export function LeaveScreen() {
         <div>
           <label className="mb-2 block text-[13px] font-medium">Type</label>
           <div className="grid grid-cols-2 gap-2">
-            {leaveTypes.map((t) => {
-              const sel = type === t.key;
+            {LEAVE_TYPES.map((t) => {
+              const sel = leaveType === t.key;
               return (
-                <button
-                  key={t.key}
-                  onClick={() => setType(t.key)}
-                  className={cn(
-                    "rounded-[10px] p-3 text-left transition-colors",
-                    sel
-                      ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)]"
-                      : "border border-[var(--es-neutral-300)] bg-card",
-                  )}
-                >
+                <button key={t.key} onClick={() => setLeaveType(t.key)} className={cn("rounded-[10px] p-3 text-left transition-colors", sel ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)]" : "border border-[var(--es-neutral-300)] bg-card")}>
                   <div className="text-sm font-semibold">{t.label}</div>
                   <div className="text-[11px] text-muted-foreground">{t.sub}</div>
                   <div className={cn("tabular-nums mt-1 text-[11px] font-semibold", sel ? "text-[var(--es-accent-700)]" : "text-muted-foreground")}>
-                    Balance: {t.balance}
+                    {isLoadingQuotas ? "Loading..." : quotaError ? "Error" : `Balance: ${getBalance(t.key)}`}
                   </div>
                 </button>
               );
             })}
           </div>
         </div>
-
         {/* Date range */}
         <div>
           <label className="mb-2 block text-[13px] font-medium">Date range</label>
           <div className="grid grid-cols-2 gap-2">
-            {["From", "To"].map((l, i) => (
-              <div key={l} className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
-                <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{l}</div>
-                <div className="tabular-nums mt-0.5 text-[15px] font-semibold">
-                  {i === 0 ? "22 Apr 2026" : "23 Apr 2026"}
-                </div>
-              </div>
-            ))}
+            <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">From</div>
+              <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); if (!endDate || e.target.value > endDate) setEndDate(e.target.value); }} className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none" />
+            </div>
+            <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">To</div>
+              <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none" />
+            </div>
           </div>
         </div>
-
         {/* Duration */}
         <div>
           <label className="mb-2 block text-[13px] font-medium">Duration</label>
           <div className="grid grid-cols-3 gap-2">
-            {durations.map((o) => {
-              const sel = half === o.key;
+            {DURATIONS.map((o) => {
+              const sel = halfDay === o.key;
               return (
-                <button
-                  key={o.key}
-                  onClick={() => setHalf(o.key)}
-                  className={cn(
-                    "flex flex-col gap-0.5 rounded-lg px-2 py-2.5 text-[13px] font-semibold transition-colors",
-                    sel
-                      ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-600)] text-white"
-                      : "border border-[var(--es-neutral-300)] bg-card text-foreground",
-                  )}
-                >
+                <button key={o.key} onClick={() => setHalfDay(o.key)} className={cn("flex flex-col gap-0.5 rounded-lg px-2 py-2.5 text-[13px] font-semibold transition-colors", sel ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-600)] text-white" : "border border-[var(--es-neutral-300)] bg-card text-foreground")}>
                   <span>{o.label}</span>
                   <span className={cn("text-[10px] font-normal", sel ? "opacity-85" : "opacity-60")}>{o.sub}</span>
                 </button>
@@ -99,42 +90,43 @@ export function LeaveScreen() {
             })}
           </div>
         </div>
-
-        {/* Reason */}
+        {/* Reason + Attachment */}
         <div>
           <label className="mb-1.5 block text-[13px] font-medium">Reason</label>
-          <textarea
-            placeholder="Enter reason..."
-            className="w-full resize-none rounded-lg border border-[var(--es-neutral-300)] bg-card px-2.5 py-2.5 text-sm focus:border-[var(--es-accent-600)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
-            rows={3}
-            defaultValue="Medical appointment"
-          />
+          <Textarea placeholder="Enter reason..." rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
         </div>
-
-        {/* Attachment */}
         <button className="flex items-center gap-2.5 rounded-lg border border-dashed border-[var(--es-neutral-300)] bg-[var(--es-neutral-50)] px-3 py-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted">
-          <Paperclip className="size-4" />
-          Attach medical certificate (optional)
+          <Paperclip className="size-4" /> Attach medical certificate (optional)
         </button>
 
         {/* Summary */}
-        <div className="flex items-center justify-between rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-          <div>
-            <div className="font-semibold">Leave calculation</div>
-            <div className="tabular-nums text-[11px] opacity-80">22–23 Apr 2026 · excludes holidays</div>
+        {preview && (
+          <div className={cn(
+            "flex items-center justify-between rounded-[10px] border p-3 text-[12px]",
+            preview.sufficient
+              ? "border-[var(--es-accent-200)] bg-[var(--es-accent-50)] text-[var(--es-accent-800)]"
+              : "border-[var(--es-error-200)] bg-[var(--es-error-50)] text-[var(--es-error-700)]",
+          )}>
+            <div>
+              <div className="font-semibold">Leave calculation</div>
+              <div className="tabular-nums text-[11px] opacity-80">
+                {startDate} – {endDate} · excludes holidays
+              </div>
+            </div>
+            <div className="tabular-nums text-[22px] font-bold">
+              {preview.days}<span className="text-xs opacity-70"> days</span>
+            </div>
           </div>
-          <div className="tabular-nums text-[22px] font-bold">
-            2.0<span className="text-xs opacity-70"> days</span>
-          </div>
-        </div>
+        )}
 
         {/* Submit */}
         <Button
           className="w-full"
           size="lg"
-          onClick={() => toast.success("Request submitted. Awaiting manager approval.")}
+          disabled={isSubmitting || !startDate || !endDate || !reason.trim() || (preview !== null && !preview.sufficient)}
+          onClick={handleSubmit}
         >
-          Submit request
+          {isSubmitting ? "Submitting..." : "Submit request"}
         </Button>
       </div>
     </>

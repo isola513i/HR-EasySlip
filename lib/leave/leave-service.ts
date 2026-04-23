@@ -24,7 +24,7 @@ export async function submitLeaveRequest(
   const days = await calculateWorkingDays(startDate, endDate, input.halfDay);
   const daysDecimal = new Decimal(days);
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     // Lock and check quota (except LWP which has no limit)
     let quotaId: string | undefined;
     if (input.leaveType !== "LEAVE_WITHOUT_PAY") {
@@ -99,6 +99,13 @@ export async function submitLeaveRequest(
 
     return request;
   }, { isolationLevel: "Serializable" });
+
+  // Fire-and-forget notification to approver
+  import("@/lib/email/leave-notification-sender")
+    .then((m) => m.notifyLeaveSubmitted(result.id))
+    .catch(console.error);
+
+  return result;
 }
 
 export async function withdrawLeaveRequest(
@@ -146,6 +153,3 @@ export async function withdrawLeaveRequest(
     return updated;
   });
 }
-
-// Query functions (previewLeave, getMyLeaveRequests, getLeaveRequestDetail)
-// are in leave-query-service.ts to keep this file under 200 lines.

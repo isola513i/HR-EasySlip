@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Clock, MapPin, Check } from "lucide-react";
+import { useEffect } from "react";
+import { Clock, MapPin, Check, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { cn } from "@/lib/utils";
-
-type ClockState = "idle" | "clocking" | "done";
-type LocationType = "OFFICE" | "WFH" | "ON_SITE";
+import { useClock, type LocationType } from "@/hooks/use-clock";
 
 const locations: { key: LocationType; label: string }[] = [
   { key: "OFFICE", label: "Office" },
@@ -16,26 +15,12 @@ const locations: { key: LocationType; label: string }[] = [
 ];
 
 export function ClockScreen() {
-  const [state, setState] = useState<ClockState>("idle");
-  const [location, setLocation] = useState<LocationType>("OFFICE");
-  const [clockedTime, setClockedTime] = useState<string | null>(null);
+  const {
+    clockState, clockType, location, setLocation,
+    coords, gpsStatus, clockedTime, error, handleClock, reset,
+  } = useClock();
 
-  useEffect(() => {
-    if (state === "clocking") {
-      const timer = setTimeout(() => {
-        const now = new Date();
-        setClockedTime(
-          `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
-        );
-        setState("done");
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [state]);
-
-  const handleClock = useCallback(() => {
-    if (state === "idle") setState("clocking");
-  }, [state]);
+  useEffect(() => { if (error) toast.error(error); }, [error]);
 
   const locationLabel =
     location === "OFFICE" ? "the office" : location === "WFH" ? "home" : "on-site";
@@ -63,11 +48,23 @@ export function ClockScreen() {
             </div>
           </div>
           <div className="flex items-center justify-between px-4 py-3.5">
-            <div>
-              <div className="text-[13px] font-medium">EasySlip HQ</div>
-              <div className="font-mono text-[11px] text-muted-foreground">13.7563°N, 100.5018°E</div>
-            </div>
-            <StatusPill tone="success">Accuracy ±8 m</StatusPill>
+            {gpsStatus === "loading" ? (
+              <div className="text-[13px] text-muted-foreground">Acquiring GPS...</div>
+            ) : gpsStatus === "denied" ? (
+              <div className="flex items-center gap-1.5 text-[13px] text-[var(--es-warning-600)]">
+                <AlertTriangle className="size-3.5" /> GPS unavailable
+              </div>
+            ) : coords ? (
+              <div>
+                <div className="text-[13px] font-medium">Current location</div>
+                <div className="font-mono text-[11px] text-muted-foreground">
+                  {coords.latitude.toFixed(4)}°N, {coords.longitude.toFixed(4)}°E
+                </div>
+              </div>
+            ) : null}
+            {coords && (
+              <StatusPill tone="success">Accuracy ±{Math.round(coords.accuracy)} m</StatusPill>
+            )}
           </div>
         </div>
 
@@ -99,31 +96,40 @@ export function ClockScreen() {
         </div>
 
         {/* Clock action */}
-        {state === "done" ? (
+        {clockState === "done" ? (
           <div className="rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
             <div className="mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
               <Check className="size-[26px] text-white" />
             </div>
-            <div className="text-lg font-bold text-[var(--es-success-700)]">Clock-in recorded</div>
+            <div className="text-lg font-bold text-[var(--es-success-700)]">
+              Clock-{clockType.toLowerCase()} recorded
+            </div>
             <div className="tabular-nums mt-1 text-[28px] font-bold">{clockedTime}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              Clocked in at {locationLabel} · GPS ±8 m
+              Clocked at {locationLabel}{coords ? ` · GPS ±${Math.round(coords.accuracy)} m` : ""}
             </div>
+            <button onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
+              Clock {clockType === "IN" ? "out" : "in"} now
+            </button>
           </div>
         ) : (
           <button
-            disabled={state === "clocking"}
+            disabled={clockState === "clocking" || clockState === "loading"}
             onClick={handleClock}
             className={cn(
               "flex min-h-[110px] flex-col items-center justify-center gap-1.5 rounded-[20px] text-[22px] font-bold text-white shadow-[0_8px_24px_rgba(61,70,204,0.35)] transition-colors",
-              state === "clocking"
+              clockState === "clocking" || clockState === "loading"
                 ? "bg-[var(--es-accent-700)]"
                 : "bg-[var(--es-accent-600)] hover:bg-[var(--es-accent-700)]",
             )}
           >
             <Clock className="size-7" />
-            {state === "clocking" ? "Recording..." : "Clock in"}
-            <span className="text-xs font-medium opacity-85">Tap to clock in</span>
+            {
+              { loading: "Loading...", clocking: "Recording...", idle: `Clock ${clockType.toLowerCase()}`, error: `Clock ${clockType.toLowerCase()}`, done: "" }[clockState]
+            }
+            <span className="text-xs font-medium opacity-85">
+              {clockState === "loading" ? "Checking status" : `Tap to clock ${clockType.toLowerCase()}`}
+            </span>
           </button>
         )}
 

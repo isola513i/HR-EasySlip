@@ -20,6 +20,9 @@ import { seedEmployees } from './seed/employees';
 import { seedLeaveQuotas } from './seed/leave-quotas';
 import { seedPublicHolidays } from './seed/public-holidays';
 import { seedSystemConfig } from './seed/system-config';
+import { seedPayrollCycle } from './seed/payroll-cycle';
+import { seedAttendanceRecords } from './seed/attendance-records';
+import { seedLeaveRequests } from './seed/leave-requests';
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
@@ -48,6 +51,15 @@ async function main() {
 
   await seedSystemConfig(prisma, systemUserId);
   console.log('  ✓ System config: defaults seeded\n');
+
+  await seedPayrollCycle(prisma);
+  console.log('  ✓ Payroll cycles: Apr 2026 (OPEN) + Mar 2026 (LOCKED)\n');
+
+  const attendanceCount = await seedAttendanceRecords(prisma, employeeMap);
+  console.log(`  ✓ Attendance records: ${attendanceCount} seeded\n`);
+
+  const leaveCount = await seedLeaveRequests(prisma, employeeMap);
+  console.log(`  ✓ Leave requests: ${leaveCount} seeded\n`);
 
   console.log('✅ Seed complete.\n');
   console.log('📧 Sign-in emails (all route to development.v001@gmail.com):');

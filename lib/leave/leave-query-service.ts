@@ -111,3 +111,33 @@ export async function getLeaveRequestDetail(
 
   return request;
 }
+
+export async function getTeamCalendar(
+  caller: { employeeId: string },
+  month: number,
+  year: number,
+) {
+  const subordinates = await prisma.employee.findMany({
+    where: { managerId: caller.employeeId },
+    select: { id: true },
+  });
+  const employeeIds = [caller.employeeId, ...subordinates.map((s) => s.id)];
+
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0);
+
+  return prisma.leaveRequest.findMany({
+    where: {
+      employeeId: { in: employeeIds },
+      status: { in: ["PENDING", "APPROVED"] },
+      startDate: { lte: endDate },
+      endDate: { gte: startDate },
+    },
+    include: {
+      employee: {
+        select: { id: true, firstNameTh: true, lastNameTh: true, employeeCode: true },
+      },
+    },
+    orderBy: { startDate: "asc" },
+  });
+}
