@@ -85,6 +85,13 @@ export async function submitLeaveRequest(
     .then((m) => m.notifyLeaveSubmitted(result.request.id))
     .catch(console.error);
 
+  // Notify for overflow child (auto-generated LWP)
+  if (result.overflow) {
+    import("@/lib/email/leave-notification-sender")
+      .then((m) => m.notifyLeaveSubmitted(result.overflow!.id))
+      .catch(console.error);
+  }
+
   return result;
 }
 

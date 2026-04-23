@@ -84,7 +84,7 @@ export function withApiHandler(handler: ApiHandler, options?: HandlerOptions) {
     try {
       const response = await handler(req, { ip, userAgent, params, requestId });
 
-      if (idempotencyKey && sessionUserId && response.status < 500) {
+      if (idempotencyKey && sessionUserId && response.status >= 200 && response.status < 300) {
         const body = await response.clone().text();
         storeIdempotency(sessionUserId, idempotencyKey, response.status, body);
       }
