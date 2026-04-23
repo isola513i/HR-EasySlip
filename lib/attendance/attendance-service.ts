@@ -8,6 +8,7 @@ import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ClockInput, AttendanceFilters, BackfillInput } from "./schemas";
+import { getBangkokDayBounds, validateClockAction } from "./clock-validation";
 
 interface ClockMeta extends RequestMeta {
   deviceId?: string;
@@ -20,6 +21,10 @@ export async function clockInOut(
 ) {
   const clockedAt = new Date();
   await assertCycleOpen(clockedAt, caller.roles);
+
+  // Double clock-in/out prevention — use Asia/Bangkok for "today" boundary
+  const { todayStart, todayEnd } = getBangkokDayBounds(clockedAt);
+  await validateClockAction(caller.employeeId, input.clockType, todayStart, todayEnd);
 
   const record = await prisma.attendanceRecord.create({
     data: {

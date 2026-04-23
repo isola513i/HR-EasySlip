@@ -17,7 +17,7 @@ export interface RequestContext {
   params: Record<string, string>;
 }
 
-type RouteParams = { params: Promise<Record<string, string>> };
+type RouteContext = { params: Promise<Record<string, string>> };
 
 type ApiHandler = (
   req: NextRequest,
@@ -39,12 +39,12 @@ interface HandlerOptions {
  *   });
  */
 export function withApiHandler(handler: ApiHandler, options?: HandlerOptions) {
-  return async (req: NextRequest, route?: RouteParams): Promise<NextResponse> => {
+  return async (req: NextRequest, route: RouteContext): Promise<NextResponse> => {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       ?? req.headers.get("x-real-ip")
       ?? "unknown";
     const userAgent = req.headers.get("user-agent") ?? "";
-    const params = route?.params ? await route.params : {};
+    const params = await route.params;
 
     // Rate limiting (if configured)
     if (options?.rateLimit) {
