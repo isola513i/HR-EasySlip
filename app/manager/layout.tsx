@@ -1,4 +1,5 @@
 import { requireRoles, MANAGER_ROLES } from "@/lib/security/rbac";
+import { requireConsent } from "@/lib/consent/require-consent";
 import { ManagerShell } from "@/components/manager/manager-shell";
 
 export default async function ManagerLayout({
@@ -7,6 +8,7 @@ export default async function ManagerLayout({
   children: React.ReactNode;
 }) {
   const user = await requireRoles(MANAGER_ROLES);
+  await requireConsent("/manager/inbox");
 
   return (
     <ManagerShell

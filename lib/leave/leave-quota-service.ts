@@ -1,11 +1,11 @@
 // ════════════════════════════════════════════════════════════════
-// Leave Quota Service — get quota, reset, grant, adjust
+// Leave Quota Service — queries + manual adjustment
+// Grant/reset functions are in leave-quota-grant-service.ts
 // ════════════════════════════════════════════════════════════════
 
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import { computeAnnualLeaveGrant } from "./annual-quota-engine";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function getMyQuota(employeeId: string, year?: number) {
@@ -69,90 +69,4 @@ export async function adjustQuota(
   });
 
   return updated;
-}
-
-export async function resetYearEnd(year: number) {
-  // Find all ANNUAL quotas for the year with unused days
-  const quotas = await prisma.leaveQuota.findMany({
-    where: {
-      leaveType: "ANNUAL",
-      quotaYear: year,
-    },
-    include: { employee: { select: { id: true } } },
-  });
-
-  const cashOuts = [];
-  for (const q of quotas) {
-    const unused = q.allocatedDays.minus(q.usedDays).minus(q.pendingDays);
-    if (unused.gt(0)) {
-      const cashOut = await prisma.annualLeaveCashOut.upsert({
-        where: {
-          employeeId_year: { employeeId: q.employeeId, year },
-        },
-        create: {
-          employeeId: q.employeeId,
-          year,
-          unusedDays: unused,
-          trigger: "YEAR_END",
-        },
-        update: { unusedDays: unused },
-      });
-      cashOuts.push(cashOut);
-    }
-  }
-
-  await writeAuditLog({
-    actorId: null,
-    action: "leave.year_end_reset",
-    entityType: "LeaveQuota",
-    entityId: `year-${year}`,
-    after: { quotasProcessed: quotas.length, cashOutsCreated: cashOuts.length },
-  });
-
-  return { quotasProcessed: quotas.length, cashOutsCreated: cashOuts.length };
-}
-
-export async function grantAnniversaryLeave() {
-  const today = new Date();
-  const employees = await prisma.employee.findMany({
-    where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] } },
-    select: { id: true, hireDate: true },
-  });
-
-  let granted = 0;
-  for (const emp of employees) {
-    const existingQuota = await prisma.leaveQuota.findFirst({
-      where: {
-        employeeId: emp.id,
-        leaveType: "ANNUAL",
-        quotaYear: today.getFullYear(),
-      },
-    });
-
-    const result = computeAnnualLeaveGrant(emp.hireDate, today, existingQuota);
-    if (result.action === "NONE") continue;
-
-    await prisma.leaveQuota.create({
-      data: {
-        employeeId: emp.id,
-        leaveType: "ANNUAL",
-        quotaYear: today.getFullYear(),
-        eligibleFrom: result.eligibleFrom,
-        allocatedDays: result.days,
-        isProrated: result.action === "GRANT_PRORATED",
-        prorateBasis: "basis" in result ? result.basis : undefined,
-      },
-    });
-    granted++;
-  }
-
-  await writeAuditLog({
-    actorId: null,
-    action: "leave.anniversary_grant",
-    entityType: "LeaveQuota",
-    entityId: `year-${today.getFullYear()}`,
-    after: { employeesChecked: employees.length, granted },
-  });
-
-  return { employeesChecked: employees.length, granted };
 }

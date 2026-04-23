@@ -32,3 +32,43 @@ export async function retryEvent(eventId: string) {
 
   return updated;
 }
+
+const EXHAUSTED_THRESHOLD = 3;
+
+/**
+ * Check for FAILED outbox events that have exhausted retries.
+ * Sends alert email to HR if any found.
+ */
+export async function alertOnExhaustedOutboxEvents(): Promise<void> {
+  const events = await prisma.payrollOutboxEvent.findMany({
+    where: { status: "FAILED", attempts: { gte: EXHAUSTED_THRESHOLD } },
+    select: { id: true, eventType: true, lastError: true, attempts: true },
+    take: 20,
+  });
+
+  if (events.length === 0) return;
+
+  const { sendNotificationEmail } = await import("@/lib/email/notification-service");
+
+  const lines = events.map(
+    (e) => `• ${e.id} (${e.eventType}) — ${e.attempts} attempts — ${e.lastError ?? "unknown error"}`,
+  );
+
+  const subject = `[EasySlip HR] ⚠ ${events.length} outbox event(s) require manual attention`;
+  const body = [
+    "The following payroll outbox events have exhausted retries:",
+    "",
+    ...lines,
+    "",
+    "Please check the system and retry manually via POST /api/v1/system/outbox/retry/:eventId",
+  ].join("\n");
+
+  const alertEmail = process.env.ALERT_EMAIL ?? process.env.EMAIL_FROM ?? "development.v001@gmail.com";
+
+  await sendNotificationEmail(
+    alertEmail,
+    subject,
+    `<pre style="font-family:monospace;font-size:13px;">${body}</pre>`,
+    body,
+  );
+}

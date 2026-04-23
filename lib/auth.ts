@@ -83,7 +83,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!lockout.success) {
         logAuthEvent("auth.blocked", user.id, {
           reason: "Account locked: too many failed sign-in attempts",
-        }).catch(() => {});
+        }).catch((err) => console.error("[auth audit]", err));
         return "/signin?error=AccessDenied";
       }
 
@@ -97,7 +97,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signInAttemptLimiter.record(user.id); // count this failure
         logAuthEvent("auth.blocked", user.id, {
           reason: "Account disabled",
-        }).catch(() => {});
+        }).catch((err) => console.error("[auth audit]", err));
         return "/signin?error=AccessDenied";
       }
       const emp = full.employee;
@@ -110,12 +110,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signInAttemptLimiter.record(user.id); // count this failure
         logAuthEvent("auth.blocked", user.id, {
           reason: `Employment status: ${emp.employmentStatus}`,
-        }).catch(() => {});
+        }).catch((err) => console.error("[auth audit]", err));
         return "/signin?error=AccessDenied";
       }
 
       // Success — log sign-in (fire-and-forget)
-      logAuthEvent("auth.signin", user.id).catch(() => {});
+      logAuthEvent("auth.signin", user.id).catch((err) => console.error("[auth audit]", err));
       return true;
     },
     async session({ session, user }) {

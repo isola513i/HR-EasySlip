@@ -31,20 +31,35 @@ export async function lockCycle(
     throw new DomainError(ErrorCodes.ALREADY_PROCESSED, { status: cycle.status });
   }
 
-  const updated = await prisma.payrollCycle.update({
-    where: { id: cycleId },
-    data: { status: "LOCKED", lockedAt: new Date(), lockedBy: caller.userId },
-  });
+  const updated = await prisma.$transaction(async (tx) => {
+    const locked = await tx.payrollCycle.update({
+      where: { id: cycleId },
+      data: { status: "LOCKED", lockedAt: new Date(), lockedBy: caller.userId },
+    });
 
-  await writeAuditLog({
-    actorId: caller.userId,
-    action: "payroll.cycle_locked",
-    entityType: "PayrollCycle",
-    entityId: cycleId,
-    before: cycle,
-    after: updated,
-    ipAddress: meta.ip,
-    userAgent: meta.userAgent,
+    await tx.payrollOutboxEvent.create({
+      data: {
+        payrollCycleId: cycleId,
+        eventType: "cycle.locked",
+        aggregateId: cycleId,
+        payload: { cycleId, year: cycle.year, month: cycle.month },
+        idempotencyKey: `cycle-locked:${cycleId}`,
+        status: "PENDING",
+      },
+    });
+
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "payroll.cycle_locked",
+      entityType: "PayrollCycle",
+      entityId: cycleId,
+      before: cycle,
+      after: locked,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+    }, tx);
+
+    return locked;
   });
 
   return updated;

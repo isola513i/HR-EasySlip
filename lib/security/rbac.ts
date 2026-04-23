@@ -37,7 +37,7 @@ export const CUTOFF_OVERRIDE_ROLES: readonly Role[] = [
   "HR_AUTHORIZED",
 ] as const;
 
-interface AuthResult {
+export interface AuthResult {
   userId: string;
   roles: Role[];
   employeeId: string | undefined;
@@ -147,4 +147,24 @@ export async function requireApiRoles(
     firstNameTh: emp?.firstNameTh,
     lastNameTh: emp?.lastNameTh,
   };
+}
+
+export type EmployeeAuthResult = AuthResult & { employeeId: string };
+
+/**
+ * Stricter guard: requires both valid roles AND an employee record.
+ * Eliminates the need for manual `if (!caller.employeeId)` checks in routes.
+ */
+export async function requireApiEmployee(
+  allowedRoles: readonly Role[],
+): Promise<EmployeeAuthResult | NextResponse> {
+  const result = await requireApiRoles(allowedRoles);
+  if (result instanceof NextResponse) return result;
+  if (!result.employeeId) {
+    return NextResponse.json(
+      { ok: false, error: "Forbidden", code: "NO_EMPLOYEE_RECORD" },
+      { status: 403 },
+    );
+  }
+  return result as EmployeeAuthResult;
 }

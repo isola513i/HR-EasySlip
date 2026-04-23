@@ -15,3 +15,10 @@ export const AuditQuerySchema = z.object({
 });
 
 export type AuditQuery = z.infer<typeof AuditQuerySchema>;
+
+export const AuditTimelineQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  perPage: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export type AuditTimelineQuery = z.infer<typeof AuditTimelineQuerySchema>;

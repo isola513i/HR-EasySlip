@@ -4,11 +4,18 @@
 
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
-import { grantAnniversaryLeave } from "@/lib/leave/leave-quota-service";
+import { logger } from "@/lib/observability/logger";
+import { grantAnniversaryLeave } from "@/lib/leave/leave-quota-grant-service";
+import { alertOnExhaustedOutboxEvents } from "@/lib/system/outbox-service";
 
 export async function dailyQuotaTick() {
-  // Run anniversary leave grant check
   const result = await grantAnniversaryLeave();
+
+  // Fire-and-forget outbox alert
+  alertOnExhaustedOutboxEvents().catch((err) =>
+    logger.error("Failed to send outbox alert", { error: err?.message }),
+  );
+
   return result;
 }
 

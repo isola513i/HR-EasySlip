@@ -37,12 +37,21 @@ export async function queryLogs(filters: AuditQuery) {
 export async function getEntityTimeline(
   entityType: string,
   entityId: string,
+  page = 1,
+  perPage = 50,
 ) {
-  return prisma.auditLog.findMany({
-    where: { entityType, entityId },
-    include: {
-      actor: { select: { id: true, email: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const where = { entityType, entityId };
+
+  const [items, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      include: { actor: { select: { id: true, email: true } } },
+      orderBy: { createdAt: "asc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
+
+  return { items, total, page, perPage };
 }

@@ -114,6 +114,8 @@ model Employee {
   employmentStatus EmploymentStatus @default(PROBATION)
   workShift        WorkShift        @default(MORNING)
   terminationDate  DateTime?        @db.Date
+  isAnonymized     Boolean          @default(false)
+  anonymizedAt     DateTime?
 
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   department   Department? @relation(fields: [departmentId], references: [id])

@@ -104,6 +104,24 @@ export const authEndpointLimiter = createRateLimiter("auth-endpoint", {
   windowMs: 60_000,
 });
 
+/** Clock in/out: 10 requests per minute per IP (prevents double-tap spam) */
+export const clockLimiter = createRateLimiter("clock", {
+  maxRequests: 10,
+  windowMs: 60_000,
+});
+
+/** Leave requests: 10 per minute per IP */
+export const leaveRequestLimiter = createRateLimiter("leave-request", {
+  maxRequests: 10,
+  windowMs: 60_000,
+});
+
+/** Approval actions: 30 per minute per IP (bulk approve can hit multiple) */
+export const approvalLimiter = createRateLimiter("approval", {
+  maxRequests: 30,
+  windowMs: 60_000,
+});
+
 /**
  * Account lockout: 5 failed sign-in attempts per email in 15 minutes.
  * After lockout, the user must wait for the window to expire.

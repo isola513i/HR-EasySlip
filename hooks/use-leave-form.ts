@@ -51,7 +51,7 @@ export function useLeaveForm() {
         signal: ctrl.signal,
       })
         .then(setPreview)
-        .catch(() => {});
+        .catch(() => setPreview(null));
     }, 300);
     return () => { clearTimeout(timer); ctrl.abort(); };
   }, [leaveType, startDate, endDate, halfDay]);

@@ -12,11 +12,20 @@ export class ApiClientError extends Error {
   }
 }
 
+const DEFAULT_TIMEOUT_MS = 30_000;
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    ...options,
-  });
+  // Apply timeout unless caller already provided an AbortSignal
+  const needsTimeout = !options?.signal;
+  const ctrl = needsTimeout ? new AbortController() : undefined;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), DEFAULT_TIMEOUT_MS) : undefined;
+
+  try {
+    const res = await fetch(url, {
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      ...options,
+      ...(ctrl && { signal: ctrl.signal }),
+    });
   const json = await res.json();
   if (!json.ok) {
     throw new ApiClientError(
@@ -27,6 +36,9 @@ async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
     );
   }
   return json;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 export async function apiFetch<T>(

@@ -1,26 +1,54 @@
-// ════════════════════════════════════════════════════════════════
-// Consent Service — PDPA consent management
-// ════════════════════════════════════════════════════════════════
-
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
-import type { ConsentGrantInput } from "./schemas";
 
 interface RequestMeta {
   ip: string;
   userAgent: string;
 }
 
-export async function grantConsent(
-  userId: string,
-  input: ConsentGrantInput,
-  meta: RequestMeta,
-) {
+export const CONSENT_PURPOSE = "PDPA-EmployeeData-v1";
+export const CONSENT_VERSION = "1.0";
+
+export async function hasActiveConsent(userId: string): Promise<boolean> {
+  const record = await prisma.consentRecord.findFirst({
+    where: {
+      userId,
+      purpose: CONSENT_PURPOSE,
+      version: CONSENT_VERSION,
+      granted: true,
+      withdrawnAt: null,
+    },
+  });
+  return record !== null;
+}
+
+export async function getConsentStatus(userId: string) {
+  const record = await prisma.consentRecord.findFirst({
+    where: {
+      userId,
+      purpose: CONSENT_PURPOSE,
+      version: CONSENT_VERSION,
+      granted: true,
+      withdrawnAt: null,
+    },
+    orderBy: { grantedAt: "desc" },
+    select: { granted: true, grantedAt: true, purpose: true, version: true },
+  });
+
+  return {
+    consented: record !== null,
+    purpose: CONSENT_PURPOSE,
+    version: CONSENT_VERSION,
+    grantedAt: record?.grantedAt ?? null,
+  };
+}
+
+export async function grantConsent(userId: string, meta: RequestMeta) {
   const record = await prisma.consentRecord.create({
     data: {
       userId,
-      purpose: input.purpose,
-      version: input.version,
+      purpose: CONSENT_PURPOSE,
+      version: CONSENT_VERSION,
       granted: true,
       grantedAt: new Date(),
       ipAddress: meta.ip,
@@ -41,13 +69,9 @@ export async function grantConsent(
   return record;
 }
 
-export async function withdrawConsent(
-  userId: string,
-  meta: RequestMeta,
-) {
-  // Find latest active consent
+export async function withdrawConsent(userId: string, meta: RequestMeta) {
   const consent = await prisma.consentRecord.findFirst({
-    where: { userId, granted: true, withdrawnAt: null },
+    where: { userId, purpose: CONSENT_PURPOSE, granted: true, withdrawnAt: null },
     orderBy: { grantedAt: "desc" },
   });
 

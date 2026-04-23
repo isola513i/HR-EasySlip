@@ -22,24 +22,27 @@ export async function clockInOut(
   const clockedAt = new Date();
   await assertCycleOpen(clockedAt, caller.roles);
 
-  // Double clock-in/out prevention — use Asia/Bangkok for "today" boundary
   const { todayStart, todayEnd } = getBangkokDayBounds(clockedAt);
-  await validateClockAction(caller.employeeId, input.clockType, todayStart, todayEnd);
 
-  const record = await prisma.attendanceRecord.create({
-    data: {
-      employeeId: caller.employeeId,
-      clockType: input.clockType,
-      clockedAt,
-      workLocation: input.workLocation,
-      latitude: input.latitude,
-      longitude: input.longitude,
-      gpsAccuracyM: input.gpsAccuracyM,
-      deviceId: meta.deviceId,
-      ipAddress: meta.ip,
-      note: input.note,
-    },
-  });
+  // Wrap validate + create in Serializable transaction to prevent race condition
+  const record = await prisma.$transaction(async (tx) => {
+    await validateClockAction(tx, caller.employeeId, input.clockType, todayStart, todayEnd);
+
+    return tx.attendanceRecord.create({
+      data: {
+        employeeId: caller.employeeId,
+        clockType: input.clockType,
+        clockedAt,
+        workLocation: input.workLocation,
+        latitude: input.latitude,
+        longitude: input.longitude,
+        gpsAccuracyM: input.gpsAccuracyM,
+        deviceId: meta.deviceId,
+        ipAddress: meta.ip,
+        note: input.note,
+      },
+    });
+  }, { isolationLevel: "Serializable" });
 
   await writeAuditLog({
     actorId: caller.userId,
