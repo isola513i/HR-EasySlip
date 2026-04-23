@@ -5,18 +5,10 @@ import { Download, Plus, MoreHorizontal } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { SearchInput } from "@/components/shared/search-input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-
-const employees = [
-  { code: "ES0042", name: "Suda Thongdee", email: "suda.t@esg.co.th", dept: "Engineering", role: "EMPLOYEE", manager: "K. Somchai", status: "ACTIVE", start: "2022-03-15" },
-  { code: "ES0018", name: "Nattapol Kaewcharoen", email: "nattapol.k@esg.co.th", dept: "Engineering", role: "EMPLOYEE", manager: "K. Somchai", status: "ACTIVE", start: "2021-07-01" },
-  { code: "ES0031", name: "Piyanuch Seedum", email: "piyanuch.s@esg.co.th", dept: "Marketing", role: "EMPLOYEE", manager: "K. Wipa", status: "ACTIVE", start: "2023-01-10" },
-  { code: "ES0027", name: "Anon Chokdee", email: "anon.c@esg.co.th", dept: "Engineering", role: "EMPLOYEE", manager: "K. Somchai", status: "PROBATION", start: "2026-02-20" },
-  { code: "ES0055", name: "Malee Suayngam", email: "malee.s@esg.co.th", dept: "Design", role: "MANAGER", manager: "K. Natee", status: "ACTIVE", start: "2020-11-03" },
-  { code: "ES0061", name: "Somchai Ruayluea", email: "somchai.r@esg.co.th", dept: "Engineering", role: "MANAGER", manager: "K. Natee", status: "ACTIVE", start: "2019-08-12" },
-  { code: "ES0064", name: "Weeraya Sangjan", email: "weeraya.s@esg.co.th", dept: "HR", role: "HR_AUTHORIZED", manager: "K. Apinya", status: "ACTIVE", start: "2022-09-01" },
-  { code: "ES0070", name: "Preecha Jaidee", email: "preecha.j@esg.co.th", dept: "Finance", role: "EMPLOYEE", manager: "K. Duangjai", status: "SUSPENDED", start: "2021-04-19" },
-];
+import { useEmployees } from "@/hooks/use-employees";
+import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog";
 
 const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
   ACTIVE: "success",
@@ -25,20 +17,43 @@ const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
   RESIGNED: "neutral",
 };
 
-const statusFilters = ["All", "Active", "Probation", "Suspended"];
+const statusFilters = [
+  { label: "All", value: "" },
+  { label: "Active", value: "ACTIVE" },
+  { label: "Probation", value: "PROBATION" },
+  { label: "Suspended", value: "SUSPENDED" },
+];
 
 export function EmployeeDirectory() {
+  const { items, isLoading, error, setSearch, setStatus } = useEmployees();
   const [activeFilter, setActiveFilter] = useState(0);
+  const [searchValue, setSearchValue] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleSearch = (v: string) => {
+    setSearchValue(v);
+    setSearch(v);
+  };
+
+  const handleFilter = (idx: number) => {
+    setActiveFilter(idx);
+    setStatus(statusFilters[idx].value);
+  };
 
   return (
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
       <div className="flex items-center gap-2.5">
-        <SearchInput placeholder="Search employee... name / code / email" className="max-w-[360px]" />
+        <SearchInput
+          placeholder="Search employee... name / code / email"
+          className="max-w-[360px]"
+          value={searchValue}
+          onChange={handleSearch}
+        />
         {statusFilters.map((f, i) => (
           <button
-            key={f}
-            onClick={() => setActiveFilter(i)}
+            key={f.label}
+            onClick={() => handleFilter(i)}
             className={cn(
               "rounded-lg border px-3 py-[7px] text-xs font-medium transition-colors",
               i === activeFilter
@@ -46,17 +61,27 @@ export function EmployeeDirectory() {
                 : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
             )}
           >
-            {f}
+            {f.label}
           </button>
         ))}
         <div className="flex-1" />
         <button className="flex items-center gap-1.5 rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
           <Download className="size-3.5" /> Export CSV
         </button>
-        <button className="flex items-center gap-1.5 rounded-lg bg-[var(--es-accent-600)] px-3.5 py-[7px] text-xs font-semibold text-white transition-colors hover:bg-[var(--es-accent-700)]">
+        <button
+          onClick={() => setDialogOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg bg-[var(--es-accent-600)] px-3.5 py-[7px] text-xs font-semibold text-white transition-colors hover:bg-[var(--es-accent-700)]"
+        >
           <Plus className="size-3.5" /> Add employee
         </button>
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
+        </div>
+      )}
 
       {/* Table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
@@ -70,33 +95,60 @@ export function EmployeeDirectory() {
           <span>Start</span>
           <span />
         </div>
-        {employees.map((p) => (
-          <div
-            key={p.code}
-            className="grid grid-cols-[100px_1fr_140px_110px_140px_110px_110px_40px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-[13px]"
-          >
-            <span className="tabular-nums text-xs text-muted-foreground">
-              {p.code}
-            </span>
-            <div>
-              <div className="font-medium">{p.name}</div>
-              <div className="text-[11px] text-muted-foreground">{p.email}</div>
-            </div>
-            <span>{p.dept}</span>
-            <RoleBadge role={p.role} />
-            <span className="text-xs text-muted-foreground">{p.manager}</span>
-            <StatusPill tone={statusTone[p.status] ?? "neutral"}>
-              {p.status}
-            </StatusPill>
-            <span className="tabular-nums text-xs text-muted-foreground">
-              {p.start}
-            </span>
-            <button className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
-              <MoreHorizontal className="size-4" />
-            </button>
+        {isLoading
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-[100px_1fr_140px_110px_140px_110px_110px_40px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3">
+                <Skeleton className="h-4 w-16" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-40" />
+                </div>
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-5 w-16" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-4" />
+              </div>
+            ))
+          : items.map((p) => (
+              <div
+                key={p.id}
+                className="grid grid-cols-[100px_1fr_140px_110px_140px_110px_110px_40px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-[13px]"
+              >
+                <span className="tabular-nums text-xs text-muted-foreground">
+                  {p.employeeCode}
+                </span>
+                <div>
+                  <div className="font-medium">{p.firstNameTh} {p.lastNameTh}</div>
+                  <div className="text-[11px] text-muted-foreground">{p.user?.email ?? "—"}</div>
+                </div>
+                <span>{p.department?.name ?? "—"}</span>
+                <RoleBadge role={p.roles?.[0] ?? "EMPLOYEE"} />
+                <span className="text-xs text-muted-foreground">
+                  {p.manager ? `${p.manager.firstNameTh} ${p.manager.lastNameTh}` : "—"}
+                </span>
+                <StatusPill tone={statusTone[p.employmentStatus] ?? "neutral"}>
+                  {p.employmentStatus}
+                </StatusPill>
+                <span className="tabular-nums text-xs text-muted-foreground">—</span>
+                <button className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
+                  <MoreHorizontal className="size-4" />
+                </button>
+              </div>
+            ))}
+        {!isLoading && items.length === 0 && !error && (
+          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+            No employees found
           </div>
-        ))}
+        )}
       </div>
+
+      <EmployeeFormDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onCreated={() => handleSearch(searchValue)}
+      />
     </div>
   );
 }

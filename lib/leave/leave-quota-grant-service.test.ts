@@ -13,9 +13,6 @@ mock.module("@/lib/audit/logger", () => ({
   writeAuditLog: mock(() => Promise.resolve()),
 }));
 
-mock.module("./annual-quota-engine", () => ({
-  computeAnnualLeaveGrant: mock(() => ({ action: "NONE" })),
-}));
 
 const { grantInitialLeaveQuota } = await import("./leave-quota-grant-service");
 

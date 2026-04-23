@@ -95,13 +95,17 @@ export async function grantAnniversaryLeave() {
     const result = computeAnnualLeaveGrant(emp.hireDate, today, existing);
     if (result.action === "NONE") continue;
 
-    await prisma.leaveQuota.create({
-      data: {
+    await prisma.leaveQuota.upsert({
+      where: {
+        employeeId_leaveType_quotaYear: { employeeId: emp.id, leaveType: "ANNUAL", quotaYear: today.getFullYear() },
+      },
+      create: {
         employeeId: emp.id, leaveType: "ANNUAL", quotaYear: today.getFullYear(),
         eligibleFrom: result.eligibleFrom, allocatedDays: result.days,
         isProrated: result.action === "GRANT_PRORATED",
         prorateBasis: "basis" in result ? result.basis : undefined,
       },
+      update: {},
     });
     granted++;
   }

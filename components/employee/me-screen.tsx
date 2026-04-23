@@ -4,12 +4,13 @@ import {
   FileText,
   CalendarDays,
   ShieldCheck,
-  Settings,
   LogOut,
   ChevronRight,
 } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { signOut } from "next-auth/react";
+import { ProfileEditCard } from "@/components/employee/profile-edit-card";
+import { NotificationPrefs } from "@/components/employee/notification-prefs";
 
 interface Props {
   user: { name: string; code: string; role: string; email: string };
@@ -19,7 +20,6 @@ const menuItems = [
   { icon: FileText, label: "Timesheet", sub: "View attendance log" },
   { icon: CalendarDays, label: "Leave history", sub: "Past requests" },
   { icon: ShieldCheck, label: "PDPA consent", sub: "Consent records" },
-  { icon: Settings, label: "Notifications", sub: "Push settings" },
 ] as const;
 
 export function MeScreen({ user }: Props) {
@@ -45,6 +45,12 @@ export function MeScreen({ user }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Profile edit */}
+        <ProfileEditCard />
+
+        {/* Notification preferences */}
+        <NotificationPrefs />
 
         {/* Menu */}
         <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">

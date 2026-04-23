@@ -1,0 +1,2 @@
+ALTER TABLE "Employee" ADD COLUMN "notifyLeave" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "Employee" ADD COLUMN "notifyApproval" BOOLEAN NOT NULL DEFAULT true;

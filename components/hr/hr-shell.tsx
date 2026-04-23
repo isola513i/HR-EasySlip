@@ -9,6 +9,7 @@ import {
   Scroll,
   Settings,
   Clock,
+  Banknote,
 } from "lucide-react";
 import { AdminShell } from "@/components/shared/admin-shell";
 import type { NavItem, NavGroup } from "@/components/shared/admin-sidebar";
@@ -46,6 +47,13 @@ const navItems: (NavItem | NavGroup)[] = [
     icon: CalendarCheck,
     label: "Public Holidays",
   },
+  { group: "Payroll" },
+  {
+    key: "payroll",
+    href: "/hr/payroll",
+    icon: Banknote,
+    label: "Payroll Export",
+  },
   { group: "Compliance" },
   {
     key: "audit",
@@ -74,6 +82,7 @@ const pageTitles: Record<string, string> = {
   "/hr/leave-calendar": "Leave Calendar",
   "/hr/attendance": "Attendance",
   "/hr/holidays": "Public Holidays",
+  "/hr/payroll": "Payroll Export",
   "/hr/audit": "Audit Log",
   "/hr/pdpa": "PDPA Consent",
   "/hr/settings": "Settings",

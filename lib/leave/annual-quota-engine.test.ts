@@ -5,7 +5,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from 'bun:test';
-import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import {
   computeAnnualLeaveGrant,
   computeResignationAnnualProrate,
@@ -23,7 +23,7 @@ import {
 /** Construct a UTC date at 00:00 — kills local-timezone flakiness. */
 const d = (iso: string): Date => new Date(`${iso}T00:00:00.000Z`);
 
-const expectDays = (actual: Prisma.Decimal, expected: string) =>
+const expectDays = (actual: Decimal, expected: string) =>
   expect(actual.toFixed(2)).toBe(expected);
 
 // ════════════════════════════════════════════════════════════════
@@ -259,7 +259,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2025-04-15'),
       terminationDate: d('2026-02-01'),
-      usedDays: new Prisma.Decimal(0),
+      usedDays: new Decimal(0),
     });
     expect(r.toFixed(2)).toBe('0.00');
   });
@@ -272,7 +272,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2025-04-15'),
       terminationDate: d('2026-10-15'),
-      usedDays: new Prisma.Decimal(1),
+      usedDays: new Decimal(1),
     });
     expect(r.toFixed(2)).toBe('2.00');
   });
@@ -286,7 +286,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2024-01-01'),
       terminationDate: d('2026-06-30'),
-      usedDays: new Prisma.Decimal(0),
+      usedDays: new Decimal(0),
     });
     expect(r.toFixed(2)).toBe('2.50');
   });
@@ -297,7 +297,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2020-01-01'),
       terminationDate: d('2026-12-31'),
-      usedDays: new Prisma.Decimal(0),
+      usedDays: new Decimal(0),
     });
     expect(r.toFixed(2)).toBe('6.00');
   });
@@ -306,7 +306,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2025-04-15'),
       terminationDate: d('2026-10-15'),
-      usedDays: new Prisma.Decimal(5), // > entitled 3.0
+      usedDays: new Decimal(5), // > entitled 3.0
     });
     expect(r.toFixed(2)).toBe('0.00');
   });
@@ -318,7 +318,7 @@ describe('computeResignationAnnualProrate', () => {
     const r = computeResignationAnnualProrate({
       hireDate: d('2025-04-15'),
       terminationDate: d('2026-04-15'),
-      usedDays: new Prisma.Decimal(0),
+      usedDays: new Decimal(0),
     });
     expect(r.toFixed(2)).toBe('0.00');
   });

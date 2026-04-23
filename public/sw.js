@@ -58,9 +58,27 @@ self.addEventListener("message", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  // Skip non-GET and auth/api routes
   if (request.method !== "GET") return;
   const url = new URL(request.url);
+
+  // Cacheable read-only API paths — network first, cache fallback
+  const CACHEABLE_API = ["/api/v1/leave/quota/me", "/api/v1/employee/me/profile", "/api/v1/consent/status"];
+  if (CACHEABLE_API.some((p) => url.pathname.startsWith(p))) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then((r) => r || new Response('{"ok":false,"error":"offline"}', { status: 503, headers: { "Content-Type": "application/json" } })))
+    );
+    return;
+  }
+
+  // Skip other API routes
   if (url.pathname.startsWith("/api/")) return;
 
   // PDPA: Never cache auth-required pages — prevents data leak on shared devices

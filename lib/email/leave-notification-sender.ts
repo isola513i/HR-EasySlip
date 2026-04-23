@@ -17,10 +17,11 @@ export async function notifyLeaveSubmitted(requestId: string): Promise<void> {
       where: { id: requestId },
       include: {
         employee: { select: { firstNameTh: true, lastNameTh: true, employeeCode: true } },
-        approver: { select: { user: { select: { email: true } } } },
+        approver: { select: { notifyLeave: true, user: { select: { email: true } } } },
       },
     });
     if (!req?.approver?.user?.email) return;
+    if (req.approver.notifyLeave === false) return;
     const approverEmail = req.approver.user.email;
 
     const params = {
@@ -54,11 +55,12 @@ export async function notifyLeaveDecision(
       where: { id: requestId },
       include: {
         employee: {
-          select: { firstNameTh: true, lastNameTh: true, user: { select: { email: true } } },
+          select: { firstNameTh: true, lastNameTh: true, notifyApproval: true, user: { select: { email: true } } },
         },
       },
     });
     if (!req?.employee?.user?.email) return;
+    if (req.employee.notifyApproval === false) return;
     const employeeEmail = req.employee.user.email;
 
     const params = {

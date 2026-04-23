@@ -116,6 +116,8 @@ model Employee {
   terminationDate  DateTime?        @db.Date
   isAnonymized     Boolean          @default(false)
   anonymizedAt     DateTime?
+  notifyLeave      Boolean          @default(true)
+  notifyApproval   Boolean          @default(true)
 
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   department   Department? @relation(fields: [departmentId], references: [id])

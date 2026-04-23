@@ -1,6 +1,7 @@
 import { requireRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { requireConsent } from "@/lib/consent/require-consent";
 import { BottomNav } from "@/components/employee/bottom-nav";
+import { OfflineBanner } from "@/components/shared/offline-banner";
 
 export default async function EmployeeLayout({
   children,
@@ -12,6 +13,7 @@ export default async function EmployeeLayout({
 
   return (
     <div className="mx-auto min-h-dvh max-w-md bg-background">
+      <OfflineBanner />
       <div className="pb-20">{children}</div>
       <BottomNav />
     </div>

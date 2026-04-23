@@ -17,7 +17,7 @@ import {
   isAfter,
   startOfDay,
 } from 'date-fns';
-import { Prisma } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export const ANNUAL_LEAVE_FULL_YEAR_DAYS = 6;
 export const ROUNDING_STEP = 0.5;
@@ -31,13 +31,13 @@ export type GrantResult =
   | { action: 'NONE'; reason: string }
   | {
       action: 'GRANT_PRORATED';
-      days: Prisma.Decimal;
+      days: Decimal;
       eligibleFrom: Date;
       basis: string;
     }
   | {
       action: 'GRANT_FULL';
-      days: Prisma.Decimal;
+      days: Decimal;
       eligibleFrom: Date;
     };
 
@@ -86,7 +86,7 @@ export function computeAnnualLeaveGrant(
 
     return {
       action: 'GRANT_PRORATED',
-      days: new Prisma.Decimal(proratedDays.toFixed(2)),
+      days: new Decimal(proratedDays.toFixed(2)),
       eligibleFrom: anniversary,
       basis:
         `anniversary=${toIsoDate(anniversary)}; ` +
@@ -100,7 +100,7 @@ export function computeAnnualLeaveGrant(
   if (anniversary.getFullYear() < currentYear) {
     return {
       action: 'GRANT_FULL',
-      days: new Prisma.Decimal(ANNUAL_LEAVE_FULL_YEAR_DAYS.toFixed(2)),
+      days: new Decimal(ANNUAL_LEAVE_FULL_YEAR_DAYS.toFixed(2)),
       eligibleFrom: new Date(Date.UTC(currentYear, 0, 1)),
     };
   }
@@ -134,8 +134,8 @@ function toIsoDate(d: Date): string {
 export function computeResignationAnnualProrate(args: {
   hireDate: Date;
   terminationDate: Date;
-  usedDays: Prisma.Decimal;
-}): Prisma.Decimal {
+  usedDays: Decimal;
+}): Decimal {
   const { hireDate, terminationDate, usedDays } = args;
 
   const year = terminationDate.getFullYear();
@@ -144,7 +144,7 @@ export function computeResignationAnnualProrate(args: {
 
   // กรณียังไม่ครบ 1 ปี → ไม่มีสิทธิ์ annual เลย
   if (isAfter(anniversary, terminationDate)) {
-    return new Prisma.Decimal(0);
+    return new Decimal(0);
   }
 
   // วันเริ่มนับของปี = max(yearStart, anniversary)
@@ -162,6 +162,6 @@ export function computeResignationAnnualProrate(args: {
     ROUNDING_STEP,
   );
 
-  const cashOut = new Prisma.Decimal(entitled.toFixed(2)).minus(usedDays);
-  return cashOut.lt(0) ? new Prisma.Decimal(0) : cashOut;
+  const cashOut = new Decimal(entitled.toFixed(2)).minus(usedDays);
+  return cashOut.lt(0) ? new Decimal(0) : cashOut;
 }
