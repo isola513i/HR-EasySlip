@@ -7,12 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { apiFetch } from "@/lib/api/client";
-
 interface Props {
   open: boolean;
   onClose: () => void;
   onCreated: () => void;
+  onCreate: (input: Record<string, unknown>) => Promise<unknown>;
 }
 
 interface FormState {
@@ -32,7 +31,7 @@ const initial: FormState = {
   firstNameEn: "", lastNameEn: "", phone: "", hireDate: "", workShift: "MORNING",
 };
 
-export function EmployeeFormDialog({ open, onClose, onCreated }: Props) {
+export function EmployeeFormDialog({ open, onClose, onCreated, onCreate }: Props) {
   const [form, setForm] = useState<FormState>(initial);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +60,7 @@ export function EmployeeFormDialog({ open, onClose, onCreated }: Props) {
       if (form.lastNameEn) body.lastNameEn = form.lastNameEn;
       if (form.phone) body.phone = form.phone;
 
-      await apiFetch("/api/v1/hr/employees", { method: "POST", body: JSON.stringify(body) });
+      await onCreate(body);
       toast.success("Employee created");
       setForm(initial);
       onCreated();

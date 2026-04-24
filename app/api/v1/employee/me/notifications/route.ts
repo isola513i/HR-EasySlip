@@ -7,13 +7,15 @@ import { NotificationPrefsSchema } from "@/lib/employee/notification-schemas";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 
+const PREFS_SELECT = { notifyLeave: true, notifyApproval: true } as const;
+
 export const GET = withApiHandler(async () => {
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
   const prefs = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
-    select: { notifyLeave: true, notifyApproval: true },
+    select: PREFS_SELECT,
   });
 
   return apiOk(prefs);
@@ -24,12 +26,16 @@ export const PUT = withApiHandler(async (req, ctx) => {
   if (caller instanceof NextResponse) return caller;
 
   const input = await parseBody(req, NotificationPrefsSchema);
-  const employee = await prisma.employee.update({
+
+  const before = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
-    data: {
-      notifyLeave: input.notifyLeave,
-      notifyApproval: input.notifyApproval,
-    },
+    select: PREFS_SELECT,
+  });
+
+  const updated = await prisma.employee.update({
+    where: { id: caller.employeeId },
+    data: { notifyLeave: input.notifyLeave, notifyApproval: input.notifyApproval },
+    select: PREFS_SELECT,
   });
 
   await writeAuditLog({
@@ -37,10 +43,11 @@ export const PUT = withApiHandler(async (req, ctx) => {
     action: "employee.notification_prefs_updated",
     entityType: "Employee",
     entityId: caller.employeeId,
+    before,
     after: input,
     ipAddress: ctx.ip,
     userAgent: ctx.userAgent,
   });
 
-  return apiOk(employee);
+  return apiOk(updated);
 });

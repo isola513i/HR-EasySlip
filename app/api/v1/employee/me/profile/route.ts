@@ -7,17 +7,21 @@ import { ProfileUpdateSchema } from "@/lib/employee/profile-schemas";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 
+const PROFILE_SELECT = {
+  id: true, employeeCode: true, firstNameTh: true, lastNameTh: true,
+  firstNameEn: true, lastNameEn: true, phone: true, employmentStatus: true,
+  department: { select: { name: true, code: true } },
+  position: { select: { name: true } },
+  user: { select: { email: true } },
+} as const;
+
 export const GET = withApiHandler(async () => {
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
   const profile = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
-    include: {
-      department: { select: { name: true, code: true } },
-      position: { select: { name: true } },
-      user: { select: { email: true } },
-    },
+    select: PROFILE_SELECT,
   });
 
   return apiOk(profile);
@@ -28,13 +32,16 @@ export const PUT = withApiHandler(async (req, ctx) => {
   if (caller instanceof NextResponse) return caller;
 
   const input = await parseBody(req, ProfileUpdateSchema);
-  const employee = await prisma.employee.update({
+
+  const before = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
-    data: {
-      phone: input.phone,
-      firstNameEn: input.firstNameEn,
-      lastNameEn: input.lastNameEn,
-    },
+    select: { phone: true, firstNameEn: true, lastNameEn: true },
+  });
+
+  const updated = await prisma.employee.update({
+    where: { id: caller.employeeId },
+    data: { phone: input.phone, firstNameEn: input.firstNameEn, lastNameEn: input.lastNameEn },
+    select: PROFILE_SELECT,
   });
 
   await writeAuditLog({
@@ -42,10 +49,11 @@ export const PUT = withApiHandler(async (req, ctx) => {
     action: "employee.profile_updated",
     entityType: "Employee",
     entityId: caller.employeeId,
+    before,
     after: input,
     ipAddress: ctx.ip,
     userAgent: ctx.userAgent,
   });
 
-  return apiOk(employee);
+  return apiOk(updated);
 });

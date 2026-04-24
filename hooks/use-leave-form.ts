@@ -60,7 +60,7 @@ export function useLeaveForm() {
     if (!startDate || !endDate || !reason.trim()) return null;
     setIsSubmitting(true);
     try {
-      const result = await apiFetch<{ id: string }>("/api/v1/leave/requests", {
+      const result = await apiFetch<{ request: { id: string }; overflow: { id: string } | null }>("/api/v1/leave/requests", {
         method: "POST",
         body: JSON.stringify({
           leaveType,

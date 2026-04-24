@@ -5,6 +5,7 @@ import { Download, Plus, MoreHorizontal } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { SearchInput } from "@/components/shared/search-input";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/use-employees";
@@ -25,7 +26,7 @@ const statusFilters = [
 ];
 
 export function EmployeeDirectory() {
-  const { items, isLoading, error, setSearch, setStatus } = useEmployees();
+  const { items, isLoading, error, setSearch, setStatus, create, refetch } = useEmployees();
   const [activeFilter, setActiveFilter] = useState(0);
   const [searchValue, setSearchValue] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -65,15 +66,12 @@ export function EmployeeDirectory() {
           </button>
         ))}
         <div className="flex-1" />
-        <button className="flex items-center gap-1.5 rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
-          <Download className="size-3.5" /> Export CSV
-        </button>
-        <button
-          onClick={() => setDialogOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg bg-[var(--es-accent-600)] px-3.5 py-[7px] text-xs font-semibold text-white transition-colors hover:bg-[var(--es-accent-700)]"
-        >
-          <Plus className="size-3.5" /> Add employee
-        </button>
+        <Button variant="outline" size="sm">
+          <Download className="mr-1.5 size-3.5" /> Export CSV
+        </Button>
+        <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-1.5 size-3.5" /> Add employee
+        </Button>
       </div>
 
       {/* Error */}
@@ -147,7 +145,8 @@ export function EmployeeDirectory() {
       <EmployeeFormDialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        onCreated={() => handleSearch(searchValue)}
+        onCreated={() => refetch()}
+        onCreate={create}
       />
     </div>
   );

@@ -14,6 +14,7 @@ export const HR_ROLES: readonly Role[] = [
   "CEO",
   "CTO",
   "COO",
+  "ADMIN",
 ] as const;
 
 /** Roles that can access manager-level features */

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 const SECRET = process.env.E2E_TEST_SECRET;
 
 export async function POST(req: Request) {
-  if (process.env.NODE_ENV !== "development" || !SECRET) {
+  if (!["development", "test"].includes(process.env.NODE_ENV ?? "") || !SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -34,6 +34,7 @@ export async function POST(req: Request) {
   response.cookies.set("authjs.session-token", token, {
     path: "/",
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     expires,
     sameSite: "lax",
   });

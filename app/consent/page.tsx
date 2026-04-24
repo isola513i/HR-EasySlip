@@ -15,7 +15,8 @@ export default async function ConsentPage({
   if (!session?.user?.id) redirect("/signin");
 
   const params = await searchParams;
-  const callbackUrl = params.callbackUrl ?? "/employee/today";
+  const raw = params.callbackUrl ?? "/employee/today";
+  const callbackUrl = raw.startsWith("/") && !raw.startsWith("//") ? raw : "/employee/today";
 
   const consented = await hasActiveConsent(session.user.id);
   if (consented) redirect(callbackUrl);

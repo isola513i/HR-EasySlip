@@ -35,7 +35,7 @@ export const EmployeeListFiltersSchema = z.object({
   perPage: z.coerce.number().int().min(1).max(100).default(20),
   status: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED"]).optional(),
   departmentId: z.string().optional(),
-  search: z.string().optional(),
+  search: z.string().max(200).optional(),
 });
 
 export type EmployeeCreateInput = z.infer<typeof EmployeeCreateSchema>;
