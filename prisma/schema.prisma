@@ -132,6 +132,8 @@ model Employee {
   leaveApprovals     LeaveRequest[]          @relation("LeaveApprover")
   leaveQuotas        LeaveQuota[]
   cashOutRecords     AnnualLeaveCashOut[]
+  overtimeRequests   OvertimeRequest[]    @relation("OTRequester")
+  overtimeApprovals  OvertimeRequest[]    @relation("OTApprover")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -397,6 +399,7 @@ model PayrollCycle {
 
   attendance   AttendanceRecord[]
   leaves       LeaveRequest[]
+  overtime     OvertimeRequest[]
   outboxEvents PayrollOutboxEvent[]
 
   @@unique([year, month])
@@ -485,4 +488,42 @@ model SystemConfig {
   description String?
   updatedBy   String
   updatedAt   DateTime @updatedAt
+}
+
+// ────────────────────────────────────────────────────────────────
+// OVERTIME
+// ────────────────────────────────────────────────────────────────
+
+enum OvertimeType {
+  WEEKDAY      // OT หลังเลิกงาน จ-ศ (1.5x)
+  HOLIDAY      // OT วันหยุด ส/อา/นักขัตฤกษ์ (3x)
+  HOLIDAY_WORK // ทำงานวันหยุด (1x เพิ่ม)
+}
+
+model OvertimeRequest {
+  id              String       @id @default(cuid())
+  employeeId      String
+  date            DateTime     @db.Date
+  overtimeType    OvertimeType
+  assignedStart   DateTime?    // หัวหน้ากำหนด (HOLIDAY only)
+  assignedEnd     DateTime?    // หัวหน้ากำหนด (HOLIDAY only)
+  actualStart     DateTime?    // เวลาสแกนจริง
+  actualEnd       DateTime?    // เวลาสแกนจริง
+  hoursApproved   Decimal?     @db.Decimal(4, 2)
+  rateMultiplier  Decimal      @db.Decimal(3, 1) // 1.0 / 1.5 / 3.0
+  reason          String       @db.Text
+  status          LeaveStatus  @default(PENDING)
+  approverId      String?
+  approvedAt      DateTime?
+  rejectedReason  String?
+  payrollCycleId  String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  employee     Employee      @relation("OTRequester", fields: [employeeId], references: [id])
+  approver     Employee?     @relation("OTApprover", fields: [approverId], references: [id])
+  payrollCycle PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
+
+  @@index([employeeId, date])
+  @@index([approverId, status])
 }
