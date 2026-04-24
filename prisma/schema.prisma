@@ -100,20 +100,69 @@ model Employee {
   id               String           @id @default(cuid())
   userId           String           @unique
   employeeCode     String           @unique // e.g. ES0042 (reference ของ Empeo)
+  // ── ข้อมูลพื้นฐาน ──
+  prefix           String?          // คำนำหน้า (นาย/นางสาว/นาง)
+  gender           String?          // เพศ (ชาย/หญิง/อื่นๆ)
   firstNameTh      String
   lastNameTh       String
   firstNameEn      String?
   lastNameEn       String?
+  nicknameTh       String?          // ชื่อเล่น (TH)
+  nicknameEn       String?          // ชื่อเล่น (EN)
+  nationalId       String?          // เลขบัตรประชาชน
   phone            String?
+  personalEmail    String?          // อีเมลส่วนตัว
+  lineId           String?          // LINE ID
+  dateOfBirth      DateTime?        @db.Date
+
+  // ── ข้อมูลตำแหน่ง ──
   roles            Role[]           @default([EMPLOYEE])
+  level            String?          // ระดับ (CEO/E/M/O3 etc.)
   departmentId     String?
   positionId       String?
   managerId        String?
+  employmentType   String?          // ประเภทการจ้าง (พาร์ทไทม์/ฝึกงาน/รายเดือน/รายวัน)
   hireDate         DateTime         @db.Date
   probationEndDate DateTime?        @db.Date
   employmentStatus EmploymentStatus @default(PROBATION)
   workShift        WorkShift        @default(MORNING)
   terminationDate  DateTime?        @db.Date
+
+  // ── ข้อมูลส่วนตัว ──
+  nationality      String?          // สัญชาติ
+  ethnicity        String?          // เชื้อชาติ
+  religion         String?          // ศาสนา
+  maritalStatus    String?          // สถานะสมรส
+  militaryStatus   String?          // สถานะเกณฑ์ทหาร
+  bloodType        String?          // กรุ๊ปเลือด
+
+  // ── การเงิน ──
+  bankAccount      String?          // เลขบัญชีธนาคาร
+  bankName         String?          // ชื่อธนาคาร
+  socialSecurityNo String?          // เลขประกันสังคม
+  hospitalCode     String?          // รหัสโรงพยาบาล
+
+  // ── ที่อยู่ตามทะเบียนบ้าน ──
+  addressRegistered String?         @db.Text
+  provinceRegistered String?
+  districtRegistered String?
+  subdistrictRegistered String?
+  zipCodeRegistered String?
+
+  // ── ที่อยู่ที่ติดต่อได้ ──
+  addressCurrent   String?          @db.Text
+  provinceCurrent  String?
+  districtCurrent  String?
+  subdistrictCurrent String?
+  zipCodeCurrent   String?
+
+  // ── ผู้ติดต่อฉุกเฉิน ──
+  emergencyName    String?
+  emergencyLastName String?
+  emergencyRelation String?
+  emergencyPhone   String?
+
+  // ── ระบบ ──
   isAnonymized     Boolean          @default(false)
   anonymizedAt     DateTime?
   notifyLeave      Boolean          @default(true)

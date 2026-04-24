@@ -25,7 +25,7 @@ function formatPeriod(start: string, end: string) {
 }
 
 export function PayrollDashboard() {
-  const { cycles, isLoading, error, year, setYear, lockCycle, downloadTimestamps, downloadCashout } = usePayroll();
+  const { cycles, isLoading, error, year, setYear, lockCycle, downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData } = usePayroll();
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
   const [locking, setLocking] = useState(false);
 
@@ -58,9 +58,14 @@ export function PayrollDashboard() {
             <Button key={y} variant={year === y ? "default" : "outline"} size="sm" onClick={() => setYear(y)}>{y}</Button>
           ))}
         </div>
-        <Button size="sm" variant="outline" onClick={handleDownloadCashout}>
-          <Download className="mr-1.5 size-4" /> Cashout Export ({year})
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success("Employee data downloaded")).catch(() => toast.error("Failed"))}>
+            <Download className="mr-1.5 size-4" /> Employee Data
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleDownloadCashout}>
+            <Download className="mr-1.5 size-4" /> Cashout ({year})
+          </Button>
+        </div>
       </div>
       {isLoading ? (
         <div className="space-y-2">
@@ -96,9 +101,10 @@ export function PayrollDashboard() {
                       {c.status === "OPEN" && (
                         <Button size="sm" variant="outline" onClick={() => setLockTarget(c)}><Lock className="mr-1 size-3.5" /> Lock</Button>
                       )}
-                      {(c.status === "LOCKED" || c.status === "EXPORTED") && (
+                      {(c.status === "LOCKED" || c.status === "EXPORTED") && (<>
                         <Button size="sm" variant="outline" onClick={() => handleDownloadTimestamps(c.id)}><Download className="mr-1 size-3.5" /> Timestamps</Button>
-                      )}
+                        <Button size="sm" variant="outline" onClick={() => downloadPayrollInfo(c.id).then(() => toast.success("Payroll info downloaded")).catch(() => toast.error("Failed"))}><Download className="mr-1 size-3.5" /> Payroll</Button>
+                      </>)}
                     </div>
                   </TableCell>
                 </TableRow>

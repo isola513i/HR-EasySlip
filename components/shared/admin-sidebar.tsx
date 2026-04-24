@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/shared/notification-bell";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { StatusPill } from "@/components/shared/status-pill";
 
@@ -127,10 +127,7 @@ export function AdminTopbar({
       </div>
       <div className="flex items-center gap-3">
         {actions}
-        <button className="relative rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted" aria-label="Notifications">
-          <Bell className="size-5" strokeWidth={1.75} />
-          <span className="absolute right-1 top-1 size-1.5 rounded-full bg-[var(--es-error-500)]" />
-        </button>
+        <NotificationBell />
         <RoleBadge role={role} />
       </div>
     </header>

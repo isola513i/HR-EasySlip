@@ -79,14 +79,37 @@ export function usePayroll(initialYear?: number) {
     URL.revokeObjectURL(url);
   }, []);
 
+  const downloadPayrollInfo = useCallback(async (id: string) => {
+    const res = await fetch(`/api/v1/payroll/cycles/${id}/export/payroll-info`);
+    if (!res.ok) throw new Error("Failed to download payroll info");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `payroll-info-${id}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const downloadEmployeeData = useCallback(async () => {
+    const res = await fetch("/api/v1/payroll/employees/export");
+    if (!res.ok) throw new Error("Failed to download employee data");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `employee-data.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
   return {
-    cycles,
-    isLoading,
-    error,
-    year,
-    setYear,
-    lockCycle,
-    downloadTimestamps,
-    downloadCashout,
+    cycles, isLoading, error, year, setYear,
+    lockCycle, downloadTimestamps, downloadCashout,
+    downloadPayrollInfo, downloadEmployeeData,
   };
 }

@@ -39,13 +39,19 @@ export async function anonymizeEmployee(
     await tx.employee.update({
       where: { id: employeeId },
       data: {
-        firstNameTh: "[anonymized]",
-        lastNameTh: "[anonymized]",
-        firstNameEn: null,
-        lastNameEn: null,
-        phone: null,
-        isAnonymized: true,
-        anonymizedAt: new Date(),
+        firstNameTh: "[anonymized]", lastNameTh: "[anonymized]",
+        firstNameEn: null, lastNameEn: null, nicknameTh: null, nicknameEn: null,
+        prefix: null, gender: null, nationalId: null, phone: null,
+        personalEmail: null, lineId: null, dateOfBirth: null,
+        nationality: null, ethnicity: null, religion: null,
+        maritalStatus: null, militaryStatus: null, bloodType: null,
+        bankAccount: null, bankName: null, socialSecurityNo: null, hospitalCode: null,
+        addressRegistered: null, provinceRegistered: null, districtRegistered: null,
+        subdistrictRegistered: null, zipCodeRegistered: null,
+        addressCurrent: null, provinceCurrent: null, districtCurrent: null,
+        subdistrictCurrent: null, zipCodeCurrent: null,
+        emergencyName: null, emergencyLastName: null, emergencyRelation: null, emergencyPhone: null,
+        isAnonymized: true, anonymizedAt: new Date(),
       },
     });
 
