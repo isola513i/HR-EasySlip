@@ -113,22 +113,30 @@ export async function getLeaveRequestDetail(
 }
 
 export async function getTeamCalendar(
-  caller: { employeeId: string },
+  caller: { employeeId: string; roles?: Role[] },
   month: number,
   year: number,
 ) {
-  const subordinates = await prisma.employee.findMany({
-    where: { managerId: caller.employeeId },
-    select: { id: true },
-  });
-  const employeeIds = [caller.employeeId, ...subordinates.map((s) => s.id)];
-
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
+  // HR roles see all employees, managers see only their team
+  const isHR = caller.roles?.some((r) =>
+    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
+  );
+
+  let employeeFilter: { in: string[] } | undefined;
+  if (!isHR) {
+    const subordinates = await prisma.employee.findMany({
+      where: { managerId: caller.employeeId },
+      select: { id: true },
+    });
+    employeeFilter = { in: [caller.employeeId, ...subordinates.map((s) => s.id)] };
+  }
+
   return prisma.leaveRequest.findMany({
     where: {
-      employeeId: { in: employeeIds },
+      ...(employeeFilter && { employeeId: employeeFilter }),
       status: { in: ["PENDING", "APPROVED"] },
       startDate: { lte: endDate },
       endDate: { gte: startDate },

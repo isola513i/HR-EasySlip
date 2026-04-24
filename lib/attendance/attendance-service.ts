@@ -87,21 +87,27 @@ export async function getTeamRecords(
   date: string,
   departmentId?: string,
 ) {
-  const subordinates = await prisma.employee.findMany({
-    where: { managerId: caller.employeeId },
-    select: { id: true },
-  });
-
-  const employeeIds = [caller.employeeId, ...subordinates.map((s) => s.id)];
   const dayStart = new Date(date);
   const dayEnd = new Date(date + "T23:59:59.999Z");
 
+  // HR roles see all employees, managers see only their team
+  const isHR = caller.roles.some((r) =>
+    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
+  );
+
+  let employeeFilter: { in: string[] } | undefined;
+  if (!isHR) {
+    const subordinates = await prisma.employee.findMany({
+      where: { managerId: caller.employeeId },
+      select: { id: true },
+    });
+    employeeFilter = { in: [caller.employeeId, ...subordinates.map((s) => s.id)] };
+  }
+
   const where = {
-    employeeId: { in: employeeIds },
+    ...(employeeFilter && { employeeId: employeeFilter }),
     clockedAt: { gte: dayStart, lte: dayEnd },
-    ...(departmentId && {
-      employee: { departmentId },
-    }),
+    ...(departmentId && { employee: { departmentId } }),
   };
 
   const records = await prisma.attendanceRecord.findMany({

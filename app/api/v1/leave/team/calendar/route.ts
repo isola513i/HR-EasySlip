@@ -12,7 +12,7 @@ export const GET = withApiHandler(async (req) => {
 
   const { month, year } = parseSearchParams(req, TeamCalendarSchema);
   const calendar = await getTeamCalendar(
-    { employeeId: caller.employeeId },
+    { employeeId: caller.employeeId, roles: caller.roles },
     month,
     year,
   );
