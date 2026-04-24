@@ -6,11 +6,13 @@ const COMPANY_NAME = "บริษัท โกไฟว์ จำกัด";
 const INCOME_HEADERS = [
   "รหัสอ้างอิงพนักงาน", "รหัสพนักงาน", "ชื่อพนักงาน", "บริษัท", "ระดับ",
   "เงินได้สุทธิ", "เงินเดือนต่องวด",
-  "เงินเดือน / ค่าจ้างรายวัน", "ค่าล่วงเวลา",
+  "เงินเดือน / ค่าจ้างรายวัน", "ค่าล่วงเวลา (1.5x)",
   "ค่าวิชาชีพ", "โบนัส", "ค่ากะ", "ค่ากะพิเศษ (OT)",
-  "ค่ากะพิเศษ (วันหยุด)", "ค่ากะพิเศษจากเวลาทำงาน",
+  "ค่ากะพิเศษ (วันหยุด) (3x)", "ค่ากะพิเศษจากเวลาทำงาน",
   "เบี้ยขยัน", "เบี้ยขยันพิเศษ",
 ];
+
+interface OTBucket { weekday: number; holiday: number }
 
 export async function generatePayrollInfoExcel(
   cycleId: string,
@@ -24,56 +26,50 @@ export async function generatePayrollInfoExcel(
     orderBy: { employeeCode: "asc" },
   });
 
-  // Get approved OT hours for this cycle period
   const otRequests = await prisma.overtimeRequest.findMany({
-    where: {
-      status: "APPROVED",
-      date: { gte: cycle.cycleStart, lte: cycle.cycleEnd },
-    },
-    select: { employeeId: true, hoursApproved: true, rateMultiplier: true },
+    where: { status: "APPROVED", date: { gte: cycle.cycleStart, lte: cycle.cycleEnd } },
+    select: { employeeId: true, hoursApproved: true, overtimeType: true },
   });
 
-  const otByEmployee = new Map<string, number>();
+  // Split OT by type: weekday (1.5x) vs holiday (3.0x)
+  const otByEmployee = new Map<string, OTBucket>();
   for (const ot of otRequests) {
     if (!ot.hoursApproved) continue;
-    const current = otByEmployee.get(ot.employeeId) ?? 0;
-    otByEmployee.set(ot.employeeId, current + ot.hoursApproved.toNumber());
+    const bucket = otByEmployee.get(ot.employeeId) ?? { weekday: 0, holiday: 0 };
+    if (ot.overtimeType === "WEEKDAY") {
+      bucket.weekday += ot.hoursApproved.toNumber();
+    } else {
+      bucket.holiday += ot.hoursApproved.toNumber();
+    }
+    otByEmployee.set(ot.employeeId, bucket);
   }
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("ข้อมูลเงินเดือน");
 
-  // Row 1: metadata
-  const metaRow = ws.addRow([
-    ` ${COMPANY_NAME} `, "", ` งวดที่ `, String(cycle.month), ` ปี `, String(cycle.year),
-  ]);
+  const metaRow = ws.addRow([` ${COMPANY_NAME} `, "", ` งวดที่ `, String(cycle.month), ` ปี `, String(cycle.year)]);
   metaRow.font = { bold: true };
 
-  // Row 2: headers
   ws.addRow(INCOME_HEADERS);
   ws.getRow(2).font = { bold: true };
 
-  // Row 3+: employee data
   for (const emp of employees) {
-    const otHours = otByEmployee.get(emp.id) ?? 0;
+    const ot = otByEmployee.get(emp.id) ?? { weekday: 0, holiday: 0 };
     ws.addRow([
-      "", // รหัสอ้างอิง (Empeo internal)
-      emp.employeeCode,
-      `${emp.firstNameTh} ${emp.lastNameTh}`,
-      COMPANY_NAME,
-      emp.position?.name ?? "",
-      "0.00", // เงินได้สุทธิ — Empeo calculates
-      "0.00", // เงินเดือน — not in our system
-      "0.00", // ค่าจ้างรายวัน
-      otHours > 0 ? otHours.toFixed(2) : "0.00", // ค่าล่วงเวลา
-      "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00",
+      "", emp.employeeCode, `${emp.firstNameTh} ${emp.lastNameTh}`,
+      COMPANY_NAME, emp.position?.name ?? "",
+      "0.00", "0.00", "0.00",
+      ot.weekday > 0 ? ot.weekday.toFixed(2) : "0.00",   // ค่าล่วงเวลา (1.5x)
+      "0.00", "0.00", "0.00", "0.00",
+      ot.holiday > 0 ? ot.holiday.toFixed(2) : "0.00",    // ค่ากะพิเศษ (วันหยุด) (3x)
+      "0.00", "0.00", "0.00",
     ]);
   }
 
-  const dd = String(new Date().getDate()).padStart(2, "0");
-  const mm = String(new Date().getMonth() + 1).padStart(2, "0");
-  const yyyy = new Date().getFullYear();
-  const filename = `Payroll_Info_Period_${cycle.month}_${dd}${mm}${yyyy}.xlsx`;
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const filename = `Payroll_Info_Period_${cycle.month}_${dd}${mm}${now.getFullYear()}.xlsx`;
 
   const buffer = await wb.xlsx.writeBuffer() as ArrayBuffer;
   return { buffer, filename };

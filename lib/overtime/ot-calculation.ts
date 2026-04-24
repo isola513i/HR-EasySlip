@@ -1,7 +1,7 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "@/lib/prisma";
 
-const WORK_END_HOUR = 18; // 18:00 end of normal day
+export const WORK_END_HOUR = 18; // 18:00 end of normal day
 const MIN_OT_MINUTES = 30;
 const ROUND_STEP_MINUTES = 30;
 

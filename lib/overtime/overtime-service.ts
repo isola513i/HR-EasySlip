@@ -6,12 +6,12 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
-import { calculateWeekdayOT, calculateHolidayOT, getOTRate } from "./ot-calculation";
+import { assertCycleOpen } from "@/lib/api/cycle-guard";
+import { calculateWeekdayOT, calculateHolidayOT, getOTRate, isHolidayOrWeekend, WORK_END_HOUR } from "./ot-calculation";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { OTSubmitWeekdayInput, OTSubmitHolidayInput, OTFilters } from "./schemas";
 
 const OT_TOO_SHORT = "OT_TOO_SHORT";
-const WORK_END_HOUR = 18;
 
 export async function submitWeekdayOT(
   caller: Caller,
@@ -19,6 +19,13 @@ export async function submitWeekdayOT(
   meta: RequestMeta,
 ) {
   const date = new Date(input.date);
+
+  await assertCycleOpen(date, caller.roles);
+
+  // Validate this is actually a weekday
+  if (await isHolidayOrWeekend(date)) {
+    throw new DomainError("INVALID_OT_TYPE", { message: "Cannot submit weekday OT on a weekend or holiday. Use holiday OT instead." });
+  }
 
   // Find today's clock-out
   const clockOut = await prisma.attendanceRecord.findFirst({
@@ -82,6 +89,13 @@ export async function submitHolidayOT(
   const date = new Date(input.date);
   const assignedStart = new Date(input.assignedStart);
   const assignedEnd = new Date(input.assignedEnd);
+
+  await assertCycleOpen(date, caller.roles);
+
+  // Validate this is actually a holiday/weekend
+  if (!(await isHolidayOrWeekend(date))) {
+    throw new DomainError("INVALID_OT_TYPE", { message: "Cannot submit holiday OT on a regular weekday. Use weekday OT instead." });
+  }
 
   // Find actual attendance IN/OUT for that date
   const [clockIn, clockOut] = await Promise.all([
