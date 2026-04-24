@@ -1,3 +1,5 @@
+"use client";
+
 import { CalendarDays, Filter, Download } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";

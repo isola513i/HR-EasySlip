@@ -8,7 +8,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 
 const notoSansThai = localFont({
-  src: "../public/NotoSansThai-VariableFont_wdth,wght.ttf",
+  src: "../public/NotoSansThai.ttf",
   variable: "--font-geist-sans",
   display: "swap",
 });
@@ -56,13 +56,11 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${notoSansThai.variable} ${geistMono.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
-      <body
-        className={`${notoSansThai.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased">
         {children}
         <Toaster position="bottom-center" />
         <ServiceWorkerRegistrar />
