@@ -42,7 +42,7 @@ export async function sendMagicLink(
   }
 
   try {
-    await signIn("resend", {
+    await signIn("email", {
       email,
       redirect: false,
       redirectTo: "/",
