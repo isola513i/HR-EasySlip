@@ -52,7 +52,7 @@ export function NotificationPrefs() {
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
-      <p className="text-sm font-semibold">Notifications</p>
+      <p className="text-sm font-semibold">การแจ้งเตือน</p>
       <div className="flex items-center gap-2.5">
         <Checkbox
           id="notifyLeave"
@@ -60,7 +60,7 @@ export function NotificationPrefs() {
           onCheckedChange={() => toggle("notifyLeave")}
         />
         <Label htmlFor="notifyLeave" className="text-sm">
-          Send email when there is a new leave request
+          ส่ง email เมื่อมีคำขอลาใหม่
         </Label>
       </div>
       <div className="flex items-center gap-2.5">
@@ -70,7 +70,7 @@ export function NotificationPrefs() {
           onCheckedChange={() => toggle("notifyApproval")}
         />
         <Label htmlFor="notifyApproval" className="text-sm">
-          Send email when a request is approved/rejected
+          ส่ง email เมื่อคำขอถูกอนุมัติ/ปฏิเสธ
         </Label>
       </div>
     </div>

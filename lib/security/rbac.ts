@@ -40,6 +40,7 @@ export const CUTOFF_OVERRIDE_ROLES: readonly Role[] = [
 
 export interface AuthResult {
   userId: string;
+  email: string | undefined;
   roles: Role[];
   employeeId: string | undefined;
   employeeCode: string | undefined;
@@ -73,6 +74,7 @@ export async function requireRoles(
 
   return {
     userId: session.user.id,
+    email: session.user.email ?? undefined,
     roles,
     employeeId: emp?.id,
     employeeCode: emp?.employeeCode,
@@ -98,6 +100,7 @@ export async function checkRoles(
 
   return {
     userId: session.user.id,
+    email: session.user.email ?? undefined,
     roles,
     employeeId: emp?.id,
     employeeCode: emp?.employeeCode,
@@ -142,6 +145,7 @@ export async function requireApiRoles(
 
   return {
     userId: session.user.id,
+    email: session.user.email ?? undefined,
     roles,
     employeeId: emp?.id,
     employeeCode: emp?.employeeCode,

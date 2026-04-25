@@ -49,7 +49,7 @@ export function OTRequestForm() {
 
         {/* Date */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium">Date</label>
+          <label className="mb-1.5 block text-[13px] font-medium">วันที่</label>
           <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
             <input
               type="date"
@@ -63,14 +63,13 @@ export function OTRequestForm() {
         {/* Weekday info / Holiday fields */}
         {otType === "WEEKDAY" ? (
           <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-            OT starts at 18:00. Must work at least 30 min. Hours calculated
-            from your clock-out.
+            OT เริ่มนับหลัง 18:00 น. ต้องทำอย่างน้อย 30 นาที คำนวณจากเวลาสแกนออก
           </div>
         ) : (
           <>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium">
-                Assigned Start
+                เวลาเริ่ม (ที่กำหนด)
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
@@ -83,7 +82,7 @@ export function OTRequestForm() {
             </div>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium">
-                Assigned End
+                เวลาจบ (ที่กำหนด)
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
@@ -96,7 +95,7 @@ export function OTRequestForm() {
               </div>
             </div>
             <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-              Assigned by your manager. OT hours capped within this window.
+              หัวหน้ากำหนดเวลาเริ่ม-จบ ชั่วโมง OT จะนับภายในกรอบเวลานี้
             </div>
           </>
         )}
@@ -104,10 +103,10 @@ export function OTRequestForm() {
         {/* Reason */}
         <div>
           <label className="mb-1.5 block text-[13px] font-medium">
-            Reason
+            เหตุผล
           </label>
           <Textarea
-            placeholder="Enter reason..."
+            placeholder="ระบุเหตุผล..."
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -121,7 +120,7 @@ export function OTRequestForm() {
           disabled={isSubmitting || !canSubmit}
           onClick={handleSubmit}
         >
-          {isSubmitting ? "Submitting..." : "Submit request"}
+          {isSubmitting ? "กำลังส่ง..." : "ส่งคำขอ"}
         </Button>
       </div>
     </>

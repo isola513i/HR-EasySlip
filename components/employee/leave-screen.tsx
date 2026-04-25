@@ -40,12 +40,12 @@ export function LeaveScreen() {
 
   return (
     <>
-      <MobileTopbar title="Leave request" backHref="/employee/today" />
+      <MobileTopbar title="คำขอลา" backHref="/employee/today" />
 
       <div className="flex flex-col gap-4 p-4">
         {/* Leave type picker */}
         <div>
-          <label className="mb-2 block text-[13px] font-medium">Type</label>
+          <label className="mb-2 block text-[13px] font-medium">ประเภท</label>
           <div className="grid grid-cols-2 gap-2">
             {LEAVE_TYPES.map((t) => {
               const sel = leaveType === t.key;
@@ -63,7 +63,7 @@ export function LeaveScreen() {
         </div>
         {/* Date range */}
         <div>
-          <label className="mb-2 block text-[13px] font-medium">Date range</label>
+          <label className="mb-2 block text-[13px] font-medium">ช่วงวันที่</label>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">From</div>
@@ -77,7 +77,7 @@ export function LeaveScreen() {
         </div>
         {/* Duration */}
         <div>
-          <label className="mb-2 block text-[13px] font-medium">Duration</label>
+          <label className="mb-2 block text-[13px] font-medium">ระยะเวลา</label>
           <div className="grid grid-cols-3 gap-2">
             {DURATIONS.map((o) => {
               const sel = halfDay === o.key;
@@ -92,11 +92,11 @@ export function LeaveScreen() {
         </div>
         {/* Reason + Attachment */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium">Reason</label>
-          <Textarea placeholder="Enter reason..." rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
+          <label className="mb-1.5 block text-[13px] font-medium">เหตุผล</label>
+          <Textarea placeholder="ระบุเหตุผล..." rows={3} value={reason} onChange={(e) => setReason(e.target.value)} />
         </div>
         <button className="flex items-center gap-2.5 rounded-lg border border-dashed border-[var(--es-neutral-300)] bg-[var(--es-neutral-50)] px-3 py-2.5 text-[13px] text-muted-foreground transition-colors hover:bg-muted">
-          <Paperclip className="size-4" /> Attach medical certificate (optional)
+          <Paperclip className="size-4" /> แนบใบรับรองแพทย์ (ถ้ามี)
         </button>
 
         {/* Summary */}
@@ -108,7 +108,7 @@ export function LeaveScreen() {
               : "border-[var(--es-error-200)] bg-[var(--es-error-50)] text-[var(--es-error-700)]",
           )}>
             <div>
-              <div className="font-semibold">Leave calculation</div>
+              <div className="font-semibold">คำนวณวันลา</div>
               <div className="tabular-nums text-[11px] opacity-80">
                 {startDate} – {endDate} · excludes holidays
               </div>
@@ -126,7 +126,7 @@ export function LeaveScreen() {
           disabled={isSubmitting || !startDate || !endDate || !reason.trim() || (preview !== null && !preview.sufficient)}
           onClick={handleSubmit}
         >
-          {isSubmitting ? "Submitting..." : "Submit request"}
+          {isSubmitting ? "กำลังส่ง..." : "ส่งคำขอ"}
         </Button>
       </div>
     </>

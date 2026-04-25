@@ -5,9 +5,7 @@ import { dequeueAll, getPendingCount } from "@/lib/offline/offline-queue";
 import { toast } from "sonner";
 
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
-  );
+  const [isOnline, setIsOnline] = useState(true); // always true on SSR, sync in useEffect
   const [pendingCount, setPendingCount] = useState(0);
 
   const refreshCount = useCallback(async () => {
@@ -35,6 +33,7 @@ export function useOnlineStatus() {
   }, [refreshCount]);
 
   useEffect(() => {
+    setIsOnline(navigator.onLine); // sync actual status on mount
     const goOnline = () => { setIsOnline(true); replayQueue(); };
     const goOffline = () => setIsOnline(false);
     window.addEventListener("online", goOnline);

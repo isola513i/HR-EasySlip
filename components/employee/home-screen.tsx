@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Clock,
+  Timer,
   CalendarDays,
   FileText,
   MapPin,
@@ -184,7 +185,7 @@ export function EmployeeHome({ user, dict }: Props) {
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5">
           <Link
             href="/employee/leave"
             className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
@@ -192,6 +193,14 @@ export function EmployeeHome({ user, dict }: Props) {
             <CalendarDays className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
             <div className="mt-2 text-sm font-semibold">Request leave</div>
             <div className="text-[11px] text-muted-foreground">Submit a leave request</div>
+          </Link>
+          <Link
+            href="/employee/ot"
+            className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
+          >
+            <Timer className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
+            <div className="mt-2 text-sm font-semibold">ขอ OT</div>
+            <div className="text-[11px] text-muted-foreground">ส่งคำขอล่วงเวลา</div>
           </Link>
           <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
             <FileText className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />

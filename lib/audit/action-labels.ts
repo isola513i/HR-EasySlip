@@ -13,6 +13,13 @@ export const ACTION_LABELS_TH: Record<string, string> = {
   "consent.grant": "ยินยอม PDPA",
   "employee.profile_updated": "แก้ไขข้อมูลส่วนตัว",
   "employee.create": "สร้างพนักงานใหม่",
+  "auth.signin": "เข้าสู่ระบบ",
+  "auth.signout": "ออกจากระบบ",
+  "auth.blocked": "ถูกบล็อค",
+  "employee.notification_prefs_updated": "แก้ไขการแจ้งเตือน",
+  "settings.update": "แก้ไขการตั้งค่า",
+  "export.employee_data": "ส่งออกข้อมูลพนักงาน",
+  "export.payroll_info": "ส่งออกข้อมูลเงินเดือน",
 };
 
 export const ACTION_LABELS_EN: Record<string, string> = {
@@ -26,6 +33,13 @@ export const ACTION_LABELS_EN: Record<string, string> = {
   "consent.grant": "Consent granted",
   "employee.profile_updated": "Profile updated",
   "employee.create": "Employee created",
+  "auth.signin": "Signed in",
+  "auth.signout": "Signed out",
+  "auth.blocked": "Blocked",
+  "employee.notification_prefs_updated": "Notification preferences updated",
+  "settings.update": "Settings updated",
+  "export.employee_data": "Employee data exported",
+  "export.payroll_info": "Payroll info exported",
 };
 
 export function getActionLabel(action: string, locale: "th" | "en" = "th"): string {

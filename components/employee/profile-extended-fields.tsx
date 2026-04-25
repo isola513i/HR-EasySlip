@@ -101,17 +101,17 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <SectionTitle>ข้อมูลส่วนตัว</SectionTitle>
         <Separator />
         <div className="grid grid-cols-2 gap-3">
-          <Field id="nicknameTh" label="Nickname (TH)" value={form.nicknameTh} onChange={set("nicknameTh")} />
-          <Field id="nicknameEn" label="Nickname (EN)" value={form.nicknameEn} onChange={set("nicknameEn")} />
+          <Field id="nicknameTh" label="ชื่อเล่น (TH)" value={form.nicknameTh} onChange={set("nicknameTh")} />
+          <Field id="nicknameEn" label="ชื่อเล่น (EN)" value={form.nicknameEn} onChange={set("nicknameEn")} />
         </div>
-        <Field id="dateOfBirth" label="Date of Birth" value={form.dateOfBirth} onChange={set("dateOfBirth")} type="date" />
+        <Field id="dateOfBirth" label="วันเกิด" value={form.dateOfBirth} onChange={set("dateOfBirth")} type="date" />
         <div className="grid grid-cols-2 gap-3">
           <Field id="nationality" label="Nationality" value={form.nationality} onChange={set("nationality")} />
           <Field id="religion" label="Religion" value={form.religion} onChange={set("religion")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field id="maritalStatus" label="Marital Status" value={form.maritalStatus} onChange={set("maritalStatus")} />
-          <Field id="bloodType" label="Blood Type" value={form.bloodType} onChange={set("bloodType")} />
+          <Field id="maritalStatus" label="สถานะสมรส" value={form.maritalStatus} onChange={set("maritalStatus")} />
+          <Field id="bloodType" label="กรุ๊ปเลือด" value={form.bloodType} onChange={set("bloodType")} />
         </div>
         <Button
           className="w-full" size="sm"
@@ -123,7 +123,7 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
             bloodType: form.bloodType || undefined,
           })}
         >
-          {saving === "personal" ? "Saving..." : "Save Personal Info"}
+          {saving === "personal" ? "กำลังบันทึก..." : "บันทึกข้อมูลส่วนตัว"}
         </Button>
       </div>
 
@@ -132,14 +132,14 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <SectionTitle>ที่อยู่ปัจจุบัน</SectionTitle>
         <Separator />
         <div className="space-y-1">
-          <Label htmlFor="addressCurrent">Address</Label>
+          <Label htmlFor="addressCurrent">ที่อยู่</Label>
           <Textarea id="addressCurrent" value={form.addressCurrent} onChange={(e) => set("addressCurrent")(e.target.value)} rows={2} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field id="provinceCurrent" label="Province" value={form.provinceCurrent} onChange={set("provinceCurrent")} />
-          <Field id="districtCurrent" label="District" value={form.districtCurrent} onChange={set("districtCurrent")} />
+          <Field id="provinceCurrent" label="จังหวัด" value={form.provinceCurrent} onChange={set("provinceCurrent")} />
+          <Field id="districtCurrent" label="เขต/อำเภอ" value={form.districtCurrent} onChange={set("districtCurrent")} />
         </div>
-        <Field id="zipCodeCurrent" label="Zip Code" value={form.zipCodeCurrent} onChange={set("zipCodeCurrent")} />
+        <Field id="zipCodeCurrent" label="รหัสไปรษณีย์" value={form.zipCodeCurrent} onChange={set("zipCodeCurrent")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "address"}
@@ -148,7 +148,7 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
             districtCurrent: form.districtCurrent || undefined, zipCodeCurrent: form.zipCodeCurrent || undefined,
           })}
         >
-          {saving === "address" ? "Saving..." : "Save Address"}
+          {saving === "address" ? "กำลังบันทึก..." : "บันทึกที่อยู่"}
         </Button>
       </div>
 
@@ -156,14 +156,14 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
       <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
         <SectionTitle>การเงิน</SectionTitle>
         <Separator />
-        <Field id="bankName" label="Bank Name" value={form.bankName} onChange={set("bankName")} />
-        <Field id="bankAccount" label="Account Number" value={form.bankAccount} onChange={set("bankAccount")} />
+        <Field id="bankName" label="ธนาคาร" value={form.bankName} onChange={set("bankName")} />
+        <Field id="bankAccount" label="เลขบัญชี" value={form.bankAccount} onChange={set("bankAccount")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "financial"}
           onClick={() => save("financial", { bankName: form.bankName || undefined, bankAccount: form.bankAccount || undefined })}
         >
-          {saving === "financial" ? "Saving..." : "Save Financial Info"}
+          {saving === "financial" ? "กำลังบันทึก..." : "บันทึกข้อมูลการเงิน"}
         </Button>
       </div>
 
@@ -172,11 +172,11 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <SectionTitle>ผู้ติดต่อฉุกเฉิน</SectionTitle>
         <Separator />
         <div className="grid grid-cols-2 gap-3">
-          <Field id="emergencyName" label="First Name" value={form.emergencyName} onChange={set("emergencyName")} />
-          <Field id="emergencyLastName" label="Last Name" value={form.emergencyLastName} onChange={set("emergencyLastName")} />
+          <Field id="emergencyName" label="ชื่อ" value={form.emergencyName} onChange={set("emergencyName")} />
+          <Field id="emergencyLastName" label="นามสกุล" value={form.emergencyLastName} onChange={set("emergencyLastName")} />
         </div>
-        <Field id="emergencyRelation" label="Relation" value={form.emergencyRelation} onChange={set("emergencyRelation")} />
-        <Field id="emergencyPhone" label="Phone" value={form.emergencyPhone} onChange={set("emergencyPhone")} />
+        <Field id="emergencyRelation" label="ความสัมพันธ์" value={form.emergencyRelation} onChange={set("emergencyRelation")} />
+        <Field id="emergencyPhone" label="เบอร์โทร" value={form.emergencyPhone} onChange={set("emergencyPhone")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "emergency"}
@@ -185,7 +185,7 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
             emergencyRelation: form.emergencyRelation || undefined, emergencyPhone: form.emergencyPhone || undefined,
           })}
         >
-          {saving === "emergency" ? "Saving..." : "Save Emergency Contact"}
+          {saving === "emergency" ? "กำลังบันทึก..." : "บันทึกผู้ติดต่อฉุกเฉิน"}
         </Button>
       </div>
     </div>

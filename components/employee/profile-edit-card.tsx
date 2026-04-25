@@ -67,38 +67,38 @@ export function ProfileEditCard() {
   return (
     <Card className="mx-auto max-w-md">
       <CardHeader>
-        <CardTitle className="text-base">My Profile</CardTitle>
+        <CardTitle className="text-base">ข้อมูลของฉัน</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Read-only fields */}
         <div className="space-y-1">
-          <Label className="text-muted-foreground">Employee Code</Label>
+          <Label className="text-muted-foreground">รหัสพนักงาน</Label>
           <p className="text-sm font-medium">{profile.employeeCode}</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <Label className="text-muted-foreground">First Name (TH)</Label>
+            <Label className="text-muted-foreground">ชื่อ (TH)</Label>
             <p className="text-sm font-medium">{profile.firstNameTh}</p>
           </div>
           <div className="space-y-1">
-            <Label className="text-muted-foreground">Last Name (TH)</Label>
+            <Label className="text-muted-foreground">นามสกุล (TH)</Label>
             <p className="text-sm font-medium">{profile.lastNameTh}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-muted-foreground">Email</Label>
+          <Label className="text-muted-foreground">อีเมล</Label>
           <p className="text-sm">{profile.user?.email ?? "—"}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-muted-foreground">Department</Label>
+          <Label className="text-muted-foreground">แผนก</Label>
           <p className="text-sm">{profile.department?.name ?? "—"}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-muted-foreground">Position</Label>
+          <Label className="text-muted-foreground">ตำแหน่ง</Label>
           <p className="text-sm">{profile.position?.name ?? "—"}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Label className="text-muted-foreground">Status</Label>
+          <Label className="text-muted-foreground">สถานะ</Label>
           <Badge variant={statusVariant[profile.employmentStatus] ?? "outline"}>
             {profile.employmentStatus}
           </Badge>
@@ -106,20 +106,20 @@ export function ProfileEditCard() {
 
         {/* Editable fields */}
         <div className="space-y-1">
-          <Label htmlFor="firstNameEn">First Name (EN)</Label>
+          <Label htmlFor="firstNameEn">ชื่อ (EN)</Label>
           <Input id="firstNameEn" value={firstNameEn} onChange={(e) => setFirstNameEn(e.target.value)} placeholder="English first name" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="lastNameEn">Last Name (EN)</Label>
+          <Label htmlFor="lastNameEn">นามสกุล (EN)</Label>
           <Input id="lastNameEn" value={lastNameEn} onChange={(e) => setLastNameEn(e.target.value)} placeholder="English last name" />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">เบอร์โทร</Label>
           <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0xx-xxx-xxxx" />
         </div>
 
         <Button onClick={handleSave} disabled={isSaving} className="w-full">
-          {isSaving ? "Saving..." : "Save Changes"}
+          {isSaving ? "กำลังบันทึก..." : "บันทึก"}
         </Button>
       </CardContent>
     </Card>
