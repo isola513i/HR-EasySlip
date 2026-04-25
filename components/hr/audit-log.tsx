@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Filter, Download, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, Filter, Download, ChevronLeft, ChevronRight, ScrollText } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { SearchInput } from "@/components/shared/search-input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,8 +70,9 @@ export function AuditLog() {
         )}
 
         {!isLoading && !error && logs.length === 0 && (
-          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            No audit logs found
+          <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+            <ScrollText className="size-10 opacity-40" />
+            <p className="text-sm">ไม่มี log กิจกรรม</p>
           </div>
         )}
 

@@ -23,9 +23,9 @@ export function OTRequestForm() {
   const handleSubmit = async () => {
     try {
       const result = await submit();
-      if (result) toast.success("OT request submitted. Awaiting approval.");
+      if (result) toast.success("ส่งคำขอ OT เรียบร้อย รอการอนุมัติ");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to submit");
+      toast.error(err instanceof Error ? err.message : "ส่งคำขอไม่สำเร็จ");
     }
   };
 

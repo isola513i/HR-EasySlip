@@ -32,9 +32,9 @@ export function LeaveScreen() {
   const handleSubmit = async () => {
     try {
       const result = await submit();
-      if (result) toast.success("Request submitted. Awaiting manager approval.");
+      if (result) toast.success("ส่งคำขอเรียบร้อย รอหัวหน้าอนุมัติ");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to submit");
+      toast.error(err instanceof Error ? err.message : "ส่งคำขอไม่สำเร็จ");
     }
   };
 

@@ -19,7 +19,7 @@ export function NotificationPrefs() {
   useEffect(() => {
     apiFetch<NotificationSettings>("/api/v1/employee/me/notifications")
       .then(setSettings)
-      .catch(() => toast.error("Failed to load notification preferences"))
+      .catch(() => toast.error("โหลดข้อมูลไม่สำเร็จ"))
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -32,10 +32,10 @@ export function NotificationPrefs() {
         method: "PUT",
         body: JSON.stringify(updated),
       });
-      toast.success("Notification preference updated");
+      toast.success("บันทึกเรียบร้อย");
     } catch {
       setSettings(settings); // rollback
-      toast.error("Failed to update preference");
+      toast.error("บันทึกไม่สำเร็จ");
     }
   };
 

@@ -35,8 +35,8 @@ function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key:
 
   async function handleSave() {
     setSaving(true);
-    try { await onSave(setting.key, draft); toast.success(`Saved ${setting.key}`); }
-    catch (err) { toast.error(err instanceof Error ? err.message : "Save failed"); }
+    try { await onSave(setting.key, draft); toast.success("บันทึกเรียบร้อย"); }
+    catch (err) { toast.error(err instanceof Error ? err.message : "บันทึกไม่สำเร็จ"); }
     finally { setSaving(false); }
   }
 

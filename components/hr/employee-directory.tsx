@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus, MoreHorizontal } from "lucide-react";
+import { Download, Plus, MoreHorizontal, Users } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
@@ -76,8 +76,8 @@ export function EmployeeDirectory() {
             const a = document.createElement("a"); a.href = url; a.download = "employees.xlsx";
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toast.success("Employee data exported");
-          } catch { toast.error("Export failed"); }
+            toast.success("ส่งออกข้อมูลเรียบร้อย");
+          } catch { toast.error("ส่งออกไม่สำเร็จ"); }
         }}>
           <Download className="mr-1.5 size-3.5" /> Export
         </Button>
@@ -148,8 +148,9 @@ export function EmployeeDirectory() {
               </div>
             ))}
         {!isLoading && items.length === 0 && !error && (
-          <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-            No employees found
+          <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+            <Users className="size-10 opacity-40" />
+            <p className="text-sm">ยังไม่มีข้อมูลพนักงาน</p>
           </div>
         )}
       </div>

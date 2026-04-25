@@ -56,9 +56,9 @@ export function ProfileEditCard() {
     setIsSaving(true);
     try {
       await updateProfile({ phone: phone || undefined, firstNameEn: firstNameEn || undefined, lastNameEn: lastNameEn || undefined });
-      toast.success("Profile updated");
+      toast.success("บันทึกเรียบร้อย");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update profile");
+      toast.error(err instanceof Error ? err.message : "บันทึกไม่สำเร็จ");
     } finally {
       setIsSaving(false);
     }

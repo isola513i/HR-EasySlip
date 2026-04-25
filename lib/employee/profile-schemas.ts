@@ -10,6 +10,7 @@ export const ProfileUpdateSchema = z.object({
   personalEmail: z.string().email().optional(),
   lineId: z.string().max(50).optional(),
   // Personal
+  dateOfBirth: z.string().max(10).optional(),
   nationality: z.string().max(100).optional(),
   religion: z.string().max(50).optional(),
   maritalStatus: z.string().max(30).optional(),

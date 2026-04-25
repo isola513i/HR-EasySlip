@@ -12,6 +12,8 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
+import { Skeleton } from "@/components/ui/skeleton";
+import { apiFetch } from "@/lib/api/client";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface Props {
@@ -19,17 +21,24 @@ interface Props {
   dict: Dictionary;
 }
 
-const leaveQuota = [
-  { label: "Sick", used: 2, total: 30, color: "var(--es-success-500)" },
-  { label: "Personal", used: 1, total: 3, color: "var(--es-warn-500)" },
-  { label: "Annual", used: 0, total: 4, color: "var(--es-accent-600)" },
-];
+interface LeaveQuotaItem {
+  leaveType: string;
+  allocatedDays: number;
+  usedDays: number;
+  available: number;
+}
 
-const recentActivity = [
-  { d: "Fri, Apr 18", t: "09:02 → 18:14", loc: "WFH", tone: "info" as const },
-  { d: "Thu, Apr 17", t: "08:58 → 18:02", loc: "Office", tone: "neutral" as const },
-  { d: "Wed, Apr 16", t: "Sick leave · 1 day", loc: "Sick", tone: "success" as const },
-];
+interface AuditEntry {
+  action: string;
+  createdAt: string;
+  entityType: string;
+}
+
+const LEAVE_COLOR: Record<string, string> = {
+  SICK: "var(--es-success-500)",
+  PERSONAL: "var(--es-warn-500)",
+  ANNUAL: "var(--es-accent-600)",
+};
 
 function formatTime(date: Date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
@@ -50,7 +59,74 @@ function ClockDisplay() {
   );
 }
 
+function LeaveQuotaSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
+        <div>
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="mt-1 h-3 w-16" />
+        </div>
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className={i < 2 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
+          <div className="mb-1.5 flex justify-between">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+          <Skeleton className="h-1.5 w-full rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RecentActivitySkeleton() {
+  return (
+    <div>
+      <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < 2 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
+            <div>
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="mt-1 h-3 w-20" />
+            </div>
+            <Skeleton className="h-5 w-14 rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function formatActionLabel(action: string) {
+  return action.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+}
+
 export function EmployeeHome({ user, dict }: Props) {
+  const [leaveQuota, setLeaveQuota] = useState<LeaveQuotaItem[] | null>(null);
+  const [recentActivity, setRecentActivity] = useState<AuditEntry[] | null>(null);
+  const [quotaLoading, setQuotaLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(true);
+
+  useEffect(() => {
+    apiFetch<LeaveQuotaItem[]>("/api/v1/leave/quota/me")
+      .then(setLeaveQuota)
+      .catch(() => setLeaveQuota([]))
+      .finally(() => setQuotaLoading(false));
+
+    apiFetch<AuditEntry[]>("/api/v1/audit/logs?perPage=5")
+      .then(setRecentActivity)
+      .catch(() => setRecentActivity([]))
+      .finally(() => setActivityLoading(false));
+  }, []);
+
   return (
     <>
       {/* Topbar */}
@@ -123,44 +199,67 @@ export function EmployeeHome({ user, dict }: Props) {
         </div>
 
         {/* Leave quota */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-          <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
-            <div>
-              <div className="text-sm font-semibold">Leave quota</div>
-              <div className="text-[11px] text-muted-foreground">FY 2026</div>
+        {quotaLoading ? (
+          <LeaveQuotaSkeleton />
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+            <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
+              <div>
+                <div className="text-sm font-semibold">Leave quota</div>
+                <div className="text-[11px] text-muted-foreground">FY {new Date().getFullYear()}</div>
+              </div>
+              <ChevronRight className="size-[18px] text-muted-foreground" />
             </div>
-            <ChevronRight className="size-[18px] text-muted-foreground" />
+            {leaveQuota && leaveQuota.length > 0 ? (
+              leaveQuota.map((q, i) => {
+                const allocated = Number(q.allocatedDays);
+                const used = Number(q.usedDays);
+                const avail = Number(q.available);
+                const pct = allocated > 0 ? (used / allocated) * 100 : 0;
+                const color = LEAVE_COLOR[q.leaveType] ?? "var(--es-neutral-400)";
+                return (
+                  <div key={q.leaveType} className={i < leaveQuota.length - 1 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
+                    <div className="mb-1.5 flex justify-between text-[13px]">
+                      <span className="font-medium capitalize">{q.leaveType.toLowerCase()}</span>
+                      <span className="tabular-nums text-muted-foreground">
+                        <b className="font-semibold text-foreground">{avail}</b> / {allocated} days
+                      </span>
+                    </div>
+                    <div className="h-1.5 overflow-hidden rounded-full bg-[var(--es-neutral-100)]">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="px-4 py-6 text-center text-sm text-muted-foreground">No leave quota found</div>
+            )}
           </div>
-          {leaveQuota.map((q, i) => (
-            <div key={q.label} className={i < leaveQuota.length - 1 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
-              <div className="mb-1.5 flex justify-between text-[13px]">
-                <span className="font-medium">{q.label}</span>
-                <span className="tabular-nums text-muted-foreground">
-                  <b className="font-semibold text-foreground">{q.total - q.used}</b> / {q.total} days
-                </span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-[var(--es-neutral-100)]">
-                <div className="h-full rounded-full" style={{ width: `${(q.used / q.total) * 100}%`, backgroundColor: q.color }} />
-              </div>
-            </div>
-          ))}
-        </div>
+        )}
 
         {/* Recent activity */}
-        <div>
-          <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
-          <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-            {recentActivity.map((r, i) => (
-              <div key={r.d} className={`flex items-center justify-between px-4 py-3 ${i < recentActivity.length - 1 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
-                <div>
-                  <div className="text-[13px] font-medium">{r.d}</div>
-                  <div className="tabular-nums text-xs text-muted-foreground">{r.t}</div>
-                </div>
-                <StatusPill tone={r.tone}>{r.loc}</StatusPill>
-              </div>
-            ))}
+        {activityLoading ? (
+          <RecentActivitySkeleton />
+        ) : (
+          <div>
+            <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+              {recentActivity && recentActivity.length > 0 ? (
+                recentActivity.map((r, i) => (
+                  <div key={`${r.createdAt}-${i}`} className={`flex items-center justify-between px-4 py-3 ${i < recentActivity.length - 1 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
+                    <div>
+                      <div className="text-[13px] font-medium">{formatActionLabel(r.action)}</div>
+                      <div className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</div>
+                    </div>
+                    <StatusPill tone="neutral">{r.entityType}</StatusPill>
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground">No recent activity</div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );

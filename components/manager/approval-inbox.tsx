@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,14 +35,14 @@ export function ApprovalInbox() {
   }, [rows]);
 
   const handleApprove = useCallback(async (id: string) => {
-    try { await approve(id); toast.success("Approved"); setSelected(new Set()); }
-    catch { toast.error("Failed to approve"); }
+    try { await approve(id); toast.success("อนุมัติแล้ว"); setSelected(new Set()); }
+    catch { toast.error("อนุมัติไม่สำเร็จ"); }
   }, [approve]);
 
   const handleReject = useCallback(async (reason: string) => {
     if (!rejectTarget) return;
-    try { await reject(rejectTarget.id, reason); toast.success("Rejected"); setSelected(new Set()); }
-    catch { toast.error("Failed to reject"); }
+    try { await reject(rejectTarget.id, reason); toast.success("ปฏิเสธแล้ว"); setSelected(new Set()); }
+    catch { toast.error("ปฏิเสธไม่สำเร็จ"); }
   }, [rejectTarget, reject]);
 
   const handleBulkApprove = useCallback(async () => {
@@ -50,11 +50,11 @@ export function ApprovalInbox() {
       const results = await bulkDecision(Array.from(selected), "APPROVED");
       const ok = results.filter((r) => r.ok).length;
       const fail = results.length - ok;
-      if (fail === 0) toast.success(`${ok} requests approved`);
-      else if (ok === 0) toast.error(`All ${fail} requests failed`);
-      else toast.warning(`${ok} approved, ${fail} failed`);
+      if (fail === 0) toast.success(`อนุมัติ ${ok} คำขอเรียบร้อย`);
+      else if (ok === 0) toast.error(`${fail} คำขอไม่สำเร็จ`);
+      else toast.warning(`อนุมัติ ${ok}, ไม่สำเร็จ ${fail}`);
       setSelected(new Set());
-    } catch { toast.error("Bulk action failed"); }
+    } catch { toast.error("ดำเนินการไม่สำเร็จ"); }
   }, [selected, bulkDecision]);
 
   const handleBulkReject = useCallback(async (reason: string) => {
@@ -62,12 +62,12 @@ export function ApprovalInbox() {
       const results = await bulkDecision(Array.from(selected), "REJECTED", reason);
       const ok = results.filter((r) => r.ok).length;
       const fail = results.length - ok;
-      if (fail === 0) toast.success(`${ok} requests rejected`);
-      else if (ok === 0) toast.error(`All ${fail} requests failed`);
-      else toast.warning(`${ok} rejected, ${fail} failed`);
+      if (fail === 0) toast.success(`ปฏิเสธ ${ok} คำขอเรียบร้อย`);
+      else if (ok === 0) toast.error(`${fail} คำขอไม่สำเร็จ`);
+      else toast.warning(`ปฏิเสธ ${ok}, ไม่สำเร็จ ${fail}`);
       setSelected(new Set());
       setBulkRejectOpen(false);
-    } catch { toast.error("Bulk action failed"); }
+    } catch { toast.error("ดำเนินการไม่สำเร็จ"); }
   }, [selected, bulkDecision]);
 
   const stop = useCallback((e: React.MouseEvent) => e.stopPropagation(), []);
@@ -83,7 +83,10 @@ export function ApprovalInbox() {
   );
 
   if (rows.length === 0) return (
-    <div className="py-20 text-center text-muted-foreground">No pending requests</div>
+    <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+      <CheckCircle className="size-10 opacity-40" />
+      <p className="text-sm">ไม่มีคำขอรออนุมัติ</p>
+    </div>
   );
 
   return (

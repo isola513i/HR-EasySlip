@@ -44,20 +44,20 @@ export function HolidayCalendar() {
     try {
       if (isNew) {
         await create({ date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
-        toast.success("Holiday created");
+        toast.success("เพิ่มวันหยุดเรียบร้อย");
       } else if (editing) {
         await update(editing.id, { date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
-        toast.success("Holiday updated");
+        toast.success("แก้ไขวันหยุดเรียบร้อย");
       }
       setEditing(null);
       setIsNew(false);
-    } catch { toast.error("Failed to save"); }
+    } catch { toast.error("บันทึกไม่สำเร็จ"); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
-    try { await remove(id); toast.success("Holiday deleted"); }
-    catch { toast.error("Failed to delete"); }
+    try { await remove(id); toast.success("ลบวันหยุดเรียบร้อย"); }
+    catch { toast.error("ลบไม่สำเร็จ"); }
   };
 
   return (

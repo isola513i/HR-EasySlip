@@ -61,7 +61,7 @@ export function EmployeeFormDialog({ open, onClose, onCreated, onCreate }: Props
       if (form.phone) body.phone = form.phone;
 
       await onCreate(body);
-      toast.success("Employee created");
+      toast.success("เพิ่มพนักงานเรียบร้อย");
       setForm(initial);
       onCreated();
       onClose();

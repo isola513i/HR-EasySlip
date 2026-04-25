@@ -34,20 +34,20 @@ export function PayrollDashboard() {
     setLocking(true);
     try {
       await lockCycle(lockTarget.id);
-      toast.success(`Cycle ${MONTH_NAMES[lockTarget.month - 1]} locked`);
+      toast.success(`ล็อกรอบ ${MONTH_NAMES[lockTarget.month - 1]} เรียบร้อย`);
       setLockTarget(null);
-    } catch { toast.error("Failed to lock cycle"); }
+    } catch { toast.error("ล็อกรอบไม่สำเร็จ"); }
     finally { setLocking(false); }
   };
 
   const handleDownloadTimestamps = async (id: string) => {
-    try { await downloadTimestamps(id); toast.success("Timestamps downloaded"); }
-    catch { toast.error("Failed to download timestamps"); }
+    try { await downloadTimestamps(id); toast.success("ดาวน์โหลดเรียบร้อย"); }
+    catch { toast.error("ดาวน์โหลดไม่สำเร็จ"); }
   };
 
   const handleDownloadCashout = async () => {
-    try { await downloadCashout(year); toast.success("Cashout report downloaded"); }
-    catch { toast.error("Failed to download cashout report"); }
+    try { await downloadCashout(year); toast.success("ดาวน์โหลดเรียบร้อย"); }
+    catch { toast.error("ดาวน์โหลดไม่สำเร็จ"); }
   };
 
   return (
@@ -59,7 +59,7 @@ export function PayrollDashboard() {
           ))}
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success("Employee data downloaded")).catch(() => toast.error("Failed"))}>
+          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success("ส่งออกข้อมูลเรียบร้อย")).catch(() => toast.error("ส่งออกไม่สำเร็จ"))}>
             <Download className="mr-1.5 size-4" /> Employee Data
           </Button>
           <Button size="sm" variant="outline" onClick={handleDownloadCashout}>
@@ -103,7 +103,7 @@ export function PayrollDashboard() {
                       )}
                       {(c.status === "LOCKED" || c.status === "EXPORTED") && (<>
                         <Button size="sm" variant="outline" onClick={() => handleDownloadTimestamps(c.id)}><Download className="mr-1 size-3.5" /> Timestamps</Button>
-                        <Button size="sm" variant="outline" onClick={() => downloadPayrollInfo(c.id).then(() => toast.success("Payroll info downloaded")).catch(() => toast.error("Failed"))}><Download className="mr-1 size-3.5" /> Payroll</Button>
+                        <Button size="sm" variant="outline" onClick={() => downloadPayrollInfo(c.id).then(() => toast.success("ดาวน์โหลดข้อมูลเงินเดือนเรียบร้อย")).catch(() => toast.error("ดาวน์โหลดไม่สำเร็จ"))}><Download className="mr-1 size-3.5" /> Payroll</Button>
                       </>)}
                     </div>
                   </TableCell>

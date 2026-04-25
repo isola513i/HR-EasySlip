@@ -10,7 +10,10 @@ import {
 import { StatusPill } from "@/components/shared/status-pill";
 import { signOut } from "next-auth/react";
 import { ProfileEditCard } from "@/components/employee/profile-edit-card";
+import { ProfileExtendedFields } from "@/components/employee/profile-extended-fields";
 import { NotificationPrefs } from "@/components/employee/notification-prefs";
+import { useProfile } from "@/hooks/use-profile";
+import { toast } from "sonner";
 
 interface Props {
   user: { name: string; code: string; role: string; email: string };
@@ -23,6 +26,17 @@ const menuItems = [
 ] as const;
 
 export function MeScreen({ user }: Props) {
+  const { profile, updateProfile } = useProfile();
+
+  const handleExtendedSave = async (fields: Partial<typeof profile & object>) => {
+    try {
+      await updateProfile(fields);
+      toast.success("Profile updated");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    }
+  };
+
   return (
     <>
       <header className="flex h-14 items-center border-b border-[var(--es-neutral-100)] px-4">
@@ -48,6 +62,11 @@ export function MeScreen({ user }: Props) {
 
         {/* Profile edit */}
         <ProfileEditCard />
+
+        {/* Extended profile fields */}
+        {profile && (
+          <ProfileExtendedFields profile={profile} onSave={handleExtendedSave} />
+        )}
 
         {/* Notification preferences */}
         <NotificationPrefs />

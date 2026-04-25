@@ -12,6 +12,23 @@ export interface Profile {
   lastNameEn?: string;
   phone?: string;
   employmentStatus: string;
+  nicknameTh?: string;
+  nicknameEn?: string;
+  dateOfBirth?: string;
+  nationality?: string;
+  religion?: string;
+  maritalStatus?: string;
+  bloodType?: string;
+  bankName?: string;
+  bankAccount?: string;
+  addressCurrent?: string;
+  provinceCurrent?: string;
+  districtCurrent?: string;
+  zipCodeCurrent?: string;
+  emergencyName?: string;
+  emergencyLastName?: string;
+  emergencyRelation?: string;
+  emergencyPhone?: string;
   department?: { name: string; code: string };
   position?: { name: string };
   user?: { email: string };
@@ -30,7 +47,7 @@ export function useProfile() {
   }, []);
 
   const updateProfile = useCallback(
-    async (input: { phone?: string; firstNameEn?: string; lastNameEn?: string }) => {
+    async (input: Partial<Omit<Profile, "id" | "employeeCode" | "employmentStatus" | "department" | "position" | "user">>) => {
       const updated = await apiFetch<Profile>("/api/v1/employee/me/profile", {
         method: "PUT",
         body: JSON.stringify(input),

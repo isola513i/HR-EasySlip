@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -92,8 +92,9 @@ export function LeaveCalendarView() {
       ) : error ? (
         <div className="py-16 text-center text-[var(--es-error-500)]">{error}</div>
       ) : grouped.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">
-          No leave requests for this month
+        <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+          <CalendarOff className="size-10 opacity-40" />
+          <p className="text-sm">ไม่มีคำขอลาในเดือนนี้</p>
         </div>
       ) : (
         <div className="space-y-4">
