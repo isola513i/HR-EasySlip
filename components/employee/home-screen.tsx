@@ -14,6 +14,8 @@ import {
 import { StatusPill } from "@/components/shared/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
+import { formatDate } from "@/lib/format";
+import { getActionLabel } from "@/lib/audit/action-labels";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface Props {
@@ -40,15 +42,15 @@ const LEAVE_COLOR: Record<string, string> = {
   ANNUAL: "var(--es-accent-600)",
 };
 
-function formatTime(date: Date) {
+function formatClockTime(date: Date) {
   return `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
 }
 
 function ClockDisplay() {
-  const [time, setTime] = useState(() => formatTime(new Date()));
+  const [time, setTime] = useState(() => formatClockTime(new Date()));
 
   useEffect(() => {
-    const id = setInterval(() => setTime(formatTime(new Date())), 15_000);
+    const id = setInterval(() => setTime(formatClockTime(new Date())), 15_000);
     return () => clearInterval(id);
   }, []);
 
@@ -101,12 +103,7 @@ function RecentActivitySkeleton() {
 }
 
 function formatActionLabel(action: string) {
-  return action.replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatDate(iso: string) {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  return getActionLabel(action, "en");
 }
 
 export function EmployeeHome({ user, dict }: Props) {
@@ -124,8 +121,7 @@ export function EmployeeHome({ user, dict }: Props) {
       .catch(() => { if (!ignore) setLeaveQuota([]); })
       .finally(() => { if (!ignore) setQuotaLoading(false); });
 
-    // Use leave requests/me instead of audit logs (employees don't have audit access)
-    apiFetch<AuditEntry[]>("/api/v1/audit/logs?perPage=5", { signal: ctrl.signal })
+    apiFetch<AuditEntry[]>("/api/v1/employee/me/activity?perPage=5", { signal: ctrl.signal })
       .then((d) => { if (!ignore) setRecentActivity(d); })
       .catch(() => { if (!ignore) setRecentActivity([]); })
       .finally(() => { if (!ignore) setActivityLoading(false); });

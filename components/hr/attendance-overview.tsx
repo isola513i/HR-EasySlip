@@ -10,6 +10,7 @@ import {
   useAttendanceTeam,
   type AttendanceRecord,
 } from "@/hooks/use-attendance-team";
+import { formatTime, calcDuration } from "@/lib/format";
 
 type EmployeeRow = {
   employee: AttendanceRecord["employee"];
@@ -33,18 +34,6 @@ function groupRecords(records: AttendanceRecord[]): EmployeeRow[] {
       clockOut: outs[0] ?? null,
     }))
     .sort((a, b) => a.employee.employeeCode.localeCompare(b.employee.employeeCode));
-}
-
-function fmtTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
-
-function calcDuration(inIso: string, outIso: string): string {
-  const diff = new Date(outIso).getTime() - new Date(inIso).getTime();
-  if (diff <= 0) return "—";
-  const h = Math.floor(diff / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
 const LOCATION_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
@@ -106,10 +95,10 @@ export function AttendanceOverview() {
                     {employee.firstNameTh} {employee.lastNameTh}
                   </TableCell>
                   <TableCell className="tabular-nums">
-                    {clockIn ? fmtTime(clockIn.clockedAt) : "—"}
+                    {clockIn ? formatTime(clockIn.clockedAt) : "—"}
                   </TableCell>
                   <TableCell className="tabular-nums">
-                    {clockOut ? fmtTime(clockOut.clockedAt) : "—"}
+                    {clockOut ? formatTime(clockOut.clockedAt) : "—"}
                   </TableCell>
                   <TableCell className="tabular-nums">
                     {clockIn && clockOut

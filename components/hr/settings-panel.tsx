@@ -23,7 +23,7 @@ function groupSettings(settings: SystemSetting[]): Record<string, SystemSetting[
   return groups;
 }
 
-function formatDate(iso: string): string {
+function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 }
 
@@ -49,7 +49,7 @@ function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key:
         <Label className="text-sm font-medium">{setting.description ?? setting.key}</Label>
         <p className="text-[11px] text-muted-foreground">
           <code>{setting.key}</code>
-          {setting.updatedAt && <span className="ml-2">Updated: {formatDate(setting.updatedAt)}</span>}
+          {setting.updatedAt && <span className="ml-2">Updated: {formatDateTime(setting.updatedAt)}</span>}
         </p>
       </div>
       {isBool ? (

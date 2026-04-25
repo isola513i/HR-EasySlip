@@ -13,6 +13,55 @@ interface Props {
   onSave: (fields: Partial<Profile>) => Promise<void>;
 }
 
+interface FormState {
+  nicknameTh: string;
+  nicknameEn: string;
+  dateOfBirth: string;
+  nationality: string;
+  religion: string;
+  maritalStatus: string;
+  bloodType: string;
+  addressCurrent: string;
+  provinceCurrent: string;
+  districtCurrent: string;
+  zipCodeCurrent: string;
+  bankName: string;
+  bankAccount: string;
+  emergencyName: string;
+  emergencyLastName: string;
+  emergencyRelation: string;
+  emergencyPhone: string;
+}
+
+type SavingSection = "personal" | "address" | "financial" | "emergency" | null;
+
+function initialFromProfile(profile: Profile): FormState {
+  const str = (key: keyof Profile) => String(profile[key] ?? "");
+  const dateFmt = (key: keyof Profile) => {
+    const v = profile[key];
+    return v ? String(v).slice(0, 10) : "";
+  };
+  return {
+    nicknameTh: str("nicknameTh"),
+    nicknameEn: str("nicknameEn"),
+    dateOfBirth: dateFmt("dateOfBirth"),
+    nationality: str("nationality"),
+    religion: str("religion"),
+    maritalStatus: str("maritalStatus"),
+    bloodType: str("bloodType"),
+    addressCurrent: str("addressCurrent"),
+    provinceCurrent: str("provinceCurrent"),
+    districtCurrent: str("districtCurrent"),
+    zipCodeCurrent: str("zipCodeCurrent"),
+    bankName: str("bankName"),
+    bankAccount: str("bankAccount"),
+    emergencyName: str("emergencyName"),
+    emergencyLastName: str("emergencyLastName"),
+    emergencyRelation: str("emergencyRelation"),
+    emergencyPhone: str("emergencyPhone"),
+  };
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="text-sm font-semibold">{children}</h3>;
 }
@@ -30,62 +79,17 @@ function Field({ id, label, value, onChange, type = "text" }: {
 }
 
 export function ProfileExtendedFields({ profile, onSave }: Props) {
-  const str = (key: keyof Profile) => String(profile[key] ?? "");
-  const dateFmt = (key: keyof Profile) => {
-    const v = profile[key];
-    if (!v) return "";
-    return String(v).slice(0, 10);
-  };
+  const [form, setForm] = useState<FormState>(initialFromProfile(profile));
+  const [saving, setSaving] = useState<SavingSection>(null);
 
-  // Personal
-  const [nicknameTh, setNicknameTh] = useState(str("nicknameTh"));
-  const [nicknameEn, setNicknameEn] = useState(str("nicknameEn"));
-  const [dateOfBirth, setDateOfBirth] = useState(dateFmt("dateOfBirth"));
-  const [nationality, setNationality] = useState(str("nationality"));
-  const [religion, setReligion] = useState(str("religion"));
-  const [maritalStatus, setMaritalStatus] = useState(str("maritalStatus"));
-  const [bloodType, setBloodType] = useState(str("bloodType"));
-
-  // Address
-  const [addressCurrent, setAddressCurrent] = useState(str("addressCurrent"));
-  const [provinceCurrent, setProvinceCurrent] = useState(str("provinceCurrent"));
-  const [districtCurrent, setDistrictCurrent] = useState(str("districtCurrent"));
-  const [zipCodeCurrent, setZipCodeCurrent] = useState(str("zipCodeCurrent"));
-
-  // Financial
-  const [bankName, setBankName] = useState(str("bankName"));
-  const [bankAccount, setBankAccount] = useState(str("bankAccount"));
-
-  // Emergency
-  const [emergencyName, setEmergencyName] = useState(str("emergencyName"));
-  const [emergencyLastName, setEmergencyLastName] = useState(str("emergencyLastName"));
-  const [emergencyRelation, setEmergencyRelation] = useState(str("emergencyRelation"));
-  const [emergencyPhone, setEmergencyPhone] = useState(str("emergencyPhone"));
-
-  const [saving, setSaving] = useState<string | null>(null);
+  const set = (key: keyof FormState) => (v: string) =>
+    setForm((prev) => ({ ...prev, [key]: v }));
 
   useEffect(() => {
-    setNicknameTh(str("nicknameTh"));
-    setNicknameEn(str("nicknameEn"));
-    setDateOfBirth(dateFmt("dateOfBirth"));
-    setNationality(str("nationality"));
-    setReligion(str("religion"));
-    setMaritalStatus(str("maritalStatus"));
-    setBloodType(str("bloodType"));
-    setAddressCurrent(str("addressCurrent"));
-    setProvinceCurrent(str("provinceCurrent"));
-    setDistrictCurrent(str("districtCurrent"));
-    setZipCodeCurrent(str("zipCodeCurrent"));
-    setBankName(str("bankName"));
-    setBankAccount(str("bankAccount"));
-    setEmergencyName(str("emergencyName"));
-    setEmergencyLastName(str("emergencyLastName"));
-    setEmergencyRelation(str("emergencyRelation"));
-    setEmergencyPhone(str("emergencyPhone"));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setForm(initialFromProfile(profile));
   }, [profile]);
 
-  const save = async (section: string, fields: Record<string, unknown>) => {
+  const save = async (section: SavingSection, fields: Record<string, unknown>) => {
     setSaving(section);
     try { await onSave(fields); } finally { setSaving(null); }
   };
@@ -97,26 +101,26 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <SectionTitle>ข้อมูลส่วนตัว</SectionTitle>
         <Separator />
         <div className="grid grid-cols-2 gap-3">
-          <Field id="nicknameTh" label="Nickname (TH)" value={nicknameTh} onChange={setNicknameTh} />
-          <Field id="nicknameEn" label="Nickname (EN)" value={nicknameEn} onChange={setNicknameEn} />
+          <Field id="nicknameTh" label="Nickname (TH)" value={form.nicknameTh} onChange={set("nicknameTh")} />
+          <Field id="nicknameEn" label="Nickname (EN)" value={form.nicknameEn} onChange={set("nicknameEn")} />
         </div>
-        <Field id="dateOfBirth" label="Date of Birth" value={dateOfBirth} onChange={setDateOfBirth} type="date" />
+        <Field id="dateOfBirth" label="Date of Birth" value={form.dateOfBirth} onChange={set("dateOfBirth")} type="date" />
         <div className="grid grid-cols-2 gap-3">
-          <Field id="nationality" label="Nationality" value={nationality} onChange={setNationality} />
-          <Field id="religion" label="Religion" value={religion} onChange={setReligion} />
+          <Field id="nationality" label="Nationality" value={form.nationality} onChange={set("nationality")} />
+          <Field id="religion" label="Religion" value={form.religion} onChange={set("religion")} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field id="maritalStatus" label="Marital Status" value={maritalStatus} onChange={setMaritalStatus} />
-          <Field id="bloodType" label="Blood Type" value={bloodType} onChange={setBloodType} />
+          <Field id="maritalStatus" label="Marital Status" value={form.maritalStatus} onChange={set("maritalStatus")} />
+          <Field id="bloodType" label="Blood Type" value={form.bloodType} onChange={set("bloodType")} />
         </div>
         <Button
           className="w-full" size="sm"
           disabled={saving === "personal"}
           onClick={() => save("personal", {
-            nicknameTh: nicknameTh || undefined, nicknameEn: nicknameEn || undefined,
-            dateOfBirth: dateOfBirth || undefined, nationality: nationality || undefined,
-            religion: religion || undefined, maritalStatus: maritalStatus || undefined,
-            bloodType: bloodType || undefined,
+            nicknameTh: form.nicknameTh || undefined, nicknameEn: form.nicknameEn || undefined,
+            dateOfBirth: form.dateOfBirth || undefined, nationality: form.nationality || undefined,
+            religion: form.religion || undefined, maritalStatus: form.maritalStatus || undefined,
+            bloodType: form.bloodType || undefined,
           })}
         >
           {saving === "personal" ? "Saving..." : "Save Personal Info"}
@@ -129,19 +133,19 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <Separator />
         <div className="space-y-1">
           <Label htmlFor="addressCurrent">Address</Label>
-          <Textarea id="addressCurrent" value={addressCurrent} onChange={(e) => setAddressCurrent(e.target.value)} rows={2} />
+          <Textarea id="addressCurrent" value={form.addressCurrent} onChange={(e) => set("addressCurrent")(e.target.value)} rows={2} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field id="provinceCurrent" label="Province" value={provinceCurrent} onChange={setProvinceCurrent} />
-          <Field id="districtCurrent" label="District" value={districtCurrent} onChange={setDistrictCurrent} />
+          <Field id="provinceCurrent" label="Province" value={form.provinceCurrent} onChange={set("provinceCurrent")} />
+          <Field id="districtCurrent" label="District" value={form.districtCurrent} onChange={set("districtCurrent")} />
         </div>
-        <Field id="zipCodeCurrent" label="Zip Code" value={zipCodeCurrent} onChange={setZipCodeCurrent} />
+        <Field id="zipCodeCurrent" label="Zip Code" value={form.zipCodeCurrent} onChange={set("zipCodeCurrent")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "address"}
           onClick={() => save("address", {
-            addressCurrent: addressCurrent || undefined, provinceCurrent: provinceCurrent || undefined,
-            districtCurrent: districtCurrent || undefined, zipCodeCurrent: zipCodeCurrent || undefined,
+            addressCurrent: form.addressCurrent || undefined, provinceCurrent: form.provinceCurrent || undefined,
+            districtCurrent: form.districtCurrent || undefined, zipCodeCurrent: form.zipCodeCurrent || undefined,
           })}
         >
           {saving === "address" ? "Saving..." : "Save Address"}
@@ -152,12 +156,12 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
       <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
         <SectionTitle>การเงิน</SectionTitle>
         <Separator />
-        <Field id="bankName" label="Bank Name" value={bankName} onChange={setBankName} />
-        <Field id="bankAccount" label="Account Number" value={bankAccount} onChange={setBankAccount} />
+        <Field id="bankName" label="Bank Name" value={form.bankName} onChange={set("bankName")} />
+        <Field id="bankAccount" label="Account Number" value={form.bankAccount} onChange={set("bankAccount")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "financial"}
-          onClick={() => save("financial", { bankName: bankName || undefined, bankAccount: bankAccount || undefined })}
+          onClick={() => save("financial", { bankName: form.bankName || undefined, bankAccount: form.bankAccount || undefined })}
         >
           {saving === "financial" ? "Saving..." : "Save Financial Info"}
         </Button>
@@ -168,17 +172,17 @@ export function ProfileExtendedFields({ profile, onSave }: Props) {
         <SectionTitle>ผู้ติดต่อฉุกเฉิน</SectionTitle>
         <Separator />
         <div className="grid grid-cols-2 gap-3">
-          <Field id="emergencyName" label="First Name" value={emergencyName} onChange={setEmergencyName} />
-          <Field id="emergencyLastName" label="Last Name" value={emergencyLastName} onChange={setEmergencyLastName} />
+          <Field id="emergencyName" label="First Name" value={form.emergencyName} onChange={set("emergencyName")} />
+          <Field id="emergencyLastName" label="Last Name" value={form.emergencyLastName} onChange={set("emergencyLastName")} />
         </div>
-        <Field id="emergencyRelation" label="Relation" value={emergencyRelation} onChange={setEmergencyRelation} />
-        <Field id="emergencyPhone" label="Phone" value={emergencyPhone} onChange={setEmergencyPhone} />
+        <Field id="emergencyRelation" label="Relation" value={form.emergencyRelation} onChange={set("emergencyRelation")} />
+        <Field id="emergencyPhone" label="Phone" value={form.emergencyPhone} onChange={set("emergencyPhone")} />
         <Button
           className="w-full" size="sm"
           disabled={saving === "emergency"}
           onClick={() => save("emergency", {
-            emergencyName: emergencyName || undefined, emergencyLastName: emergencyLastName || undefined,
-            emergencyRelation: emergencyRelation || undefined, emergencyPhone: emergencyPhone || undefined,
+            emergencyName: form.emergencyName || undefined, emergencyLastName: form.emergencyLastName || undefined,
+            emergencyRelation: form.emergencyRelation || undefined, emergencyPhone: form.emergencyPhone || undefined,
           })}
         >
           {saving === "emergency" ? "Saving..." : "Save Emergency Contact"}

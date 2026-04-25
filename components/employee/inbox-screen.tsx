@@ -13,6 +13,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetchPaginated } from "@/lib/api/client";
 import { ApiClientError } from "@/lib/api/client";
 import { formatLeaveType } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/format";
+import { ACTION_LABELS_TH } from "@/lib/audit/action-labels";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -36,24 +38,24 @@ interface Notification {
   time: string;
 }
 
-/* ── Action → label / tone / icon mapping ───────────────────── */
+/* ── Action → tone / icon mapping ──────────────────────────── */
 
-const ACTION_MAP: Record<
+const ACTION_TONE_ICON: Record<
   string,
-  { label: string; tone: Tone; icon: typeof Check }
+  { tone: Tone; icon: typeof Check }
 > = {
-  "leave.submit": { label: "ส่งคำขอลา", tone: "info", icon: FileText },
-  "leave.approve": { label: "คำขอลาอนุมัติแล้ว", tone: "success", icon: Check },
-  "leave.reject": { label: "คำขอลาถูกปฏิเสธ", tone: "warn", icon: AlertTriangle },
-  "attendance.clock_in": { label: "ลงเวลาเข้างาน", tone: "success", icon: Clock },
-  "attendance.clock_out": { label: "ลงเวลาออกงาน", tone: "info", icon: Clock },
-  "overtime.submit": { label: "ส่งคำขอ OT", tone: "info", icon: FileText },
-  "consent.grant": { label: "ยินยอม PDPA", tone: "neutral", icon: ShieldCheck },
+  "leave.submit": { tone: "info", icon: FileText },
+  "leave.approve": { tone: "success", icon: Check },
+  "leave.reject": { tone: "warn", icon: AlertTriangle },
+  "attendance.clock_in": { tone: "success", icon: Clock },
+  "attendance.clock_out": { tone: "info", icon: Clock },
+  "overtime.submit": { tone: "info", icon: FileText },
+  "consent.grant": { tone: "neutral", icon: ShieldCheck },
 };
 
 function mapAuditToNotification(entry: AuditLogEntry): Notification {
-  const mapping = ACTION_MAP[entry.action];
-  const title = mapping?.label ?? entry.action;
+  const mapping = ACTION_TONE_ICON[entry.action];
+  const title = ACTION_LABELS_TH[entry.action] ?? entry.action;
   const tone = mapping?.tone ?? "neutral";
   const icon = mapping?.icon ?? Bell;
 
@@ -67,18 +69,6 @@ function mapAuditToNotification(entry: AuditLogEntry): Notification {
   const time = formatRelativeTime(entry.createdAt);
 
   return { tone, icon, title, sub, time };
-}
-
-function formatRelativeTime(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "เมื่อสักครู่";
-  if (mins < 60) return `${mins} นาทีที่แล้ว`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "เมื่อวาน";
-  return `${days} วันที่แล้ว`;
 }
 
 /* ── Tone colours ────────────────────────────────────────────── */
@@ -108,7 +98,7 @@ export function InboxScreen() {
     async function load() {
       try {
         const { data } = await apiFetchPaginated<AuditLogEntry>(
-          "/api/v1/audit/logs?perPage=10",
+          "/api/v1/employee/me/activity?perPage=10",
         );
         if (!cancelled) {
           setNotifications(data.map(mapAuditToNotification));

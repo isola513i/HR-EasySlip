@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
+import { formatRelativeTime } from "@/lib/format";
+import { getActionLabel } from "@/lib/audit/action-labels";
 
 interface NotifItem {
   id: string;
@@ -10,31 +12,6 @@ interface NotifItem {
   entityType: string;
   entityId: string;
   createdAt: string;
-}
-
-const ACTION_LABELS: Record<string, string> = {
-  "leave.submit": "Leave request submitted",
-  "leave.approve": "Leave approved",
-  "leave.reject": "Leave rejected",
-  "leave.withdraw": "Leave withdrawn",
-  "attendance.clock_in": "Clocked in",
-  "attendance.clock_out": "Clocked out",
-  "consent.grant": "Consent granted",
-  "employee.profile_updated": "Profile updated",
-};
-
-function formatAction(action: string): string {
-  return ACTION_LABELS[action] ?? action.replace(/[._]/g, " ");
-}
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 export function NotificationBell() {
@@ -75,10 +52,10 @@ export function NotificationBell() {
             {!loading && items.length === 0 && <div className="px-4 py-6 text-center text-xs text-muted-foreground">No recent activity</div>}
             {items.map((n) => (
               <div key={n.id} className="border-b border-[var(--es-neutral-100)] px-4 py-2.5 last:border-b-0">
-                <div className="text-[13px] font-medium">{formatAction(n.action)}</div>
+                <div className="text-[13px] font-medium">{getActionLabel(n.action, "en")}</div>
                 <div className="flex justify-between text-[11px] text-muted-foreground">
                   <span>{n.entityType} #{n.entityId.slice(-6)}</span>
-                  <span>{timeAgo(n.createdAt)}</span>
+                  <span>{formatRelativeTime(n.createdAt)}</span>
                 </div>
               </div>
             ))}

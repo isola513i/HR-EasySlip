@@ -6,6 +6,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { StatCard } from "@/components/shared/stat-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
+import { todayISO, formatTime } from "@/lib/format";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -50,19 +51,6 @@ const LATE_THRESHOLD_MINUTE = 15;
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 
-function todayISO(): string {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function formatClockTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
-
 function isLate(clockedAt: string): boolean {
   const d = new Date(clockedAt);
   return (
@@ -101,7 +89,7 @@ function deriveTeamMembers(records: AttendanceRecord[]): TeamMember[] {
       name: `${r.employee.firstNameTh} ${r.employee.lastNameTh}`,
       code: r.employee.employeeCode,
       status: late ? "late" : "in",
-      time: formatClockTime(r.clockedAt),
+      time: formatTime(r.clockedAt),
       loc: mapWorkLocation(r.workLocation),
     });
   }

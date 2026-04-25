@@ -5,11 +5,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { SearchInput } from "@/components/shared/search-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditLogs } from "@/hooks/use-audit-logs";
-
-function formatTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
+import { formatTime } from "@/lib/format";
 
 export function AuditLog() {
   const { logs, page, setPage, totalPages, search, setSearch, isLoading, error } =
