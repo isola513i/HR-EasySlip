@@ -13,6 +13,7 @@ export interface Employee {
   phone?: string;
   roles: string[];
   employmentStatus: string;
+  hireDate: string;
   department?: { name: string };
   position?: { name: string };
   manager?: { firstNameTh: string; lastNameTh: string };

@@ -141,7 +141,9 @@ export function EmployeeDirectory() {
                 <StatusPill tone={statusTone[p.employmentStatus] ?? "neutral"}>
                   {p.employmentStatus}
                 </StatusPill>
-                <span className="tabular-nums text-xs text-muted-foreground">—</span>
+                <span className="tabular-nums text-xs text-muted-foreground">
+                  {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                </span>
                 <button className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
                   <MoreHorizontal className="size-4" />
                 </button>

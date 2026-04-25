@@ -122,8 +122,8 @@ export function PdpaConsentView() {
                         {e.action}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {e.entityId}
+                    <TableCell className="font-mono text-xs text-muted-foreground" title={e.entityId}>
+                      {e.entityId.slice(0, 8)}
                     </TableCell>
                     <TableCell className="tabular-nums text-xs text-muted-foreground">
                       {e.ipAddress ?? "—"}

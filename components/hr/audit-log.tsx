@@ -86,8 +86,8 @@ export function AuditLog() {
               <code className="rounded bg-[var(--es-accent-50)] px-[7px] py-[2px] font-mono text-xs text-[var(--es-accent-700)]">
                 {r.action}
               </code>
-              <span className="font-mono text-xs text-muted-foreground">
-                {r.entityType}#{r.entityId}
+              <span className="truncate font-mono text-xs text-muted-foreground" title={`${r.entityType}#${r.entityId}`}>
+                {r.entityType}#{r.entityId.slice(0, 8)}
               </span>
               <span className="tabular-nums text-xs text-muted-foreground">
                 {r.ipAddress ?? "—"}
