@@ -116,15 +116,21 @@ export function EmployeeHome({ user, dict }: Props) {
   const [activityLoading, setActivityLoading] = useState(true);
 
   useEffect(() => {
-    apiFetch<LeaveQuotaItem[]>("/api/v1/leave/quota/me")
-      .then(setLeaveQuota)
-      .catch(() => setLeaveQuota([]))
-      .finally(() => setQuotaLoading(false));
+    let ignore = false;
+    const ctrl = new AbortController();
 
-    apiFetch<AuditEntry[]>("/api/v1/audit/logs?perPage=5")
-      .then(setRecentActivity)
-      .catch(() => setRecentActivity([]))
-      .finally(() => setActivityLoading(false));
+    apiFetch<LeaveQuotaItem[]>("/api/v1/leave/quota/me", { signal: ctrl.signal })
+      .then((d) => { if (!ignore) setLeaveQuota(d); })
+      .catch(() => { if (!ignore) setLeaveQuota([]); })
+      .finally(() => { if (!ignore) setQuotaLoading(false); });
+
+    // Use leave requests/me instead of audit logs (employees don't have audit access)
+    apiFetch<AuditEntry[]>("/api/v1/audit/logs?perPage=5", { signal: ctrl.signal })
+      .then((d) => { if (!ignore) setRecentActivity(d); })
+      .catch(() => { if (!ignore) setRecentActivity([]); })
+      .finally(() => { if (!ignore) setActivityLoading(false); });
+
+    return () => { ignore = true; ctrl.abort(); };
   }, []);
 
   return (

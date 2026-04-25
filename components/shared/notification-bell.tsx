@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
 
 interface NotifItem {
   id: string;
@@ -45,10 +46,9 @@ export function NotificationBell() {
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    fetch("/api/v1/audit/logs?perPage=8")
-      .then((r) => r.json())
-      .then((json) => { if (json.ok) setItems(json.data); })
-      .catch(() => {})
+    apiFetch<NotifItem[]>("/api/v1/audit/logs?perPage=8")
+      .then(setItems)
+      .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, [open]);
 
