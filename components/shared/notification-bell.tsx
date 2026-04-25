@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Bell } from "lucide-react";
-import { formatLeaveType } from "@/lib/utils";
 
 interface NotifItem {
   id: string;

@@ -1,9 +1,16 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "@/lib/prisma";
 
-export const WORK_END_HOUR = 18; // 18:00 end of normal day
+export const WORK_END_HOUR = 18; // 18:00 Bangkok time
 const MIN_OT_MINUTES = 30;
 const ROUND_STEP_MINUTES = 30;
+const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+/** Convert UTC Date to Bangkok hours+minutes */
+function toBangkokHM(d: Date): { h: number; m: number } {
+  const bkk = new Date(d.getTime() + BANGKOK_OFFSET_MS);
+  return { h: bkk.getUTCHours(), m: bkk.getUTCMinutes() };
+}
 
 /** Round down to nearest 30-minute step */
 export function roundDown30(minutes: number): number {
@@ -16,7 +23,8 @@ export function roundDown30(minutes: number): number {
  * Returns null if <30 min (not eligible).
  */
 export function calculateWeekdayOT(clockOut: Date): Decimal | null {
-  const otMinutes = (clockOut.getUTCHours() * 60 + clockOut.getUTCMinutes()) - (WORK_END_HOUR * 60);
+  const bkk = toBangkokHM(clockOut);
+  const otMinutes = (bkk.h * 60 + bkk.m) - (WORK_END_HOUR * 60);
   if (otMinutes < MIN_OT_MINUTES) return null;
 
   const rounded = roundDown30(otMinutes);

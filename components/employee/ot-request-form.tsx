@@ -1,16 +1,13 @@
 "use client";
 
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useOTRequests } from "@/hooks/use-ot-requests";
 
-const OT_TABS = [
-  { key: "WEEKDAY" as const, label: "Weekday OT" },
-  { key: "HOLIDAY" as const, label: "Holiday OT" },
-];
+type OTType = "WEEKDAY" | "HOLIDAY";
 
 export function OTRequestForm() {
   const {
@@ -43,25 +40,12 @@ export function OTRequestForm() {
 
       <div className="flex flex-col gap-4 p-4">
         {/* OT type tabs */}
-        <div className="grid grid-cols-2 gap-2">
-          {OT_TABS.map((tab) => {
-            const sel = otType === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setOTType(tab.key)}
-                className={cn(
-                  "rounded-lg py-2.5 text-[13px] font-semibold transition-colors",
-                  sel
-                    ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-600)] text-white"
-                    : "border border-[var(--es-neutral-300)] bg-card text-foreground",
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+        <Tabs value={otType} onValueChange={(v) => setOTType(v as OTType)}>
+          <TabsList className="w-full">
+            <TabsTrigger value="WEEKDAY" className="flex-1">Weekday OT</TabsTrigger>
+            <TabsTrigger value="HOLIDAY" className="flex-1">Holiday OT</TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Date */}
         <div>

@@ -11,28 +11,31 @@ describe("roundDown30", () => {
 });
 
 describe("calculateWeekdayOT", () => {
-  test("clock out 18:40 → 0.5h", () => {
-    const result = calculateWeekdayOT(new Date("2026-04-24T18:40:00Z"));
+  // Times are in UTC — Bangkok = UTC+7
+  // 18:40 BKK = 11:40 UTC, 19:15 BKK = 12:15 UTC, etc.
+
+  test("clock out 18:40 BKK → 0.5h", () => {
+    const result = calculateWeekdayOT(new Date("2026-04-24T11:40:00Z"));
     expect(result?.toString()).toBe("0.5");
   });
 
-  test("clock out 19:15 → 1.0h", () => {
-    const result = calculateWeekdayOT(new Date("2026-04-24T19:15:00Z"));
+  test("clock out 19:15 BKK → 1.0h", () => {
+    const result = calculateWeekdayOT(new Date("2026-04-24T12:15:00Z"));
     expect(result?.toString()).toBe("1");
   });
 
-  test("clock out 20:05 → 2.0h", () => {
-    const result = calculateWeekdayOT(new Date("2026-04-24T20:05:00Z"));
+  test("clock out 20:05 BKK → 2.0h", () => {
+    const result = calculateWeekdayOT(new Date("2026-04-24T13:05:00Z"));
     expect(result?.toString()).toBe("2");
   });
 
-  test("clock out 18:20 → null (too short)", () => {
-    const result = calculateWeekdayOT(new Date("2026-04-24T18:20:00Z"));
+  test("clock out 18:20 BKK → null (too short)", () => {
+    const result = calculateWeekdayOT(new Date("2026-04-24T11:20:00Z"));
     expect(result).toBeNull();
   });
 
-  test("clock out 18:00 → null (no OT)", () => {
-    const result = calculateWeekdayOT(new Date("2026-04-24T18:00:00Z"));
+  test("clock out 18:00 BKK → null (no OT)", () => {
+    const result = calculateWeekdayOT(new Date("2026-04-24T11:00:00Z"));
     expect(result).toBeNull();
   });
 });
