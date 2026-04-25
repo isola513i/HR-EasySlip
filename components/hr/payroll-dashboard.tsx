@@ -14,7 +14,8 @@ import {
 import { StatusPill } from "@/components/shared/status-pill";
 import { usePayroll, type PayrollCycle } from "@/hooks/use-payroll";
 
-const YEARS = [2025, 2026, 2027];
+const currentYear = new Date().getFullYear();
+const YEARS = [currentYear - 1, currentYear, currentYear + 1];
 const STATUS_TONE = { OPEN: "info", LOCKED: "warn", EXPORTED: "success" } as const;
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 

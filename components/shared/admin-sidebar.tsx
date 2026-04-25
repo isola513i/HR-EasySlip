@@ -38,7 +38,7 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick }
       <div className="flex items-center gap-2.5 px-2 pb-4">
         <div className="es-brand-gradient grid size-7 place-items-center rounded-lg text-[13px] font-extrabold text-white">ES</div>
         <div>
-          <div className="text-sm font-bold tracking-tight">EasySlip</div>
+          <div className="text-sm font-bold tracking-tight">{process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"}</div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground">HR Portal</div>
         </div>
       </div>

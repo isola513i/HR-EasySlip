@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHolidays, type Holiday } from "@/hooks/use-holidays";
 
-const YEARS = [2025, 2026, 2027];
+const currentYear = new Date().getFullYear();
+const YEARS = [currentYear - 1, currentYear, currentYear + 1];
 
 export function HolidayCalendar() {
   const { holidays, isLoading, error: fetchError, year, setYear, create, update, remove } = useHolidays(2026);

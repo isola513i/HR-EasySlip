@@ -136,7 +136,7 @@ export function EmployeeHome({ user, dict }: Props) {
             {dict.common.greeting} {user.name || "User"}
           </div>
           <div className="text-[11px] text-muted-foreground">
-            EasySlip · {user.code} · {user.role}
+            {process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"} · {user.code} · {user.role}
           </div>
         </div>
         <Link

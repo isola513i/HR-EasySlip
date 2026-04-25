@@ -102,7 +102,7 @@ export function MeScreen({ user }: Props) {
         </div>
 
         <div className="mt-2 text-center text-[11px] text-muted-foreground">
-          EasySlip HR v1.0.0
+          {process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip HR"}
         </div>
       </div>
     </>
