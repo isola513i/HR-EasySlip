@@ -1,0 +1,22 @@
+import { NextResponse } from "next/server";
+import { withApiHandler } from "@/lib/api/with-api-handler";
+import { apiOk } from "@/lib/api/response";
+import { parseBody } from "@/lib/api/validate";
+import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
+import { ChecklistItemToggleSchema } from "@/lib/onboarding/schemas";
+import { toggleChecklistItem } from "@/lib/onboarding/checklist-service";
+
+export const PATCH = withApiHandler(async (req, ctx) => {
+  const caller = await requireApiEmployee(EMPLOYEE_ROLES);
+  if (caller instanceof NextResponse) return caller;
+
+  const { isDone } = await parseBody(req, ChecklistItemToggleSchema);
+  const result = await toggleChecklistItem({
+    itemId: ctx.params.itemId,
+    isDone,
+    actorUserId: caller.userId,
+    ownerEmployeeId: caller.employeeId,
+    meta: { ip: ctx.ip, userAgent: ctx.userAgent },
+  });
+  return apiOk(result);
+});

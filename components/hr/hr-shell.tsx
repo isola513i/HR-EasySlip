@@ -3,6 +3,7 @@
 import {
   LayoutGrid,
   Users,
+  ClipboardCheck,
   CalendarDays,
   CalendarCheck,
   ShieldCheck,
@@ -28,6 +29,12 @@ const navItems: (NavItem | NavGroup)[] = [
     href: "/hr/employees",
     icon: Users,
     label: "Employees",
+  },
+  {
+    key: "onboarding",
+    href: "/hr/onboarding",
+    icon: ClipboardCheck,
+    label: "Onboarding",
   },
   {
     key: "leave",
@@ -79,6 +86,7 @@ const navItems: (NavItem | NavGroup)[] = [
 const pageTitles: Record<string, string> = {
   "/hr/overview": "Overview",
   "/hr/employees": "Employees",
+  "/hr/onboarding": "Onboarding",
   "/hr/leave-calendar": "Leave Calendar",
   "/hr/attendance": "Attendance",
   "/hr/holidays": "Public Holidays",

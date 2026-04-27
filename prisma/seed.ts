@@ -23,6 +23,7 @@ import { seedSystemConfig } from './seed/system-config';
 import { seedPayrollCycle } from './seed/payroll-cycle';
 import { seedAttendanceRecords } from './seed/attendance-records';
 import { seedLeaveRequests } from './seed/leave-requests';
+import { seedOnboardingTemplate } from './seed/onboarding-template';
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
@@ -60,6 +61,9 @@ async function main() {
 
   const leaveCount = await seedLeaveRequests(prisma, employeeMap);
   console.log(`  ✓ Leave requests: ${leaveCount} seeded\n`);
+
+  await seedOnboardingTemplate(prisma, systemUserId);
+  console.log('  ✓ Onboarding: default template seeded\n');
 
   console.log('✅ Seed complete.\n');
   console.log('📧 Sign-in emails (all route to development.v001@gmail.com):');
