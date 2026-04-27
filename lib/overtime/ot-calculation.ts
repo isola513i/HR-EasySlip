@@ -65,6 +65,64 @@ export function getOTRate(type: "WEEKDAY" | "HOLIDAY" | "HOLIDAY_WORK"): Decimal
   }
 }
 
+// Thai Labor Protection Act limits
+const MAX_DAILY_OT_HOURS = 4;
+const MAX_WEEKLY_OT_HOURS = 36;
+
+export interface OTWarning { code: "DAILY_CAP" | "WEEKLY_CAP"; message: string; current: number; limit: number }
+
+/** Check if adding OT hours would exceed daily/weekly Thai labor law limits */
+export async function checkOTLimits(
+  employeeId: string,
+  date: Date,
+  newHours: number,
+): Promise<OTWarning[]> {
+  const warnings: OTWarning[] = [];
+
+  // Daily check: sum approved OT for the same date
+  const dailyAgg = await prisma.overtimeRequest.aggregate({
+    where: { employeeId, date, status: { in: ["PENDING", "APPROVED"] } },
+    _sum: { hoursApproved: true },
+  });
+  const dailyTotal = Number(dailyAgg._sum.hoursApproved ?? 0) + newHours;
+  if (dailyTotal > MAX_DAILY_OT_HOURS) {
+    warnings.push({
+      code: "DAILY_CAP",
+      message: `OT วันนี้รวม ${dailyTotal} ชม. เกินกำหนด ${MAX_DAILY_OT_HOURS} ชม./วัน`,
+      current: dailyTotal,
+      limit: MAX_DAILY_OT_HOURS,
+    });
+  }
+
+  // Weekly check: Mon-Sun of the given date
+  const dayOfWeek = date.getUTCDay();
+  const monday = new Date(date);
+  monday.setUTCDate(date.getUTCDate() - ((dayOfWeek + 6) % 7));
+  monday.setUTCHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 7);
+
+  const weeklyAgg = await prisma.overtimeRequest.aggregate({
+    where: {
+      employeeId,
+      date: { gte: monday, lt: sunday },
+      status: { in: ["PENDING", "APPROVED"] },
+    },
+    _sum: { hoursApproved: true },
+  });
+  const weeklyTotal = Number(weeklyAgg._sum.hoursApproved ?? 0) + newHours;
+  if (weeklyTotal > MAX_WEEKLY_OT_HOURS) {
+    warnings.push({
+      code: "WEEKLY_CAP",
+      message: `OT สัปดาห์นี้รวม ${weeklyTotal} ชม. เกินกำหนด ${MAX_WEEKLY_OT_HOURS} ชม./สัปดาห์`,
+      current: weeklyTotal,
+      limit: MAX_WEEKLY_OT_HOURS,
+    });
+  }
+
+  return warnings;
+}
+
 /** Check if a date is a public holiday or weekend */
 export async function isHolidayOrWeekend(date: Date): Promise<boolean> {
   const day = date.getUTCDay();

@@ -9,7 +9,7 @@ interface Params {
   appUrl: string;
 }
 
-import { BRAND as _B } from "./brand";
+import { BRAND as _B, unsubscribeFooterHtml, unsubscribeFooterText } from "./brand";
 const BRAND = { ..._B, dark: _B.color } as const;
 
 export function leaveSubmittedHtml(p: Params): string {
@@ -41,6 +41,7 @@ export function leaveSubmittedHtml(p: Params): string {
     </table>
   </td></tr>
   <tr><td align="center" style="padding-top:24px;font-size:11px;color:${BRAND.muted};">${BRAND.name}</td></tr>
+  ${unsubscribeFooterHtml(p.appUrl)}
 </table>
 </td></tr>
 </table>
@@ -58,5 +59,6 @@ export function leaveSubmittedText(p: Params): string {
     `Reason: ${p.reason}`,
     "",
     `Review: ${p.appUrl}/manager/inbox`,
+    unsubscribeFooterText(p.appUrl),
   ].join("\n");
 }

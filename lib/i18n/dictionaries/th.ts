@@ -222,6 +222,8 @@ const th = {
     reasonPlaceholder: "ระบุเหตุผล...",
     submitSuccess: "ส่งคำขอ OT เรียบร้อย รอการอนุมัติ",
     submitFailed: "ส่งคำขอไม่สำเร็จ",
+    dailyCapWarning: "OT วันนี้รวม {hours} ชม. เกินกำหนด {limit} ชม./วัน",
+    weeklyCapWarning: "OT สัปดาห์นี้รวม {hours} ชม. เกินกำหนด {limit} ชม./สัปดาห์",
   },
   profile: {
     title: "โปรไฟล์",

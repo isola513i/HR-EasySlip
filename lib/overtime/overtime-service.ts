@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
-import { calculateWeekdayOT, calculateHolidayOT, getOTRate, isHolidayOrWeekend, WORK_END_HOUR } from "./ot-calculation";
+import { calculateWeekdayOT, calculateHolidayOT, getOTRate, isHolidayOrWeekend, checkOTLimits, WORK_END_HOUR } from "./ot-calculation";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { OTSubmitWeekdayInput, OTSubmitHolidayInput, OTFilters } from "./schemas";
 
@@ -78,7 +78,8 @@ export async function submitWeekdayOT(
     userAgent: meta.userAgent,
   });
 
-  return request;
+  const warnings = await checkOTLimits(caller.employeeId, date, Number(hours));
+  return { ...request, warnings };
 }
 
 export async function submitHolidayOT(
@@ -160,7 +161,8 @@ export async function submitHolidayOT(
     userAgent: meta.userAgent,
   });
 
-  return request;
+  const warnings = await checkOTLimits(caller.employeeId, date, Number(hours));
+  return { ...request, warnings };
 }
 
 export async function getMyOTRequests(employeeId: string, filters: OTFilters) {

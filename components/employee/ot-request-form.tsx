@@ -24,8 +24,13 @@ export function OTRequestForm() {
 
   const handleSubmit = async () => {
     try {
-      const result = await submit();
-      if (result) toast.success(t.ot.submitSuccess);
+      const result = await submit() as { warnings?: { code: string; message: string }[] } | null;
+      if (result) {
+        toast.success(t.ot.submitSuccess);
+        if (result.warnings?.length) {
+          for (const w of result.warnings) toast.warning(w.message);
+        }
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.ot.submitFailed);
     }

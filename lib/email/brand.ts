@@ -11,3 +11,15 @@ export const BRAND = {
   error: "#dc2626",
   errorBg: "#fef2f2",
 } as const;
+
+export function unsubscribeFooterHtml(appUrl: string): string {
+  return `<tr><td align="center" style="padding-top:12px;font-size:10px;color:${BRAND.muted};">
+    หากไม่ต้องการรับอีเมลแจ้งเตือน <a href="${appUrl}/employee/me" style="color:${BRAND.accent};text-decoration:underline;">จัดการการแจ้งเตือน</a>
+    <br/>To unsubscribe, <a href="${appUrl}/employee/me" style="color:${BRAND.accent};text-decoration:underline;">manage notification preferences</a>
+  </td></tr>`;
+}
+
+export function unsubscribeFooterText(appUrl: string): string {
+  return `\n---\nจัดการการแจ้งเตือน / Manage notifications: ${appUrl}/employee/me`;
+}
+

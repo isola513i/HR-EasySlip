@@ -220,6 +220,8 @@ const en = {
     reasonPlaceholder: "Enter reason...",
     submitSuccess: "OT request submitted. Awaiting approval.",
     submitFailed: "Failed to submit request",
+    dailyCapWarning: "Total OT today: {hours} hrs, exceeds {limit} hrs/day limit",
+    weeklyCapWarning: "Total OT this week: {hours} hrs, exceeds {limit} hrs/week limit",
   },
   profile: {
     title: "Profile",

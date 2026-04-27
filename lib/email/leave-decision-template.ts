@@ -6,9 +6,10 @@ interface Params {
   days: string;
   decision: "APPROVED" | "REJECTED";
   rejectedReason?: string;
+  appUrl?: string;
 }
 
-import { BRAND as _B } from "./brand";
+import { BRAND as _B, unsubscribeFooterHtml, unsubscribeFooterText } from "./brand";
 const BRAND = { ..._B, dark: _B.color } as const;
 
 export function leaveDecisionHtml(p: Params): string {
@@ -46,6 +47,7 @@ export function leaveDecisionHtml(p: Params): string {
     </div>` : ""}
   </td></tr>
   <tr><td align="center" style="padding-top:24px;font-size:11px;color:${BRAND.muted};">${BRAND.name}</td></tr>
+  ${p.appUrl ? unsubscribeFooterHtml(p.appUrl) : ""}
 </table>
 </td></tr>
 </table>
@@ -66,5 +68,6 @@ export function leaveDecisionText(p: Params): string {
   if (!approved && p.rejectedReason) {
     lines.push("", `Rejection reason: ${p.rejectedReason}`);
   }
+  if (p.appUrl) lines.push(unsubscribeFooterText(p.appUrl));
   return lines.join("\n");
 }
