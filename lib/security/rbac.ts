@@ -72,6 +72,11 @@ export async function requireRoles(
     redirect("/forbidden");
   }
 
+  // Force password change before accessing any protected page
+  if (session.user.mustChangePassword) {
+    redirect("/change-password");
+  }
+
   return {
     userId: session.user.id,
     email: session.user.email ?? undefined,

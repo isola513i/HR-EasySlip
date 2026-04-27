@@ -47,7 +47,7 @@ export function useOnboardingTemplates() {
     });
     await fetchData();
     return result;
-  }, [fetch]);
+  }, [fetchData]);
 
   const update = useCallback(async (id: string, input: Record<string, unknown>) => {
     const result = await apiFetch<Template>(`/api/v1/hr/onboarding/templates/${id}`, {
@@ -55,12 +55,12 @@ export function useOnboardingTemplates() {
     });
     await fetchData();
     return result;
-  }, [fetch]);
+  }, [fetchData]);
 
   const remove = useCallback(async (id: string) => {
     await apiFetch(`/api/v1/hr/onboarding/templates/${id}`, { method: "DELETE" });
     await fetchData();
-  }, [fetch]);
+  }, [fetchData]);
 
   return { templates, isLoading, error, refetch: fetchData, create, update, remove };
 }

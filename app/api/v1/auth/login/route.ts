@@ -71,10 +71,12 @@ export const POST = withApiHandler(async (req, ctx) => {
 
   const response = apiOk({ mustChangePassword: user.mustChangePassword });
 
-  response.cookies.set("authjs.session-token", sessionToken, {
+  const isSecure = process.env.NODE_ENV === "production";
+  const cookieName = isSecure ? "__Secure-authjs.session-token" : "authjs.session-token";
+  response.cookies.set(cookieName, sessionToken, {
     path: "/",
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecure,
     expires,
     sameSite: "lax",
   });

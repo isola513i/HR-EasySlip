@@ -81,14 +81,14 @@ export function ResetPasswordForm({ token, email }: Props) {
           autoComplete="new-password"
           required
           minLength={8}
-          placeholder="อย่างน้อย 8 ตัวอักษร"
+          placeholder={t.password.minLength}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="rp-confirm">ยืนยันรหัสผ่านใหม่</Label>
+        <Label htmlFor="rp-confirm">{t.password.confirmPassword}</Label>
         <Input
           id="rp-confirm"
           type="password"
@@ -101,7 +101,7 @@ export function ResetPasswordForm({ token, email }: Props) {
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "กำลังเปลี่ยน..." : "ตั้งรหัสผ่านใหม่"}
+        {isLoading ? t.password.resetChanging : t.password.resetButton}
       </Button>
     </form>
   );
