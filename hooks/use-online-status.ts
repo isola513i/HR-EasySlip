@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { dequeueAll, getPendingCount, getAllPending, removeById, type PendingRequest } from "@/lib/offline/offline-queue";
+import { dequeueAll, getAllPending, removeById, type PendingRequest } from "@/lib/offline/offline-queue";
 import { toast } from "sonner";
 
 export function useOnlineStatus() {
@@ -11,8 +11,8 @@ export function useOnlineStatus() {
 
   const refreshCount = useCallback(async () => {
     try {
-      const [count, items] = await Promise.all([getPendingCount(), getAllPending()]);
-      setPendingCount(count);
+      const items = await getAllPending();
+      setPendingCount(items.length);
       setPendingItems(items);
     } catch { /* IndexedDB unavailable */ }
   }, []);

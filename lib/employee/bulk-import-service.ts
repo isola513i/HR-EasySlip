@@ -69,11 +69,11 @@ export async function bulkImportEmployees(
 
   // Pre-hash all passwords before entering the transaction
   const passwordMap = new Map<string, { plain: string; hash: string }>();
-  for (const row of rows) {
+  await Promise.all(rows.map(async (row) => {
     const plain = generateInitialPassword(row.employeeCode);
     const hash = await hashPassword(plain);
     passwordMap.set(row.employeeCode, { plain, hash });
-  }
+  }));
 
   const created: BulkImportResult["created"] = [];
 

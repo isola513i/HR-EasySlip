@@ -8,10 +8,10 @@ interface DataPoint { month: string; ANNUAL: number; SICK: number; PERSONAL: num
 interface Props { data?: DataPoint[] }
 
 const COLORS = {
-  ANNUAL: "#2563eb",
-  SICK: "#dc2626",
-  PERSONAL: "#f59e0b",
-  LWP: "#6b7280",
+  ANNUAL: "var(--es-accent-600, #2563eb)",
+  SICK: "var(--es-error-500, #dc2626)",
+  PERSONAL: "var(--es-warn-500, #f59e0b)",
+  LWP: "var(--es-neutral-500, #6b7280)",
 } as const;
 
 export function LeaveTrendChart({ data }: Props) {
