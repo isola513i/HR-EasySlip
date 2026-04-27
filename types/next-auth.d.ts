@@ -5,6 +5,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
+      mustChangePassword: boolean;
       employee: {
         id: string;
         employeeCode: string;

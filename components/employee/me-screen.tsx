@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import {
   FileText,
   CalendarDays,
   ShieldCheck,
+  KeyRound,
   LogOut,
   ChevronRight,
 } from "lucide-react";
@@ -13,34 +15,38 @@ import { ProfileEditCard } from "@/components/employee/profile-edit-card";
 import { ProfileExtendedFields } from "@/components/employee/profile-extended-fields";
 import { NotificationPrefs } from "@/components/employee/notification-prefs";
 import { useProfile } from "@/hooks/use-profile";
+import { ChangePasswordDialog } from "@/components/employee/change-password-dialog";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
   user: { name: string; code: string; role: string; email: string };
 }
 
-const menuItems = [
-  { icon: FileText, label: "Timesheet", sub: "View attendance log" },
-  { icon: CalendarDays, label: "Leave history", sub: "Past requests" },
-  { icon: ShieldCheck, label: "PDPA consent", sub: "Consent records" },
-] as const;
-
 export function MeScreen({ user }: Props) {
+  const t = useT();
   const { profile, updateProfile } = useProfile();
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  const menuItems = [
+    { icon: FileText, label: t.employee.timesheet, sub: t.employee.timesheetDesc },
+    { icon: CalendarDays, label: t.leave.leaveHistory, sub: t.leave.leaveHistoryDesc },
+    { icon: ShieldCheck, label: t.profile.pdpaConsent, sub: t.profile.pdpaConsentDesc },
+  ] as const;
 
   const handleExtendedSave = async (fields: Partial<typeof profile & object>) => {
     try {
       await updateProfile(fields);
-      toast.success("Profile updated");
+      toast.success(t.profile.updateSuccess);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update");
+      toast.error(err instanceof Error ? err.message : t.profile.updateFailed);
     }
   };
 
   return (
     <>
       <header className="flex h-14 items-center border-b border-[var(--es-neutral-100)] px-4">
-        <span className="text-base font-semibold">Profile</span>
+        <span className="text-base font-semibold">{t.profile.title}</span>
       </header>
 
       <div className="flex flex-col gap-4 p-4">
@@ -89,6 +95,19 @@ export function MeScreen({ user }: Props) {
             </button>
           ))}
 
+          {/* Change password */}
+          <button
+            onClick={() => setShowChangePassword(true)}
+            className="flex w-full items-center gap-3.5 border-t border-[var(--es-neutral-100)] px-4 py-3.5 text-left transition-colors hover:bg-muted"
+          >
+            <KeyRound className="size-5 text-muted-foreground" strokeWidth={1.75} />
+            <div className="flex-1">
+              <div className="text-sm font-medium">{t.password.changeButton}</div>
+              <div className="text-[11px] text-muted-foreground">{t.password.updateYourPassword}</div>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
+
           {/* Sign out */}
           <button
             onClick={() => signOut({ callbackUrl: "/signin" })}
@@ -96,7 +115,7 @@ export function MeScreen({ user }: Props) {
           >
             <LogOut className="size-5" strokeWidth={1.75} />
             <div className="flex-1">
-              <div className="text-sm font-medium">Sign out</div>
+              <div className="text-sm font-medium">{t.common.signOut}</div>
             </div>
           </button>
         </div>
@@ -105,6 +124,11 @@ export function MeScreen({ user }: Props) {
           {process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip HR"}
         </div>
       </div>
+
+      <ChangePasswordDialog
+        open={showChangePassword}
+        onClose={() => setShowChangePassword(false)}
+      />
     </>
   );
 }

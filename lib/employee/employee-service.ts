@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { grantInitialLeaveQuota } from "@/lib/leave/leave-quota-grant-service";
+import { createChecklistForEmployee } from "@/lib/onboarding/checklist-service";
+import { hashPassword, generateInitialPassword } from "@/lib/auth/password-utils";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { EmployeeCreateInput, EmployeeUpdateInput, EmployeeListFilters } from "./schemas";
 
@@ -13,10 +15,12 @@ const EMPLOYEE_INCLUDE = {
 
 export async function createEmployee(input: EmployeeCreateInput, caller: Caller, meta: RequestMeta) {
   const hireDate = new Date(input.hireDate);
+  const initialPassword = generateInitialPassword(input.employeeCode);
+  const passwordHash = await hashPassword(initialPassword);
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
-      data: { email: input.email, emailVerified: new Date() },
+      data: { email: input.email, emailVerified: new Date(), passwordHash, mustChangePassword: true },
     });
 
     const employee = await tx.employee.create({
@@ -32,11 +36,14 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
     });
 
     await grantInitialLeaveQuota(employee.id, hireDate, tx);
+    await createChecklistForEmployee(employee.id, undefined, tx);
 
     await writeAuditLog({ actorId: caller.userId, action: "employee.create", entityType: "Employee", entityId: employee.id, after: employee, ipAddress: meta.ip, userAgent: meta.userAgent }, tx);
 
     return employee;
   });
+
+  return { ...result, initialPassword };
 }
 
 export async function updateEmployee(employeeId: string, input: EmployeeUpdateInput, caller: Caller, meta: RequestMeta) {

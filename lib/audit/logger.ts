@@ -62,7 +62,7 @@ export async function writeAuditLog(
  * Convenience: log an auth event (signin, signout, blocked).
  */
 export async function logAuthEvent(
-  action: "auth.signin" | "auth.signout" | "auth.blocked" | "auth.magic_link_sent",
+  action: "auth.signin" | "auth.signout" | "auth.blocked" | "auth.magic_link_sent" | "auth.password_login",
   userId: string,
   meta?: { ipAddress?: string; userAgent?: string; reason?: string },
 ): Promise<void> {

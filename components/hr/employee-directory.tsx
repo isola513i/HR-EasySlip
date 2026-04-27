@@ -1,16 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus, MoreHorizontal, Users } from "lucide-react";
+import { Download, Plus, MoreHorizontal, Users, KeyRound, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { SearchInput } from "@/components/shared/search-input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/use-employees";
 import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog";
+import { useT } from "@/lib/i18n/locale-context";
 
 const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
   ACTIVE: "success",
@@ -19,18 +33,41 @@ const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
   RESIGNED: "neutral",
 };
 
-const statusFilters = [
-  { label: "All", value: "" },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Probation", value: "PROBATION" },
-  { label: "Suspended", value: "SUSPENDED" },
-];
-
 export function EmployeeDirectory() {
+  const t = useT();
+  const statusFilters = [
+    { label: t.common.all, value: "" },
+    { label: t.hr.active, value: "ACTIVE" },
+    { label: t.hr.probation, value: "PROBATION" },
+    { label: t.hr.suspended, value: "SUSPENDED" },
+  ];
   const { items, isLoading, error, setSearch, setStatus, create, refetch } = useEmployees();
   const [activeFilter, setActiveFilter] = useState(0);
   const [searchValue, setSearchValue] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [resetResult, setResetResult] = useState<{ tempPassword: string; employeeCode: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleResetPassword = async (employeeId: string) => {
+    try {
+      const res = await fetch(`/api/v1/hr/employees/${employeeId}/reset-password`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Reset failed");
+      const d = data.data ?? data;
+      setResetResult({ tempPassword: d.tempPassword, employeeCode: d.employeeCode });
+      toast.success(t.password.resetSuccess);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t.password.resetFailed);
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    if (!resetResult) return;
+    await navigator.clipboard.writeText(resetResult.tempPassword);
+    setCopied(true);
+    toast.success(t.common.copied);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSearch = (v: string) => {
     setSearchValue(v);
@@ -47,7 +84,7 @@ export function EmployeeDirectory() {
       {/* Toolbar */}
       <div className="flex items-center gap-2.5">
         <SearchInput
-          placeholder="Search employee... name / code / email"
+          placeholder={t.hr.searchEmployee}
           className="max-w-[360px]"
           value={searchValue}
           onChange={handleSearch}
@@ -76,13 +113,13 @@ export function EmployeeDirectory() {
             const a = document.createElement("a"); a.href = url; a.download = "employees.xlsx";
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            toast.success("ส่งออกข้อมูลเรียบร้อย");
-          } catch { toast.error("ส่งออกไม่สำเร็จ"); }
+            toast.success(t.hr.exportSuccess);
+          } catch { toast.error(t.hr.exportFailed); }
         }}>
-          <Download className="mr-1.5 size-3.5" /> Export
+          <Download className="mr-1.5 size-3.5" /> {t.common.export}
         </Button>
         <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 size-3.5" /> Add employee
+          <Plus className="mr-1.5 size-3.5" /> {t.hr.addEmployee}
         </Button>
       </div>
 
@@ -96,13 +133,13 @@ export function EmployeeDirectory() {
       {/* Table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
         <div className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          <span>Code</span>
-          <span>Employee</span>
-          <span>Department</span>
-          <span>Role</span>
+          <span>{t.hr.code}</span>
+          <span>{t.onboarding.employeeName}</span>
+          <span>{t.hr.department}</span>
+          <span>{t.hr.role}</span>
           <span>Manager</span>
-          <span>Status</span>
-          <span>Start</span>
+          <span>{t.profile.status}</span>
+          <span>{t.hr.start}</span>
           <span />
         </div>
         {isLoading
@@ -144,15 +181,23 @@ export function EmployeeDirectory() {
                 <span className="tabular-nums text-xs text-muted-foreground">
                   {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
                 </span>
-                <button className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
-                  <MoreHorizontal className="size-4" />
-                </button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
+                    <MoreHorizontal className="size-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleResetPassword(p.id)}>
+                      <KeyRound className="mr-2 size-3.5" />
+                      {t.password.resetPasswordMenu}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))}
         {!isLoading && items.length === 0 && !error && (
           <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
             <Users className="size-10 opacity-40" />
-            <p className="text-sm">ยังไม่มีข้อมูลพนักงาน</p>
+            <p className="text-sm">{t.hr.noEmployees}</p>
           </div>
         )}
       </div>
@@ -163,6 +208,38 @@ export function EmployeeDirectory() {
         onCreated={() => refetch()}
         onCreate={create}
       />
+
+      {/* Reset password result dialog */}
+      <Dialog open={!!resetResult} onOpenChange={() => { setResetResult(null); setCopied(false); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t.password.tempPasswordTitle}</DialogTitle>
+          </DialogHeader>
+          {resetResult && (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                {t.password.tempPasswordInfo}
+              </p>
+              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
+                <code className="flex-1 text-sm font-mono font-semibold">
+                  {resetResult.tempPassword}
+                </code>
+                <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={handleCopyPassword}>
+                  {copied ? <Check className="size-4 text-green-600" /> : <Copy className="size-4" />}
+                </Button>
+              </div>
+              <p className="text-xs text-destructive">
+                {t.password.tempPasswordWarn}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => { setResetResult(null); setCopied(false); }} className="w-full">
+              {t.password.tempPasswordClose}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

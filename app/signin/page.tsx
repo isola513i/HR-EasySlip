@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Mail } from "lucide-react";
+import { Lock } from "lucide-react";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
@@ -92,8 +92,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            <Mail className="mr-1 inline size-3" />
-            {t.signin.noPassword}
+            <Lock className="mr-1 inline size-3" />
+            EasySlip HR Portal
           </p>
         </div>
       </div>

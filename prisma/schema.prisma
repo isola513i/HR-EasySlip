@@ -51,6 +51,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   isDisabled    Boolean   @default(false)
+  passwordHash      String?  @db.Text
+  mustChangePassword Boolean  @default(false)
 
   employee  Employee?
   sessions  Session[]
@@ -183,6 +185,7 @@ model Employee {
   cashOutRecords     AnnualLeaveCashOut[]
   overtimeRequests   OvertimeRequest[]    @relation("OTRequester")
   overtimeApprovals  OvertimeRequest[]    @relation("OTApprover")
+  onboardingChecklist OnboardingChecklist?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -575,4 +578,65 @@ model OvertimeRequest {
 
   @@index([employeeId, date])
   @@index([approverId, status])
+}
+
+// ────────────────────────────────────────────────────────────────
+// ONBOARDING
+// ────────────────────────────────────────────────────────────────
+
+model OnboardingTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items      OnboardingTemplateItem[]
+  checklists OnboardingChecklist[]
+}
+
+model OnboardingTemplateItem {
+  id          String   @id @default(cuid())
+  templateId  String
+  title       String
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  category    String?
+  createdAt   DateTime @default(now())
+
+  template OnboardingTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, sortOrder])
+}
+
+model OnboardingChecklist {
+  id          String    @id @default(cuid())
+  employeeId  String    @unique
+  templateId  String
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  employee Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  template OnboardingTemplate  @relation(fields: [templateId], references: [id])
+  items    OnboardingChecklistItem[]
+}
+
+model OnboardingChecklistItem {
+  id          String    @id @default(cuid())
+  checklistId String
+  title       String
+  description String?   @db.Text
+  category    String?
+  sortOrder   Int       @default(0)
+  isDone      Boolean   @default(false)
+  doneAt      DateTime?
+  doneBy      String?
+  createdAt   DateTime  @default(now())
+
+  checklist OnboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId, sortOrder])
 }

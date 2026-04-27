@@ -10,12 +10,7 @@ import {
 } from "@/lib/email/magic-link-template";
 import { logAuthEvent } from "@/lib/audit/logger";
 import { signInAttemptLimiter } from "@/lib/security/rate-limit";
-
-const BLOCKED_EMPLOYMENT_STATUSES = [
-  "SUSPENDED",
-  "RESIGNED",
-  "TERMINATED",
-] as const;
+import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 
 const adapter = {
   ...PrismaAdapter(prisma),
@@ -120,19 +115,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, user }) {
       if (!user?.id) return session;
-      const emp = await prisma.employee.findUnique({
-        where: { userId: user.id },
+      const full = await prisma.user.findUnique({
+        where: { id: user.id },
         select: {
-          id: true,
-          employeeCode: true,
-          roles: true,
-          firstNameTh: true,
-          lastNameTh: true,
-          employmentStatus: true,
+          mustChangePassword: true,
+          employee: {
+            select: {
+              id: true,
+              employeeCode: true,
+              roles: true,
+              firstNameTh: true,
+              lastNameTh: true,
+              employmentStatus: true,
+            },
+          },
         },
       });
       session.user.id = user.id;
-      session.user.employee = emp;
+      session.user.employee = full?.employee ?? null;
+      session.user.mustChangePassword = full?.mustChangePassword ?? false;
       return session;
     },
   },

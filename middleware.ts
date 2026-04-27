@@ -7,7 +7,7 @@ const SESSION_COOKIE_NAMES = [
   "__Secure-authjs.session-token",
 ];
 
-const PROTECTED_PREFIX_RE = /^\/(hr|employee|manager)(\/|$)/;
+const PROTECTED_PREFIX_RE = /^\/(hr|employee|manager|change-password)(\/|$)/;
 
 export default function middleware(req: NextRequest): NextResponse {
   const { nextUrl } = req;

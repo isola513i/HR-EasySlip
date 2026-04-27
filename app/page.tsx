@@ -20,6 +20,11 @@ export default async function RootPage() {
     redirect("/signin");
   }
 
+  // Force password change before accessing the app
+  if (session.user.mustChangePassword) {
+    redirect("/change-password");
+  }
+
   const roles = (session.user.employee?.roles ?? []) as Role[];
 
   if (roles.some((r) => (HR_ROLES as readonly string[]).includes(r))) {
