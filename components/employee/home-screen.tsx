@@ -157,7 +157,7 @@ export function EmployeeHome({ user, dict }: Props) {
           <div className="flex items-start justify-between">
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-widest text-[#aab3c0]">
-                Today
+                {dict.employee.todayTitle}
               </div>
               <ClockDisplay />
             </div>
@@ -174,13 +174,13 @@ export function EmployeeHome({ user, dict }: Props) {
           >
             <span className="flex items-center gap-3">
               <Clock className="size-6" strokeWidth={1.75} />
-              Clock in
+              {dict.employee.clockIn}
             </span>
             <ArrowRight className="size-5" />
           </Link>
           <div className="flex justify-between text-xs text-[#aab3c0]">
-            <span>Shift starts 09:00</span>
-            <span>Not clocked in yet</span>
+            <span>{dict.employee.shiftStarts}</span>
+            <span>{dict.employee.notClockedIn}</span>
           </div>
         </div>
 
@@ -191,21 +191,21 @@ export function EmployeeHome({ user, dict }: Props) {
             className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
           >
             <CalendarDays className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
-            <div className="mt-2 text-sm font-semibold">Request leave</div>
-            <div className="text-[11px] text-muted-foreground">Submit a leave request</div>
+            <div className="mt-2 text-sm font-semibold">{dict.employee.requestLeave}</div>
+            <div className="text-[11px] text-muted-foreground">{dict.employee.requestLeaveDesc}</div>
           </Link>
           <Link
             href="/employee/ot"
             className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
           >
             <Timer className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
-            <div className="mt-2 text-sm font-semibold">ขอ OT</div>
-            <div className="text-[11px] text-muted-foreground">ส่งคำขอล่วงเวลา</div>
+            <div className="mt-2 text-sm font-semibold">{dict.employee.requestOT}</div>
+            <div className="text-[11px] text-muted-foreground">{dict.employee.requestOTDesc}</div>
           </Link>
           <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
             <FileText className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
-            <div className="mt-2 text-sm font-semibold">Timesheet</div>
-            <div className="text-[11px] text-muted-foreground">View attendance log</div>
+            <div className="mt-2 text-sm font-semibold">{dict.employee.timesheet}</div>
+            <div className="text-[11px] text-muted-foreground">{dict.employee.timesheetDesc}</div>
           </div>
         </div>
 
@@ -216,7 +216,7 @@ export function EmployeeHome({ user, dict }: Props) {
           <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
             <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
               <div>
-                <div className="text-sm font-semibold">Leave quota</div>
+                <div className="text-sm font-semibold">{dict.employee.leaveQuota}</div>
                 <div className="text-[11px] text-muted-foreground">FY {new Date().getFullYear()}</div>
               </div>
               <ChevronRight className="size-[18px] text-muted-foreground" />
@@ -233,7 +233,7 @@ export function EmployeeHome({ user, dict }: Props) {
                     <div className="mb-1.5 flex justify-between text-[13px]">
                       <span className="font-medium capitalize">{q.leaveType.toLowerCase()}</span>
                       <span className="tabular-nums text-muted-foreground">
-                        <b className="font-semibold text-foreground">{avail}</b> / {allocated} days
+                        <b className="font-semibold text-foreground">{avail}</b> / {allocated} {dict.common.days}
                       </span>
                     </div>
                     <div className="h-1.5 overflow-hidden rounded-full bg-[var(--es-neutral-100)]">
@@ -243,7 +243,7 @@ export function EmployeeHome({ user, dict }: Props) {
                 );
               })
             ) : (
-              <div className="px-4 py-6 text-center text-sm text-muted-foreground">No leave quota found</div>
+              <div className="px-4 py-6 text-center text-sm text-muted-foreground">{dict.employee.noLeaveQuota}</div>
             )}
           </div>
         )}
@@ -253,7 +253,7 @@ export function EmployeeHome({ user, dict }: Props) {
           <RecentActivitySkeleton />
         ) : (
           <div>
-            <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+            <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{dict.employee.recent}</div>
             <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
               {recentActivity && recentActivity.length > 0 ? (
                 recentActivity.map((r, i) => (
@@ -266,7 +266,7 @@ export function EmployeeHome({ user, dict }: Props) {
                   </div>
                 ))
               ) : (
-                <div className="px-4 py-6 text-center text-sm text-muted-foreground">No recent activity</div>
+                <div className="px-4 py-6 text-center text-sm text-muted-foreground">{dict.employee.noRecentActivity}</div>
               )}
             </div>
           </div>

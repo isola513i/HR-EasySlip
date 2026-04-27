@@ -2,8 +2,10 @@
 
 import { WifiOff } from "lucide-react";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function OfflineBanner() {
+  const t = useT();
   const { isOnline, pendingCount } = useOnlineStatus();
 
   if (isOnline && pendingCount === 0) return null;
@@ -13,11 +15,11 @@ export function OfflineBanner() {
       <WifiOff className="size-4" />
       {!isOnline ? (
         <span>
-          You&apos;re offline.
-          {pendingCount > 0 && ` ${pendingCount} change(s) queued for sync.`}
+          {t.offline.youreOffline}
+          {pendingCount > 0 && ` ${t.offline.queuedChanges.replace("{count}", String(pendingCount))}`}
         </span>
       ) : (
-        <span>Syncing {pendingCount} queued change(s)...</span>
+        <span>{t.offline.syncing.replace("{count}", String(pendingCount))}</span>
       )}
     </div>
   );

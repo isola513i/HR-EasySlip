@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useConsentAdmin } from "@/hooks/use-consent-admin";
+import { useT } from "@/lib/i18n/locale-context";
 
 function formatDateTime(iso: string): string {
   const d = new Date(iso);
@@ -33,6 +34,7 @@ function actionBadgeVariant(action: string) {
 }
 
 export function PdpaConsentView() {
+  const t = useT();
   const { events, isLoading, error } = useConsentAdmin();
 
   return (
@@ -41,16 +43,16 @@ export function PdpaConsentView() {
       <Card>
         <CardHeader className="flex flex-row items-center gap-3 pb-2">
           <Shield className="size-5 text-[var(--es-accent-600)]" />
-          <CardTitle className="text-base">PDPA Consent Policy</CardTitle>
+          <CardTitle className="text-base">{t.hr.pdpaTitle}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-4">
             <span>
-              <span className="font-medium text-foreground">Purpose:</span>{" "}
+              <span className="font-medium text-foreground">{t.hr.pdpaPurpose}:</span>{" "}
               PDPA-EmployeeData-v1
             </span>
             <span>
-              <span className="font-medium text-foreground">Version:</span>{" "}
+              <span className="font-medium text-foreground">{t.hr.pdpaVersion}:</span>{" "}
               1.0
             </span>
           </div>
@@ -58,7 +60,7 @@ export function PdpaConsentView() {
             href="/privacy"
             className="inline-flex items-center gap-1 text-[var(--es-accent-600)] hover:underline"
           >
-            View privacy policy <ExternalLink className="size-3.5" />
+            {t.hr.pdpaViewPolicy} <ExternalLink className="size-3.5" />
           </Link>
         </CardContent>
       </Card>
@@ -66,17 +68,17 @@ export function PdpaConsentView() {
       {/* Consent events table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Recent Consent Events</CardTitle>
+          <CardTitle className="text-base">{t.hr.pdpaRecentEvents}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Actor</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Entity ID</TableHead>
-                <TableHead>IP</TableHead>
+                <TableHead>{t.hr.pdpaDate}</TableHead>
+                <TableHead>{t.hr.pdpaActor}</TableHead>
+                <TableHead>{t.hr.pdpaAction}</TableHead>
+                <TableHead>{t.hr.pdpaEntityId}</TableHead>
+                <TableHead>{t.hr.pdpaIP}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,7 +104,7 @@ export function PdpaConsentView() {
               {!isLoading && !error && events.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">
-                    No consent events found
+                    {t.hr.pdpaNoEvents}
                   </TableCell>
                 </TableRow>
               )}

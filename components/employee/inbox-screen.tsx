@@ -15,6 +15,7 @@ import { ApiClientError } from "@/lib/api/client";
 import { formatLeaveType } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format";
 import { ACTION_LABELS_TH } from "@/lib/audit/action-labels";
+import { useT } from "@/lib/i18n/locale-context";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -89,6 +90,7 @@ const toneColors = {
 /* ── Component ───────────────────────────────────────────────── */
 
 export function InboxScreen() {
+  const t = useT();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,7 +122,7 @@ export function InboxScreen() {
   return (
     <>
       <header className="flex h-14 items-center border-b border-[var(--es-neutral-100)] px-4">
-        <span className="text-base font-semibold">Inbox</span>
+        <span className="text-base font-semibold">{t.employee.inbox}</span>
       </header>
 
       <div className="flex flex-col gap-3 p-4">
@@ -183,10 +185,11 @@ function InboxSkeleton() {
 /* ── Empty state ─────────────────────────────────────────────── */
 
 function InboxEmpty() {
+  const t = useT();
   return (
     <div className="flex flex-col items-center gap-2 py-16 text-muted-foreground">
       <Bell className="size-10 opacity-40" strokeWidth={1.5} />
-      <span className="text-sm">ไม่มีการแจ้งเตือน</span>
+      <span className="text-sm">{t.employee.noNotifications}</span>
     </div>
   );
 }

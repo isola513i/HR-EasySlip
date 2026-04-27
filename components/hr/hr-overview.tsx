@@ -3,9 +3,11 @@
 import { StatCard } from "@/components/shared/stat-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHRDashboard } from "@/hooks/use-hr-dashboard";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function HROverview() {
   const { data, isLoading, error } = useHRDashboard();
+  const t = useT();
 
   if (isLoading) {
     return (
@@ -29,9 +31,9 @@ export function HROverview() {
   if (!data) return null;
 
   const stats = [
-    { label: "Active Employees", value: String(data.totalActive), sub: `${data.headcount.length} statuses`, tone: "success" as const },
-    { label: "Pending Leaves", value: String(data.pendingLeaves), sub: "awaiting approval", tone: "warn" as const },
-    { label: "Today Attendance", value: String(data.todayAttendance), sub: "clocked in today", tone: "accent" as const },
+    { label: t.hr.activeEmployees, value: String(data.totalActive), sub: t.hr.statusCount.replace("{count}", String(data.headcount.length)), tone: "success" as const },
+    { label: t.hr.pendingLeaves, value: String(data.pendingLeaves), sub: t.hr.awaitingApproval, tone: "warn" as const },
+    { label: t.hr.todayAttendance, value: String(data.todayAttendance), sub: t.hr.clockedInToday, tone: "accent" as const },
   ];
 
   const leaveTypeColors: Record<string, string> = {
@@ -53,23 +55,23 @@ export function HROverview() {
         <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
           <div className="mb-4 flex items-baseline justify-between">
             <div>
-              <div className="text-[15px] font-semibold">Leave by type · last 6 months</div>
-              <div className="text-xs text-muted-foreground">Approved + pending requests</div>
+              <div className="text-[15px] font-semibold">{t.hr.leaveByType}</div>
+              <div className="text-xs text-muted-foreground">{t.hr.leaveChartSub}</div>
             </div>
             <div className="flex gap-3.5 text-[11px]">
               <span className="flex items-center gap-1.5">
-                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-accent-600)]" />Annual
+                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-accent-600)]" />{t.leave.annual}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-warn-500)]" />Sick
+                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-warn-500)]" />{t.leave.sick}
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-info-500)]" />Personal
+                <span className="inline-block size-2.5 rounded-sm bg-[var(--es-info-500)]" />{t.leave.personal}
               </span>
             </div>
           </div>
           {leaveEntries.length === 0 ? (
-            <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">No leave data available</div>
+            <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">{t.hr.noLeaveData}</div>
           ) : (
             <div className="flex items-end gap-[18px] border-b border-border px-2.5" style={{ height: 200 }}>
               {leaveEntries.map((entry) => (
@@ -85,9 +87,9 @@ export function HROverview() {
         </div>
         {/* Headcount breakdown */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
-          <div className="mb-3 text-[15px] font-semibold">Headcount breakdown</div>
+          <div className="mb-3 text-[15px] font-semibold">{t.hr.headcount}</div>
           {data.headcount.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">No employee data</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">{t.hr.noEmployeeData}</div>
           ) : (
             data.headcount.map((h) => {
               const pct = data.totalActive > 0 ? Math.round((h.count / data.totalActive) * 100) : 0;

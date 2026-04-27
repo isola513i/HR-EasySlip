@@ -7,6 +7,7 @@ import { StatCard } from "@/components/shared/stat-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
 import { todayISO, formatTime } from "@/lib/format";
+import { useT } from "@/lib/i18n/locale-context";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -39,11 +40,11 @@ interface KpiItem {
   sub: string;
 }
 
-const statusConfig = {
-  in: { tone: "success" as const, label: "Checked in" },
-  leave: { tone: "info" as const, label: "On leave" },
-  late: { tone: "warn" as const, label: "Late" },
-  absent: { tone: "error" as const, label: "Absent" },
+const statusTones = {
+  in: "success" as const,
+  leave: "info" as const,
+  late: "warn" as const,
+  absent: "error" as const,
 };
 
 const LATE_THRESHOLD_HOUR = 9;
@@ -97,7 +98,7 @@ function deriveTeamMembers(records: AttendanceRecord[]): TeamMember[] {
   return Array.from(seen.values());
 }
 
-function buildKpis(team: TeamMember[], pendingCount: number): KpiItem[] {
+function buildKpis(team: TeamMember[], pendingCount: number, t: ReturnType<typeof import("@/lib/i18n/locale-context").useT>): KpiItem[] {
   const checkedIn = team.filter(
     (m) => m.status === "in" || m.status === "late",
   ).length;
@@ -105,28 +106,28 @@ function buildKpis(team: TeamMember[], pendingCount: number): KpiItem[] {
 
   return [
     {
-      label: "Checked in",
+      label: t.manager.checkedIn,
       value: String(checkedIn),
       tone: "success",
-      sub: checkedIn > 0 ? `${checkedIn} คนลงเวลาแล้ว` : "ยังไม่มี",
+      sub: checkedIn > 0 ? t.manager.checkedInSub.replace("{count}", String(checkedIn)) : t.manager.noCheckedIn,
     },
     {
-      label: "On leave today",
+      label: t.manager.onLeaveToday,
       value: "—",
       tone: "info",
-      sub: "ไม่มีข้อมูล",
+      sub: t.manager.noLeaveData,
     },
     {
-      label: "Late",
+      label: t.manager.late,
       value: String(lateCount),
       tone: lateCount > 0 ? "warn" : "success",
-      sub: lateCount > 0 ? `สายเกิน ${LATE_THRESHOLD_MINUTE} นาที` : "ไม่มี",
+      sub: lateCount > 0 ? t.manager.lateSub.replace("{min}", String(LATE_THRESHOLD_MINUTE)) : t.manager.noLate,
     },
     {
-      label: "Pending approvals",
+      label: t.manager.pendingApprovals,
       value: String(pendingCount),
       tone: pendingCount > 0 ? "error" : "success",
-      sub: pendingCount > 0 ? "รอดำเนินการ" : "ไม่มีรายการ",
+      sub: pendingCount > 0 ? t.manager.pendingSub : t.manager.noPendingItems,
     },
   ];
 }
@@ -141,6 +142,7 @@ const dateStr = new Date().toLocaleDateString("en-US", {
 });
 
 export function TeamDashboard() {
+  const t = useT();
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [kpis, setKpis] = useState<KpiItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -165,12 +167,12 @@ export function TeamDashboard() {
         const pendingCount = pendingResult.pagination.total;
 
         setTeam(members);
-        setKpis(buildKpis(members, pendingCount));
+        setKpis(buildKpis(members, pendingCount, t));
       } catch {
         // On error, show empty state
         if (!cancelled) {
           setTeam([]);
-          setKpis(buildKpis([], 0));
+          setKpis(buildKpis([], 0, t));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -179,7 +181,7 @@ export function TeamDashboard() {
 
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [t]);
 
   return (
     <div className="flex flex-col gap-5">
@@ -196,19 +198,19 @@ export function TeamDashboard() {
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
           <div>
-            <div className="text-[15px] font-semibold">Team today</div>
+            <div className="text-[15px] font-semibold">{t.manager.teamToday}</div>
             <div className="text-xs text-muted-foreground">{dateStr}</div>
           </div>
           <button className="flex items-center gap-1.5 rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
-            <Download className="size-3.5" /> Export CSV
+            <Download className="size-3.5" /> {t.manager.exportCSV}
           </button>
         </div>
 
         <div className="grid grid-cols-[1fr_120px_120px_140px_80px] bg-[var(--es-neutral-50)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          <span>Member</span>
-          <span>Status</span>
-          <span>Time</span>
-          <span>Location</span>
+          <span>{t.manager.member}</span>
+          <span>{t.manager.status}</span>
+          <span>{t.manager.time}</span>
+          <span>{t.manager.location}</span>
           <span />
         </div>
 
@@ -216,13 +218,13 @@ export function TeamDashboard() {
 
         {!loading && team.length === 0 && (
           <div className="py-12 text-center text-sm text-muted-foreground">
-            ยังไม่มีข้อมูลทีมวันนี้
+            {t.manager.noTeamData}
           </div>
         )}
 
         {!loading &&
           team.map((p) => {
-            const cfg = statusConfig[p.status];
+            const statusLabels = { in: t.manager.checkedIn, leave: t.manager.onLeave, late: t.manager.late, absent: t.manager.absent };
             return (
               <div
                 key={p.code}
@@ -239,7 +241,7 @@ export function TeamDashboard() {
                     </div>
                   </div>
                 </div>
-                <StatusPill tone={cfg.tone}>{cfg.label}</StatusPill>
+                <StatusPill tone={statusTones[p.status]}>{statusLabels[p.status]}</StatusPill>
                 <span className="tabular-nums">{p.time}</span>
                 <span className="text-muted-foreground">{p.loc}</span>
                 <div className="flex justify-end">

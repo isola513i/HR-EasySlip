@@ -7,14 +7,16 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { cn } from "@/lib/utils";
 import { useClock, type LocationType } from "@/hooks/use-clock";
-
-const locations: { key: LocationType; label: string }[] = [
-  { key: "OFFICE", label: "Office" },
-  { key: "WFH", label: "Work from home" },
-  { key: "ON_SITE", label: "On-site" },
-];
+import { useT } from "@/lib/i18n/locale-context";
 
 export function ClockScreen() {
+  const t = useT();
+
+  const locations: { key: LocationType; label: string }[] = [
+    { key: "OFFICE", label: t.clock.office },
+    { key: "WFH", label: t.clock.wfh },
+    { key: "ON_SITE", label: t.clock.onSite },
+  ];
   const {
     clockState, clockType, location, setLocation,
     coords, gpsStatus, clockedTime, error, handleClock, reset,
@@ -27,7 +29,7 @@ export function ClockScreen() {
 
   return (
     <>
-      <MobileTopbar title="Clock in/out" backHref="/employee/today" />
+      <MobileTopbar title={t.clock.title} backHref="/employee/today" />
 
       <div className="flex flex-col gap-4 p-4">
         {/* GPS preview card */}
@@ -49,21 +51,21 @@ export function ClockScreen() {
           </div>
           <div className="flex items-center justify-between px-4 py-3.5">
             {gpsStatus === "loading" ? (
-              <div className="text-[13px] text-muted-foreground">Acquiring GPS...</div>
+              <div className="text-[13px] text-muted-foreground">{t.clock.acquiringGPS}</div>
             ) : gpsStatus === "denied" ? (
               <div className="flex items-center gap-1.5 text-[13px] text-[var(--es-warning-600)]">
-                <AlertTriangle className="size-3.5" /> GPS unavailable
+                <AlertTriangle className="size-3.5" /> {t.clock.gpsUnavailable}
               </div>
             ) : coords ? (
               <div>
-                <div className="text-[13px] font-medium">Current location</div>
+                <div className="text-[13px] font-medium">{t.clock.currentLocation}</div>
                 <div className="font-mono text-[11px] text-muted-foreground">
                   {coords.latitude.toFixed(4)}°N, {coords.longitude.toFixed(4)}°E
                 </div>
               </div>
             ) : null}
             {coords && (
-              <StatusPill tone="success">Accuracy ±{Math.round(coords.accuracy)} m</StatusPill>
+              <StatusPill tone="success">{t.clock.accuracy} ±{Math.round(coords.accuracy)} m</StatusPill>
             )}
           </div>
         </div>
@@ -71,7 +73,7 @@ export function ClockScreen() {
         {/* Location picker */}
         <div>
           <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Work location today
+            {t.clock.workLocation}
           </div>
           <div className="grid grid-cols-3 gap-2">
             {locations.map((loc) => {
@@ -102,14 +104,14 @@ export function ClockScreen() {
               <Check className="size-[26px] text-white" />
             </div>
             <div className="text-lg font-bold text-[var(--es-success-700)]">
-              Clock-{clockType.toLowerCase()} recorded
+              {t.clock.clockRecorded.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel)}
             </div>
             <div className="tabular-nums mt-1 text-[28px] font-bold">{clockedTime}</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              Clocked at {locationLabel}{coords ? ` · GPS ±${Math.round(coords.accuracy)} m` : ""}
+              {t.clock.clockedAt.replace("{location}", locationLabel)}{coords ? ` · GPS ±${Math.round(coords.accuracy)} m` : ""}
             </div>
             <button onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
-              Clock {clockType === "IN" ? "out" : "in"} now
+              {t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockOutLabel : t.clock.clockInLabel)}
             </button>
           </div>
         ) : (
@@ -125,16 +127,16 @@ export function ClockScreen() {
           >
             <Clock className="size-7" />
             {
-              { loading: "Loading...", clocking: "Recording...", idle: `Clock ${clockType.toLowerCase()}`, error: `Clock ${clockType.toLowerCase()}`, done: "" }[clockState]
+              { loading: t.common.loading, clocking: t.clock.recording, idle: t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel), error: t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel), done: "" }[clockState]
             }
             <span className="text-xs font-medium opacity-85">
-              {clockState === "loading" ? "Checking status" : `Tap to clock ${clockType.toLowerCase()}`}
+              {clockState === "loading" ? t.clock.checkingStatus : t.clock.tapToClock.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel)}
             </span>
           </button>
         )}
 
         <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
-          GPS location is recorded for attendance verification only. No geofencing is enforced.
+          {t.clock.gpsDisclaimer}
         </p>
       </div>
     </>

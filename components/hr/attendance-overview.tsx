@@ -11,6 +11,7 @@ import {
   type AttendanceRecord,
 } from "@/hooks/use-attendance-team";
 import { formatTime, calcDuration } from "@/lib/format";
+import { useT } from "@/lib/i18n/locale-context";
 
 type EmployeeRow = {
   employee: AttendanceRecord["employee"];
@@ -43,13 +44,14 @@ const LOCATION_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
 };
 
 export function AttendanceOverview() {
+  const t = useT();
   const { records, isLoading, error, date, setDate } = useAttendanceTeam();
   const rows = groupRecords(records);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <label className="text-sm font-medium" htmlFor="att-date">Date</label>
+        <label className="text-sm font-medium" htmlFor="att-date">{t.hr.attendanceDate}</label>
         <input
           id="att-date"
           type="date"
@@ -70,19 +72,19 @@ export function AttendanceOverview() {
       ) : rows.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
           <Clock className="size-10 opacity-40" />
-          <p className="text-sm">ไม่มีข้อมูลการลงเวลาวันนี้</p>
+          <p className="text-sm">{t.hr.noAttendance}</p>
         </div>
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-[80px]">Clock In</TableHead>
-                <TableHead className="w-[80px]">Clock Out</TableHead>
-                <TableHead className="w-[80px]">Duration</TableHead>
-                <TableHead className="w-[100px]">Location</TableHead>
+                <TableHead className="w-[100px]">{t.hr.code}</TableHead>
+                <TableHead>{t.hr.nameCol}</TableHead>
+                <TableHead className="w-[80px]">{t.hr.clockInCol}</TableHead>
+                <TableHead className="w-[80px]">{t.hr.clockOutCol}</TableHead>
+                <TableHead className="w-[80px]">{t.hr.durationCol}</TableHead>
+                <TableHead className="w-[100px]">{t.hr.locationCol}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

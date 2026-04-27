@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch } from "@/lib/api/client";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface NotificationSettings {
   notifyLeave: boolean;
@@ -13,15 +14,16 @@ interface NotificationSettings {
 }
 
 export function NotificationPrefs() {
+  const t = useT();
   const [settings, setSettings] = useState<NotificationSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     apiFetch<NotificationSettings>("/api/v1/employee/me/notifications")
       .then(setSettings)
-      .catch(() => toast.error("โหลดข้อมูลไม่สำเร็จ"))
+      .catch(() => toast.error(t.common.loadFailed))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [t]);
 
   const toggle = async (key: keyof NotificationSettings) => {
     if (!settings) return;
@@ -32,10 +34,10 @@ export function NotificationPrefs() {
         method: "PUT",
         body: JSON.stringify(updated),
       });
-      toast.success("บันทึกเรียบร้อย");
+      toast.success(t.common.savedSuccess);
     } catch {
       setSettings(settings); // rollback
-      toast.error("บันทึกไม่สำเร็จ");
+      toast.error(t.common.saveFailed);
     }
   };
 
@@ -52,7 +54,7 @@ export function NotificationPrefs() {
 
   return (
     <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
-      <p className="text-sm font-semibold">การแจ้งเตือน</p>
+      <p className="text-sm font-semibold">{t.notifications.title}</p>
       <div className="flex items-center gap-2.5">
         <Checkbox
           id="notifyLeave"
@@ -60,7 +62,7 @@ export function NotificationPrefs() {
           onCheckedChange={() => toggle("notifyLeave")}
         />
         <Label htmlFor="notifyLeave" className="text-sm">
-          ส่ง email เมื่อมีคำขอลาใหม่
+          {t.notifications.leaveEmail}
         </Label>
       </div>
       <div className="flex items-center gap-2.5">
@@ -70,7 +72,7 @@ export function NotificationPrefs() {
           onCheckedChange={() => toggle("notifyApproval")}
         />
         <Label htmlFor="notifyApproval" className="text-sm">
-          ส่ง email เมื่อคำขอถูกอนุมัติ/ปฏิเสธ
+          {t.notifications.approvalEmail}
         </Label>
       </div>
     </div>

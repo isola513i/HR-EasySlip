@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
   open: boolean;
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export function RejectDialog({ open, onClose, onConfirm, employeeName }: Props) {
+  const t = useT();
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -39,23 +41,23 @@ export function RejectDialog({ open, onClose, onConfirm, employeeName }: Props) 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            Reject {employeeName ? `${employeeName}'s request` : "request"}
+            {employeeName ? t.manager.rejectDialogTitle.replace("{name}", employeeName) : t.manager.reject}
           </DialogTitle>
         </DialogHeader>
         <Textarea
-          placeholder="Enter rejection reason (required)..."
+          placeholder={t.manager.rejectReason}
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           rows={3}
         />
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>{t.common.cancel}</Button>
           <Button
             variant="destructive"
             disabled={!reason.trim() || loading}
             onClick={handleConfirm}
           >
-            {loading ? "Rejecting..." : "Reject"}
+            {loading ? t.manager.rejecting : t.manager.reject}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { StatusPill } from "@/components/shared/status-pill";
 import { usePayroll, type PayrollCycle } from "@/hooks/use-payroll";
+import { useT } from "@/lib/i18n/locale-context";
 
 const currentYear = new Date().getFullYear();
 const YEARS = [currentYear - 1, currentYear, currentYear + 1];
@@ -26,6 +27,7 @@ function formatPeriod(start: string, end: string) {
 }
 
 export function PayrollDashboard() {
+  const t = useT();
   const { cycles, isLoading, error, year, setYear, lockCycle, downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData } = usePayroll();
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
   const [locking, setLocking] = useState(false);
@@ -35,20 +37,20 @@ export function PayrollDashboard() {
     setLocking(true);
     try {
       await lockCycle(lockTarget.id);
-      toast.success(`ล็อกรอบ ${MONTH_NAMES[lockTarget.month - 1]} เรียบร้อย`);
+      toast.success(t.hr.payrollLockSuccess.replace("{month}", MONTH_NAMES[lockTarget.month - 1]));
       setLockTarget(null);
-    } catch { toast.error("ล็อกรอบไม่สำเร็จ"); }
+    } catch { toast.error(t.hr.payrollLockFailed); }
     finally { setLocking(false); }
   };
 
   const handleDownloadTimestamps = async (id: string) => {
-    try { await downloadTimestamps(id); toast.success("ดาวน์โหลดเรียบร้อย"); }
-    catch { toast.error("ดาวน์โหลดไม่สำเร็จ"); }
+    try { await downloadTimestamps(id); toast.success(t.hr.downloadSuccess); }
+    catch { toast.error(t.hr.downloadFailed); }
   };
 
   const handleDownloadCashout = async () => {
-    try { await downloadCashout(year); toast.success("ดาวน์โหลดเรียบร้อย"); }
-    catch { toast.error("ดาวน์โหลดไม่สำเร็จ"); }
+    try { await downloadCashout(year); toast.success(t.hr.downloadSuccess); }
+    catch { toast.error(t.hr.downloadFailed); }
   };
 
   return (
@@ -60,11 +62,11 @@ export function PayrollDashboard() {
           ))}
         </div>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success("ส่งออกข้อมูลเรียบร้อย")).catch(() => toast.error("ส่งออกไม่สำเร็จ"))}>
-            <Download className="mr-1.5 size-4" /> Employee Data
+          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success(t.hr.exportSuccess)).catch(() => toast.error(t.hr.exportFailed))}>
+            <Download className="mr-1.5 size-4" /> {t.hr.payrollEmployeeData}
           </Button>
           <Button size="sm" variant="outline" onClick={handleDownloadCashout}>
-            <Download className="mr-1.5 size-4" /> Cashout ({year})
+            <Download className="mr-1.5 size-4" /> {t.hr.payrollCashout} ({year})
           </Button>
         </div>
       </div>
@@ -75,17 +77,17 @@ export function PayrollDashboard() {
       ) : error ? (
         <div className="py-16 text-center text-[var(--es-error-500)]">{error}</div>
       ) : cycles.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">No payroll cycles for {year}</div>
+        <div className="py-16 text-center text-muted-foreground">{t.hr.noPayrollCycles.replace("{year}", String(year))}</div>
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Month</TableHead>
-                <TableHead>Period</TableHead>
-                <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead className="w-[160px]">Locked At</TableHead>
-                <TableHead className="w-[200px]">Actions</TableHead>
+                <TableHead className="w-[80px]">{t.hr.payrollMonth}</TableHead>
+                <TableHead>{t.hr.payrollPeriod}</TableHead>
+                <TableHead className="w-[120px]">{t.profile.status}</TableHead>
+                <TableHead className="w-[160px]">{t.hr.payrollLockedAt}</TableHead>
+                <TableHead className="w-[200px]">{t.hr.payrollActions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -100,11 +102,11 @@ export function PayrollDashboard() {
                   <TableCell>
                     <div className="flex gap-1.5">
                       {c.status === "OPEN" && (
-                        <Button size="sm" variant="outline" onClick={() => setLockTarget(c)}><Lock className="mr-1 size-3.5" /> Lock</Button>
+                        <Button size="sm" variant="outline" onClick={() => setLockTarget(c)}><Lock className="mr-1 size-3.5" /> {t.hr.payrollLock}</Button>
                       )}
                       {(c.status === "LOCKED" || c.status === "EXPORTED") && (<>
-                        <Button size="sm" variant="outline" onClick={() => handleDownloadTimestamps(c.id)}><Download className="mr-1 size-3.5" /> Timestamps</Button>
-                        <Button size="sm" variant="outline" onClick={() => downloadPayrollInfo(c.id).then(() => toast.success("ดาวน์โหลดข้อมูลเงินเดือนเรียบร้อย")).catch(() => toast.error("ดาวน์โหลดไม่สำเร็จ"))}><Download className="mr-1 size-3.5" /> Payroll</Button>
+                        <Button size="sm" variant="outline" onClick={() => handleDownloadTimestamps(c.id)}><Download className="mr-1 size-3.5" /> {t.hr.payrollTimestamps}</Button>
+                        <Button size="sm" variant="outline" onClick={() => downloadPayrollInfo(c.id).then(() => toast.success(t.hr.payrollDownloadSuccess)).catch(() => toast.error(t.hr.downloadFailed))}><Download className="mr-1 size-3.5" /> {t.hr.payrollExport}</Button>
                       </>)}
                     </div>
                   </TableCell>
@@ -116,14 +118,13 @@ export function PayrollDashboard() {
       )}
       <Dialog open={!!lockTarget} onOpenChange={(o) => { if (!o) setLockTarget(null); }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Lock Payroll Cycle</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t.hr.payrollLockTitle}</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground">
-            Lock the <strong>{lockTarget ? MONTH_NAMES[lockTarget.month - 1] : ""} {year}</strong> cycle?
-            This will freeze all attendance and leave records for the period. This action cannot be undone.
+            {t.hr.payrollLockConfirm.replace("{month}", lockTarget ? MONTH_NAMES[lockTarget.month - 1] : "").replace("{year}", String(year))}
           </p>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLockTarget(null)}>Cancel</Button>
-            <Button disabled={locking} onClick={handleLock}>{locking ? "Locking..." : "Confirm Lock"}</Button>
+            <Button variant="outline" onClick={() => setLockTarget(null)}>{t.common.cancel}</Button>
+            <Button disabled={locking} onClick={handleLock}>{locking ? t.hr.payrollLocking : t.hr.payrollConfirmLock}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

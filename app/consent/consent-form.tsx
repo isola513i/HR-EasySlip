@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ApiClientError } from "@/lib/api/client";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
+  const t = useT();
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
       if (!json.ok) throw new ApiClientError(json.code, json.error, res.status);
       router.push(callbackUrl);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save consent");
+      setError(err instanceof Error ? err.message : t.consent.saveFailed);
       setLoading(false);
     }
   };
@@ -37,34 +39,33 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
     <div className="w-full max-w-lg space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">
-          นโยบายความเป็นส่วนตัว (PDPA)
+          {t.consent.title}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Privacy Policy — EasySlip HR
+          {t.consent.subtitle}
         </p>
       </div>
 
       <div className="rounded-xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-        <p className="mb-3 font-medium text-foreground">ระบบเก็บรวบรวมข้อมูลต่อไปนี้:</p>
+        <p className="mb-3 font-medium text-foreground">{t.consent.dataCollected}</p>
         <ul className="list-inside list-disc space-y-1">
-          <li>ข้อมูลส่วนตัว: ชื่อ-นามสกุล, รหัสพนักงาน, ตำแหน่ง, แผนก</li>
-          <li>ข้อมูลติดต่อ: อีเมล, เบอร์โทรศัพท์</li>
-          <li>ข้อมูลการลงเวลา: เวลาเข้า-ออกงาน, พิกัด GPS, IP address</li>
-          <li>ข้อมูลการลา: ประเภทการลา, วันที่, เหตุผล</li>
+          <li>{t.consent.personalData}</li>
+          <li>{t.consent.contactData}</li>
+          <li>{t.consent.attendanceData}</li>
+          <li>{t.consent.leaveData}</li>
         </ul>
         <p className="mt-3">
-          เพื่อการบริหารทรัพยากรบุคคลและปฏิบัติตามสัญญาจ้าง
-          ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562
+          {t.consent.legalBasis}
         </p>
         <Link href="/privacy" className="mt-2 inline-block text-xs underline underline-offset-4">
-          อ่านนโยบายฉบับเต็ม →
+          {t.consent.readFull}
         </Link>
       </div>
 
       <label className="flex items-start gap-3">
         <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(!!v)} className="mt-0.5" />
         <span className="text-sm leading-relaxed">
-          ฉันรับทราบและยินยอมให้บริษัทประมวลผลข้อมูลส่วนบุคคลเพื่อการบริหารทรัพยากรบุคคล
+          {t.consent.checkboxLabel}
         </span>
       </label>
 
@@ -73,7 +74,7 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
       )}
 
       <Button className="w-full" size="lg" disabled={!agreed || loading} onClick={handleSubmit}>
-        {loading ? "กำลังบันทึก..." : "ยืนยันและเข้าสู่ระบบ"}
+        {loading ? t.consent.confirming : t.consent.confirmButton}
       </Button>
     </div>
   );

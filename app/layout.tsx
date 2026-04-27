@@ -6,6 +6,7 @@ import { ServiceWorkerRegistrar } from "@/components/shared/sw-registrar";
 import { Toaster } from "@/components/ui/sonner";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 const notoSansThai = localFont({
   src: "../public/NotoSansThai.ttf",
@@ -61,7 +62,9 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
       </head>
       <body className="antialiased">
-        {children}
+        <LocaleProvider locale={locale}>
+          {children}
+        </LocaleProvider>
         <Toaster position="bottom-center" />
         <ServiceWorkerRegistrar />
       </body>

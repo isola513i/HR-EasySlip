@@ -6,10 +6,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useOTRequests } from "@/hooks/use-ot-requests";
+import { useT } from "@/lib/i18n/locale-context";
 
 type OTType = "WEEKDAY" | "HOLIDAY";
 
 export function OTRequestForm() {
+  const t = useT();
   const {
     otType, setOTType,
     date, setDate,
@@ -23,9 +25,9 @@ export function OTRequestForm() {
   const handleSubmit = async () => {
     try {
       const result = await submit();
-      if (result) toast.success("ส่งคำขอ OT เรียบร้อย รอการอนุมัติ");
+      if (result) toast.success(t.ot.submitSuccess);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "ส่งคำขอไม่สำเร็จ");
+      toast.error(err instanceof Error ? err.message : t.ot.submitFailed);
     }
   };
 
@@ -36,20 +38,20 @@ export function OTRequestForm() {
 
   return (
     <>
-      <MobileTopbar title="OT Request" backHref="/employee/today" />
+      <MobileTopbar title={t.ot.title} backHref="/employee/today" />
 
       <div className="flex flex-col gap-4 p-4">
         {/* OT type tabs */}
         <Tabs value={otType} onValueChange={(v) => setOTType(v as OTType)}>
           <TabsList className="w-full">
-            <TabsTrigger value="WEEKDAY" className="flex-1">Weekday OT</TabsTrigger>
-            <TabsTrigger value="HOLIDAY" className="flex-1">Holiday OT</TabsTrigger>
+            <TabsTrigger value="WEEKDAY" className="flex-1">{t.ot.weekday}</TabsTrigger>
+            <TabsTrigger value="HOLIDAY" className="flex-1">{t.ot.holiday}</TabsTrigger>
           </TabsList>
         </Tabs>
 
         {/* Date */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium">วันที่</label>
+          <label className="mb-1.5 block text-[13px] font-medium">{t.ot.date}</label>
           <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
             <input
               type="date"
@@ -63,13 +65,13 @@ export function OTRequestForm() {
         {/* Weekday info / Holiday fields */}
         {otType === "WEEKDAY" ? (
           <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-            OT เริ่มนับหลัง 18:00 น. ต้องทำอย่างน้อย 30 นาที คำนวณจากเวลาสแกนออก
+            {t.ot.weekdayInfo}
           </div>
         ) : (
           <>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium">
-                เวลาเริ่ม (ที่กำหนด)
+                {t.ot.assignedStart}
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
@@ -82,7 +84,7 @@ export function OTRequestForm() {
             </div>
             <div>
               <label className="mb-1.5 block text-[13px] font-medium">
-                เวลาจบ (ที่กำหนด)
+                {t.ot.assignedEnd}
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
@@ -95,7 +97,7 @@ export function OTRequestForm() {
               </div>
             </div>
             <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-              หัวหน้ากำหนดเวลาเริ่ม-จบ ชั่วโมง OT จะนับภายในกรอบเวลานี้
+              {t.ot.holidayInfo}
             </div>
           </>
         )}
@@ -103,10 +105,10 @@ export function OTRequestForm() {
         {/* Reason */}
         <div>
           <label className="mb-1.5 block text-[13px] font-medium">
-            เหตุผล
+            {t.ot.reason}
           </label>
           <Textarea
-            placeholder="ระบุเหตุผล..."
+            placeholder={t.ot.reasonPlaceholder}
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
@@ -120,7 +122,7 @@ export function OTRequestForm() {
           disabled={isSubmitting || !canSubmit}
           onClick={handleSubmit}
         >
-          {isSubmitting ? "กำลังส่ง..." : "ส่งคำขอ"}
+          {isSubmitting ? t.leave.submitting : t.leave.submit}
         </Button>
       </div>
     </>

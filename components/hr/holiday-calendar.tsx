@@ -16,11 +16,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHolidays, type Holiday } from "@/hooks/use-holidays";
+import { useT } from "@/lib/i18n/locale-context";
 
 const currentYear = new Date().getFullYear();
 const YEARS = [currentYear - 1, currentYear, currentYear + 1];
 
 export function HolidayCalendar() {
+  const t = useT();
   const { holidays, isLoading, error: fetchError, year, setYear, create, update, remove } = useHolidays(2026);
   const [editing, setEditing] = useState<Holiday | null>(null);
   const [isNew, setIsNew] = useState(false);
@@ -45,20 +47,20 @@ export function HolidayCalendar() {
     try {
       if (isNew) {
         await create({ date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
-        toast.success("เพิ่มวันหยุดเรียบร้อย");
+        toast.success(t.hr.holidayAdded);
       } else if (editing) {
         await update(editing.id, { date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
-        toast.success("แก้ไขวันหยุดเรียบร้อย");
+        toast.success(t.hr.holidayUpdated);
       }
       setEditing(null);
       setIsNew(false);
-    } catch { toast.error("บันทึกไม่สำเร็จ"); }
+    } catch { toast.error(t.common.saveFailed); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
-    try { await remove(id); toast.success("ลบวันหยุดเรียบร้อย"); }
-    catch { toast.error("ลบไม่สำเร็จ"); }
+    try { await remove(id); toast.success(t.hr.holidayDeleted); }
+    catch { toast.error(t.common.deleteFailed); }
   };
 
   return (
@@ -71,7 +73,7 @@ export function HolidayCalendar() {
             </Button>
           ))}
         </div>
-        <Button size="sm" onClick={openNew}><Plus className="mr-1.5 size-4" /> Add Holiday</Button>
+        <Button size="sm" onClick={openNew}><Plus className="mr-1.5 size-4" /> {t.hr.addHoliday}</Button>
       </div>
 
       {isLoading ? (
@@ -79,16 +81,16 @@ export function HolidayCalendar() {
       ) : fetchError ? (
         <div className="py-16 text-center text-[var(--es-error-500)]">{fetchError}</div>
       ) : holidays.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">No holidays for {year}</div>
+        <div className="py-16 text-center text-muted-foreground">{t.hr.noHolidays.replace("{year}", String(year))}</div>
       ) : (
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[120px]">Date</TableHead>
-                <TableHead>Name (TH)</TableHead>
-                <TableHead>Name (EN)</TableHead>
-                <TableHead className="w-[100px]">Type</TableHead>
+                <TableHead className="w-[120px]">{t.hr.holidayDate}</TableHead>
+                <TableHead>{t.hr.holidayNameTh}</TableHead>
+                <TableHead>{t.hr.holidayNameEn}</TableHead>
+                <TableHead className="w-[100px]">{t.hr.holidayType}</TableHead>
                 <TableHead className="w-[80px]" />
               </TableRow>
             </TableHeader>
@@ -100,7 +102,7 @@ export function HolidayCalendar() {
                   </TableCell>
                   <TableCell>{h.name}</TableCell>
                   <TableCell className="text-muted-foreground">{h.nameEn ?? "—"}</TableCell>
-                  <TableCell>{h.isSubstituted ? <Badge variant="secondary">Substituted</Badge> : <Badge variant="outline">Regular</Badge>}</TableCell>
+                  <TableCell>{h.isSubstituted ? <Badge variant="secondary">{t.hr.substituted}</Badge> : <Badge variant="outline">{t.hr.regular}</Badge>}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <button onClick={() => openEdit(h)} className="rounded p-1 hover:bg-muted"><Pencil className="size-3.5" /></button>
@@ -116,19 +118,19 @@ export function HolidayCalendar() {
 
       <Dialog open={isNew || !!editing} onOpenChange={(o) => { if (!o) { setIsNew(false); setEditing(null); } }}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{isNew ? "Add Public Holiday" : "Edit Holiday"}</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{isNew ? t.hr.addHolidayTitle : t.hr.editHolidayTitle}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>Date</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
-            <div><Label>Name (TH)</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="วันขึ้นปีใหม่" /></div>
-            <div><Label>Name (EN)</Label><Input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} placeholder="New Year's Day" /></div>
+            <div><Label>{t.hr.holidayDate}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+            <div><Label>{t.hr.holidayNameTh}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t.hr.holidayNameThPlaceholder} /></div>
+            <div><Label>{t.hr.holidayNameEn}</Label><Input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} placeholder={t.hr.holidayNameEnPlaceholder} /></div>
             <label className="flex items-center gap-2 text-sm">
               <Checkbox checked={form.isSubstituted} onCheckedChange={(v) => setForm({ ...form, isSubstituted: !!v })} />
-              Substituted holiday (วันหยุดชดเชย)
+              {t.hr.substitutedCheckbox}
             </label>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsNew(false); setEditing(null); }}>Cancel</Button>
-            <Button disabled={!form.date || !form.name.trim() || saving} onClick={handleSave}>{saving ? "Saving..." : "Save"}</Button>
+            <Button variant="outline" onClick={() => { setIsNew(false); setEditing(null); }}>{t.common.cancel}</Button>
+            <Button disabled={!form.date || !form.name.trim() || saving} onClick={handleSave}>{saving ? t.common.saving : t.common.save}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
