@@ -4,6 +4,7 @@ const OFFLINE_POST_PATHS = [
   "/api/v1/attendance/clock",
   "/api/v1/leave/requests",
   "/api/v1/attendance/adjustment",
+  "/api/v1/overtime/requests",
 ];
 
 function isOfflineEligible(url: string, method: string): boolean {

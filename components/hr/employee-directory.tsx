@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Plus, MoreHorizontal, Users, KeyRound, Copy, Check } from "lucide-react";
+import { Download, Plus, Upload, MoreHorizontal, Users, KeyRound, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/use-employees";
 import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog";
+import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
 import { useT } from "@/lib/i18n/locale-context";
 
 const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
@@ -45,6 +46,7 @@ export function EmployeeDirectory() {
   const [activeFilter, setActiveFilter] = useState(0);
   const [searchValue, setSearchValue] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [resetResult, setResetResult] = useState<{ tempPassword: string; employeeCode: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -117,6 +119,9 @@ export function EmployeeDirectory() {
           } catch { toast.error(t.hr.exportFailed); }
         }}>
           <Download className="mr-1.5 size-3.5" /> {t.common.export}
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
+          <Upload className="mr-1.5 size-3.5" /> {t.hr.bulkImport}
         </Button>
         <Button size="sm" onClick={() => setDialogOpen(true)}>
           <Plus className="mr-1.5 size-3.5" /> {t.hr.addEmployee}
@@ -207,6 +212,12 @@ export function EmployeeDirectory() {
         onClose={() => setDialogOpen(false)}
         onCreated={() => refetch()}
         onCreate={create}
+      />
+
+      <BulkImportDialog
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        onDone={() => refetch()}
       />
 
       {/* Reset password result dialog */}

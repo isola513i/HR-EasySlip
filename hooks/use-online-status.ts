@@ -1,15 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { dequeueAll, getPendingCount } from "@/lib/offline/offline-queue";
+import { dequeueAll, getPendingCount, getAllPending, removeById, type PendingRequest } from "@/lib/offline/offline-queue";
 import { toast } from "sonner";
 
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(true); // always true on SSR, sync in useEffect
+  const [isOnline, setIsOnline] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
+  const [pendingItems, setPendingItems] = useState<PendingRequest[]>([]);
 
   const refreshCount = useCallback(async () => {
-    try { setPendingCount(await getPendingCount()); } catch { /* IndexedDB unavailable */ }
+    try {
+      const [count, items] = await Promise.all([getPendingCount(), getAllPending()]);
+      setPendingCount(count);
+      setPendingItems(items);
+    } catch { /* IndexedDB unavailable */ }
   }, []);
 
   const replayQueue = useCallback(async () => {
@@ -32,8 +37,23 @@ export function useOnlineStatus() {
     } catch { /* IndexedDB unavailable */ }
   }, [refreshCount]);
 
+  const cancelItem = useCallback(async (id: number) => {
+    try {
+      await removeById(id);
+      await refreshCount();
+    } catch { /* IndexedDB unavailable */ }
+  }, [refreshCount]);
+
+  const manualRetry = useCallback(async () => {
+    if (!navigator.onLine) {
+      toast.error("Still offline");
+      return;
+    }
+    await replayQueue();
+  }, [replayQueue]);
+
   useEffect(() => {
-    setIsOnline(navigator.onLine); // sync actual status on mount
+    setIsOnline(navigator.onLine);
     const goOnline = () => { setIsOnline(true); replayQueue(); };
     const goOffline = () => setIsOnline(false);
     window.addEventListener("online", goOnline);
@@ -42,5 +62,5 @@ export function useOnlineStatus() {
     return () => { window.removeEventListener("online", goOnline); window.removeEventListener("offline", goOffline); };
   }, [replayQueue, refreshCount]);
 
-  return { isOnline, pendingCount };
+  return { isOnline, pendingCount, pendingItems, cancelItem, manualRetry };
 }

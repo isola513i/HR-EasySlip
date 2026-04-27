@@ -4,6 +4,7 @@ import {
   LayoutGrid,
   Users,
   ClipboardCheck,
+  FileBarChart,
   CalendarDays,
   CalendarCheck,
   ShieldCheck,
@@ -61,6 +62,12 @@ const navItems: (NavItem | NavGroup)[] = [
     icon: Banknote,
     label: "Payroll Export",
   },
+  {
+    key: "reports",
+    href: "/hr/reports",
+    icon: FileBarChart,
+    label: "Reports",
+  },
   { group: "Compliance" },
   {
     key: "audit",
@@ -91,6 +98,7 @@ const pageTitles: Record<string, string> = {
   "/hr/attendance": "Attendance",
   "/hr/holidays": "Public Holidays",
   "/hr/payroll": "Payroll Export",
+  "/hr/reports": "Reports",
   "/hr/audit": "Audit Log",
   "/hr/pdpa": "PDPA Consent",
   "/hr/settings": "Settings",

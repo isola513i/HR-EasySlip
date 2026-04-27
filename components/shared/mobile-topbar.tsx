@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { SyncStatusBadge } from "@/components/shared/sync-status-badge";
 
 interface MobileTopbarProps {
   title: string;
@@ -22,7 +23,8 @@ export function MobileTopbar({ title, backHref }: MobileTopbarProps) {
           <ChevronLeft className="size-[22px]" />
         </button>
       )}
-      <span className="text-base font-semibold">{title}</span>
+      <span className="flex-1 text-base font-semibold">{title}</span>
+      <SyncStatusBadge />
     </header>
   );
 }

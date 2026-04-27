@@ -48,6 +48,28 @@ export async function dequeueAll(): Promise<PendingRequest[]> {
   });
 }
 
+export async function getAllPending(): Promise<PendingRequest[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const getAll = tx.objectStore(STORE_NAME).getAll();
+    getAll.onsuccess = () => resolve(getAll.result);
+    getAll.onerror = () => reject(getAll.error);
+  });
+}
+
+export async function removeById(id: number): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    tx.objectStore(STORE_NAME).delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+export type { PendingRequest };
+
 export async function getPendingCount(): Promise<number> {
   const db = await openDB();
   return new Promise((resolve, reject) => {
