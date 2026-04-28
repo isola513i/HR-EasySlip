@@ -3,10 +3,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  CalendarDays,
+  ExternalLink,
+  Lock,
+  MapPin,
+  Phone,
+  Scale,
+  ShieldCheck,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import { ApiClientError } from "@/lib/api/client";
 import { useT } from "@/lib/i18n/locale-context";
+
+type DataItem = {
+  icon: typeof User;
+  label: string;
+  desc: string;
+};
 
 export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   const router = useRouter();
@@ -14,6 +31,13 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const dataItems: DataItem[] = [
+    { icon: User, label: t.consent.personalData, desc: t.consent.personalDataDesc },
+    { icon: Phone, label: t.consent.contactData, desc: t.consent.contactDataDesc },
+    { icon: MapPin, label: t.consent.attendanceData, desc: t.consent.attendanceDataDesc },
+    { icon: CalendarDays, label: t.consent.leaveData, desc: t.consent.leaveDataDesc },
+  ];
 
   const handleSubmit = async () => {
     if (!agreed) return;
@@ -36,46 +60,102 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   };
 
   return (
-    <div className="w-full max-w-lg space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t.consent.title}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t.consent.subtitle}
-        </p>
+    <div className="w-full max-w-xl space-y-6">
+      <div className="flex flex-col items-center gap-4 text-center">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-[var(--es-accent-50)] text-[var(--es-accent-600)] ring-1 ring-[var(--es-accent-100)]">
+          <ShieldCheck className="size-7" aria-hidden />
+        </div>
+        <div className="space-y-1.5">
+          <h1 className="text-2xl font-bold tracking-tight">{t.consent.title}</h1>
+          <p className="text-sm text-muted-foreground">{t.consent.subtitle}</p>
+        </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-        <p className="mb-3 font-medium text-foreground">{t.consent.dataCollected}</p>
-        <ul className="list-inside list-disc space-y-1">
-          <li>{t.consent.personalData}</li>
-          <li>{t.consent.contactData}</li>
-          <li>{t.consent.attendanceData}</li>
-          <li>{t.consent.leaveData}</li>
+      <section
+        aria-labelledby="data-collected-heading"
+        className="rounded-xl border border-border bg-card p-6 shadow-[var(--es-shadow-sm)]"
+      >
+        <h2
+          id="data-collected-heading"
+          className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground"
+        >
+          {t.consent.dataCollected}
+        </h2>
+
+        <ul className="mt-4 space-y-3" role="list">
+          {dataItems.map(({ icon: Icon, label, desc }) => (
+            <li key={label} className="flex items-start gap-3">
+              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+                <Icon className="size-4" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground">{label}</p>
+                <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
+              </div>
+            </li>
+          ))}
         </ul>
-        <p className="mt-3">
-          {t.consent.legalBasis}
-        </p>
-        <Link href="/privacy" className="mt-2 inline-block text-xs underline underline-offset-4">
-          {t.consent.readFull}
-        </Link>
-      </div>
 
-      <label className="flex items-start gap-3">
-        <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(!!v)} className="mt-0.5" />
-        <span className="text-sm leading-relaxed">
+        <Separator className="my-5" />
+
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+            <Scale className="size-4" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">
+              {t.consent.legalBasisHeading}
+            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {t.consent.legalBasis}
+            </p>
+          </div>
+        </div>
+
+        <Link
+          href="/privacy"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--es-accent-600)] underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+        >
+          {t.consent.readFull}
+          <ExternalLink className="size-3.5" aria-hidden />
+        </Link>
+      </section>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted/40">
+        <Checkbox
+          checked={agreed}
+          onCheckedChange={(v) => setAgreed(!!v)}
+          className="mt-0.5"
+          aria-describedby="consent-checkbox-text"
+        />
+        <span id="consent-checkbox-text" className="text-sm leading-relaxed">
           {t.consent.checkboxLabel}
         </span>
       </label>
 
-      {error && (
-        <p className="text-sm text-[var(--es-error-500)]">{error}</p>
-      )}
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-[var(--es-error-50)] p-3 text-sm text-destructive"
+        >
+          {error}
+        </p>
+      ) : null}
 
-      <Button className="w-full" size="lg" disabled={!agreed || loading} onClick={handleSubmit}>
+      <Button
+        className="w-full"
+        size="lg"
+        disabled={!agreed || loading}
+        onClick={handleSubmit}
+      >
+        <ShieldCheck className="size-4" aria-hidden />
         {loading ? t.consent.confirming : t.consent.confirmButton}
       </Button>
+
+      <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground">
+        <Lock className="size-3" aria-hidden />
+        {t.consent.footerTrust}
+      </p>
     </div>
   );
 }
