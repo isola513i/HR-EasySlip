@@ -38,6 +38,15 @@ const th = {
   metadata: {
     description: "ระบบบริหารทรัพยากรบุคคล EasySlip — ลงเวลา ลางาน อนุมัติ",
   },
+  pwa: {
+    installTitle: "ติดตั้ง EasySlip",
+    installSubtitle: "เพิ่มไปยังหน้าจอหลัก เปิดเร็วและใช้แบบออฟไลน์ได้",
+    install: "ติดตั้ง",
+    dismiss: "ไว้ทีหลัง",
+    iosTitle: "เพิ่มไปยังหน้าจอหลัก",
+    iosStep1: "แตะปุ่มแชร์",
+    iosStep2: "เลื่อนลงแล้วแตะ “เพิ่มไปยังหน้าจอหลัก”",
+  },
   signin: {
     pageTitle: "เข้าสู่ระบบ",
     heading: "EasySlip HR",

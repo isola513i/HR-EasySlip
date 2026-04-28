@@ -9,11 +9,13 @@
 // Phase 1 MVP: lightweight — no Workbox dependency.
 // ════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = "easyslip-v1";
+const CACHE_NAME = "easyslip-v2";
+const OFFLINE_URL = "/offline.html";
 
 const APP_SHELL = [
   "/",
   "/signin",
+  OFFLINE_URL,
   "/manifest.webmanifest",
   "/icons/icon-192.svg",
   "/icons/icon-512.svg",
@@ -88,9 +90,10 @@ self.addEventListener("fetch", (event) => {
   // Navigation requests: network first → cache fallback (skip protected paths)
   if (request.mode === "navigate") {
     if (isProtected) {
-      // Always fetch from network — never cache authenticated HR pages
+      // Always fetch from network — never cache authenticated HR pages.
+      // On offline, show offline page (not signin) to avoid forcing re-auth on flaky networks.
       event.respondWith(
-        fetch(request).catch(() => caches.match("/signin") || fetch("/signin"))
+        fetch(request).catch(() => caches.match(OFFLINE_URL).then((r) => r || new Response("Offline", { status: 503 })))
       );
       return;
     }
@@ -101,7 +104,12 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           return response;
         })
-        .catch(() => caches.match(request).then((r) => r || caches.match("/")))
+        .catch(() =>
+          caches
+            .match(request)
+            .then((r) => r || caches.match(OFFLINE_URL))
+            .then((r) => r || new Response("Offline", { status: 503 }))
+        )
     );
     return;
   }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
+import { InstallPrompt } from "@/components/shared/install-prompt";
 import { apiFetch } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
@@ -152,6 +153,7 @@ export function EmployeeHome({ user, dict }: Props) {
       </header>
 
       <div className="flex flex-col gap-4 p-4">
+        <InstallPrompt />
         {/* Hero clock card */}
         <div className="flex flex-col gap-3.5 rounded-[20px] bg-[var(--es-neutral-900)] p-5 text-white shadow-[var(--es-shadow-md)]">
           <div className="flex items-start justify-between">

@@ -36,6 +36,15 @@ const en = {
   metadata: {
     description: "EasySlip HR — Attendance, Leave & Approval Management System",
   },
+  pwa: {
+    installTitle: "Install EasySlip",
+    installSubtitle: "Add to home screen for fast access offline",
+    install: "Install",
+    dismiss: "Not now",
+    iosTitle: "Add to Home Screen",
+    iosStep1: "Tap the Share button",
+    iosStep2: "Scroll down and tap “Add to Home Screen”",
+  },
   signin: {
     pageTitle: "Sign In",
     heading: "EasySlip HR",
