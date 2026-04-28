@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Clock, MapPin, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
@@ -8,6 +8,7 @@ import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { cn } from "@/lib/utils";
 import { useClock, type LocationType } from "@/hooks/use-clock";
 import { useT } from "@/lib/i18n/locale-context";
+import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
 
 export function ClockScreen() {
   const t = useT();
@@ -22,7 +23,13 @@ export function ClockScreen() {
     coords, gpsStatus, clockedTime, error, handleClock, reset,
   } = useClock();
 
-  useEffect(() => { if (error) toast.error(error); }, [error]);
+  useEffect(() => { if (error) { toast.error(error); hapticError(); } }, [error]);
+
+  const lastClockState = useRef(clockState);
+  useEffect(() => {
+    if (lastClockState.current !== "done" && clockState === "done") hapticSuccess();
+    lastClockState.current = clockState;
+  }, [clockState]);
 
   const locationLabel =
     location === "OFFICE" ? "the office" : location === "WFH" ? "home" : "on-site";
@@ -99,8 +106,8 @@ export function ClockScreen() {
 
         {/* Clock action */}
         {clockState === "done" ? (
-          <div className="rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
-            <div className="mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
+          <div className="animate-in fade-in zoom-in-95 duration-300 rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
+            <div className="animate-in zoom-in-50 duration-300 delay-100 fill-mode-backwards mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
               <Check className="size-[26px] text-white" />
             </div>
             <div className="text-lg font-bold text-[var(--es-success-700)]">
@@ -117,7 +124,7 @@ export function ClockScreen() {
         ) : (
           <button
             disabled={clockState === "clocking" || clockState === "loading"}
-            onClick={handleClock}
+            onClick={() => { hapticTap(); handleClock(); }}
             className={cn(
               "flex min-h-[110px] flex-col items-center justify-center gap-1.5 rounded-[20px] text-[22px] font-bold text-white shadow-[0_8px_24px_rgba(61,70,204,0.35)] transition-colors",
               clockState === "clocking" || clockState === "loading"

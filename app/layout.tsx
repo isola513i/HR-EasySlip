@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegistrar } from "@/components/shared/sw-registrar";
+import { ViewTransitions } from "@/components/shared/view-transitions";
 import { Toaster } from "@/components/ui/sonner";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { getDictionary } from "@/lib/i18n/dictionaries";
@@ -29,7 +30,6 @@ export async function generateMetadata(): Promise<Metadata> {
       template: "%s · EasySlip HR",
     },
     description: t.metadata.description,
-    manifest: "/manifest.webmanifest",
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
@@ -67,6 +67,7 @@ export default async function RootLayout({
         </LocaleProvider>
         <Toaster position="bottom-center" />
         <ServiceWorkerRegistrar />
+        <ViewTransitions />
       </body>
     </html>
   );

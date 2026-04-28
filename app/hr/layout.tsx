@@ -1,6 +1,11 @@
+import type { Viewport } from "next";
 import { requireRoles, HR_ROLES } from "@/lib/security/rbac";
 import { requireConsent } from "@/lib/consent/require-consent";
 import { HRShell } from "@/components/hr/hr-shell";
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+};
 
 export default async function HRLayout({
   children,

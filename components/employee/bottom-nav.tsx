@@ -10,6 +10,7 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { hapticSelection } from "@/lib/haptics";
 
 const items = [
   { href: "/employee/today", icon: Home, label: "Home" },
@@ -31,15 +32,30 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => { if (!active) hapticSelection(); }}
+              aria-current={active ? "page" : undefined}
               className={cn(
-                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors",
+                "group/nav relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors active:scale-[0.92] active:transition-transform active:duration-100",
                 active
                   ? "text-[var(--es-accent-600)]"
                   : "text-muted-foreground",
               )}
             >
-              <item.icon className="size-[22px]" strokeWidth={1.75} />
+              <span
+                className={cn(
+                  "relative grid place-items-center rounded-full transition-[background-color,transform] duration-200",
+                  active && "bg-[var(--es-accent-50)] px-3 py-1",
+                )}
+              >
+                <item.icon className="size-[22px]" strokeWidth={active ? 2 : 1.75} />
+              </span>
               <span>{item.label}</span>
+              {active && (
+                <span
+                  aria-hidden="true"
+                  className="animate-in zoom-in fade-in duration-200 absolute -top-0.5 h-0.5 w-8 rounded-full bg-[var(--es-accent-600)]"
+                />
+              )}
             </Link>
           );
         })}

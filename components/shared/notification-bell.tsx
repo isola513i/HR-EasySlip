@@ -39,13 +39,16 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="relative rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted" aria-label="Notifications">
+      <button onClick={() => setOpen(!open)} className="relative rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted active:scale-90 active:transition-transform active:duration-100" aria-label="Notifications">
         <Bell className="size-5" strokeWidth={1.75} />
-        <span className="absolute right-1 top-1 size-1.5 rounded-full bg-[var(--es-error-500)]" />
+        <span className="pointer-events-none absolute right-0.5 top-0.5 grid place-items-center">
+          <span aria-hidden="true" className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
+        </span>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-[340px] rounded-xl border border-border bg-card shadow-lg">
+        <div className="absolute right-0 top-full z-50 mt-2 w-[min(90vw,340px)] rounded-xl border border-border bg-card shadow-lg">
           <div className="border-b border-border px-4 py-3 text-sm font-semibold">Notifications</div>
           <div className="max-h-[320px] overflow-y-auto">
             {loading && <div className="px-4 py-6 text-center text-xs text-muted-foreground">Loading...</div>}
