@@ -174,8 +174,10 @@
   /* Motion */
   --es-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --es-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --es-ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
   --es-dur-fast: 120ms;
   --es-dur-base: 180ms;
+  --es-dur-slow: 280ms;
 
   /* Layout */
   --es-sidebar-width: 240px;
@@ -210,6 +212,82 @@
   --sidebar-accent-foreground: #f5f7fa;
   --sidebar-border: #2a3240;
   --sidebar-ring: rgba(148, 163, 255, 0.4);
+
+  /* ═══ EasySlip palette — dark overrides ═══ */
+  /* Neutrals: invert SURFACES (0–300) but keep TEXT/HERO ranges (700–900) dark
+     so hero cards using bg-[var(--es-neutral-900)] still render dark with white text. */
+  --es-neutral-0: #10151e;
+  --es-neutral-25: #141a25;
+  --es-neutral-50: #1a212d;
+  --es-neutral-100: #232b39;
+  --es-neutral-200: #2a3240;
+  --es-neutral-300: #3a4453;
+  --es-neutral-400: #6b7684;
+  --es-neutral-500: #9aa4b2;
+  /* 600–900 left at light-mode values so hero/dark surfaces stay dark in dark mode */
+
+  /* Accent — shift to lighter shades for readable contrast */
+  --es-accent-50: #1c2160;
+  --es-accent-100: #242b82;
+  --es-accent-200: #303aa8;
+  --es-accent-300: #3d46cc;
+  --es-accent-400: #4f5de6;
+  --es-accent-500: #6b7cf7;
+  --es-accent-600: #93a3ff;
+  --es-accent-700: #bcc7ff;
+  --es-accent-800: #dde3ff;
+  --es-accent-900: #eef1ff;
+
+  /* Semantic — softened backgrounds, brighter foregrounds */
+  --es-success-50: #0d2818;
+  --es-success-100: #14532d;
+  --es-success-500: #22c55e;
+  --es-success-600: #4ade80;
+  --es-success-700: #86efac;
+
+  --es-warn-50: #2a1f0a;
+  --es-warn-100: #5a3d10;
+  --es-warn-500: #facc15;
+  --es-warn-600: #fde047;
+  --es-warn-700: #fef08a;
+
+  --es-error-50: #2a0e0e;
+  --es-error-100: #5a1414;
+  --es-error-500: #f87171;
+  --es-error-600: #fca5a5;
+  --es-error-700: #fecaca;
+
+  --es-info-50: #0d2240;
+  --es-info-100: #144478;
+  --es-info-500: #60a5fa;
+  --es-info-600: #93c5fd;
+
+  /* Role badge tints — darker bgs / lighter fgs */
+  --es-role-employee-bg: #2f3844;
+  --es-role-employee-fg: #cbd3dd;
+  --es-role-manager-bg: #1e3a5f;
+  --es-role-manager-fg: #93c5fd;
+  --es-role-hrmg-bg: #3b1e5f;
+  --es-role-hrmg-fg: #d8b4fe;
+  --es-role-hr-bg: #4a3608;
+  --es-role-hr-fg: #fde047;
+  --es-role-admin-bg: #f6f8fa;
+  --es-role-admin-fg: #10151e;
+
+  /* Brand */
+  --es-brand-gradient: linear-gradient(135deg, #1e40af 0%, #60a5fa 100%);
+
+  /* Elevation — deeper shadows for dark surfaces */
+  --es-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --es-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --es-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.35);
+  --es-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4), 0 12px 24px rgba(0, 0, 0, 0.45);
+  --es-shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.5), 0 24px 48px rgba(0, 0, 0, 0.55);
+}
+
+/* Hint user-agent so form controls / scrollbars match when .dark is active. */
+.dark {
+  color-scheme: dark;
 }
 
 @layer base {
@@ -218,9 +296,13 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
   }
   html {
     @apply font-sans;
+  }
+  button, a {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
@@ -230,4 +312,54 @@
 }
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+/* Skeleton shimmer — gradient sweep replacing animate-pulse */
+@keyframes es-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.es-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    color-mix(in srgb, var(--muted) 60%, var(--card)) 40%,
+    color-mix(in srgb, var(--muted) 60%, var(--card)) 60%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: es-shimmer 1.4s linear infinite;
+}
+
+/* View Transitions — cross-fade between routes (Chrome/Edge; Safari graceful degrade) */
+@view-transition { navigation: auto; }
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: var(--es-ease-spring);
+}
+
+/* Reduced motion — opt out of animations for users with motion sensitivity */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .es-shimmer { animation: none !important; }
+}
+
+/* iOS / Android safe-area helpers (notch + home indicator) */
+.safe-area-pb {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.safe-area-pt {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+.safe-area-px {
+  padding-left: max(env(safe-area-inset-left), 0px);
+  padding-right: max(env(safe-area-inset-right), 0px);
 }
