@@ -31,7 +31,7 @@ export function DetailSheet({ row, onClose, onApprove, onReject }: Props) {
 
   return (
     <Sheet open={!!row} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-[480px] sm:max-w-[480px]">
+      <SheetContent side="right" className="w-[min(95vw,480px)] sm:max-w-[480px]">
         <SheetHeader>
           <SheetTitle>Leave Request</SheetTitle>
         </SheetHeader>

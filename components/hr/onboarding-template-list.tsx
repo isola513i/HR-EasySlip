@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOnboardingTemplates } from "@/hooks/use-onboarding-templates";
 import { OnboardingTemplateForm } from "./onboarding-template-form";
 import { useT } from "@/lib/i18n/locale-context";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 
 export function OnboardingTemplateList() {
   const t = useT();
@@ -37,6 +38,7 @@ export function OnboardingTemplateList() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+        <ScrollableTable minWidth={480}>
         <div className="grid grid-cols-[1fr_100px_100px_80px] border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>{t.onboarding.templateName}</span>
           <span>{t.onboarding.items}</span>
@@ -80,6 +82,7 @@ export function OnboardingTemplateList() {
             {t.onboarding.noTemplates}
           </div>
         )}
+        </ScrollableTable>
       </div>
 
       <OnboardingTemplateForm

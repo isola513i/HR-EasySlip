@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
 import { todayISO, formatTime } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -186,7 +187,7 @@ export function TeamDashboard() {
   return (
     <div className="flex flex-col gap-5">
       {/* KPI tiles */}
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-3.5 lg:grid-cols-4">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-[110px] rounded-xl" />
@@ -196,25 +197,15 @@ export function TeamDashboard() {
 
       {/* Team table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <div>
-            <div className="text-[15px] font-semibold">{t.manager.teamToday}</div>
-            <div className="text-xs text-muted-foreground">{dateStr}</div>
+        <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5 lg:px-5">
+          <div className="min-w-0">
+            <div className="truncate text-[15px] font-semibold">{t.manager.teamToday}</div>
+            <div className="truncate text-xs text-muted-foreground">{dateStr}</div>
           </div>
-          <button className="flex items-center gap-1.5 rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
-            <Download className="size-3.5" /> {t.manager.exportCSV}
+          <button className="flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+            <Download className="size-3.5" /> <span className="hidden sm:inline">{t.manager.exportCSV}</span>
           </button>
         </div>
-
-        <div className="grid grid-cols-[1fr_120px_120px_140px_80px] bg-[var(--es-neutral-50)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          <span>{t.manager.member}</span>
-          <span>{t.manager.status}</span>
-          <span>{t.manager.time}</span>
-          <span>{t.manager.location}</span>
-          <span />
-        </div>
-
-        {loading && <TeamTableSkeleton />}
 
         {!loading && team.length === 0 && (
           <div className="py-12 text-center text-sm text-muted-foreground">
@@ -222,39 +213,82 @@ export function TeamDashboard() {
           </div>
         )}
 
-        {!loading &&
-          team.map((p) => {
-            const statusLabels = { in: t.manager.checkedIn, leave: t.manager.onLeave, late: t.manager.late, absent: t.manager.absent };
-            return (
-              <div
-                key={p.code}
-                className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-[var(--es-neutral-100)] px-5 py-3 text-[13px]"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-8 place-items-center rounded-full bg-[var(--es-neutral-100)] text-[11px] font-bold text-muted-foreground">
-                    {p.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="font-medium">{p.name}</div>
-                    <div className="font-mono text-[11px] text-muted-foreground">
-                      {p.code}
+        <div className="space-y-2 p-3 md:hidden">
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-[78px] w-full rounded-xl" />
+              ))
+            : team.map((p) => {
+                const statusLabels = { in: t.manager.checkedIn, leave: t.manager.onLeave, late: t.manager.late, absent: t.manager.absent };
+                return (
+                  <div key={p.code} className="rounded-xl border border-border bg-card p-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--es-neutral-100)] text-xs font-bold text-muted-foreground">
+                        {p.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-sm font-semibold">{p.name}</div>
+                        <div className="font-mono text-[11px] text-muted-foreground">{p.code}</div>
+                      </div>
+                      <StatusPill tone={statusTones[p.status]}>{statusLabels[p.status]}</StatusPill>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="tabular-nums">{p.time}</span>
+                      <span>·</span>
+                      <span>{p.loc}</span>
                     </div>
                   </div>
-                </div>
-                <StatusPill tone={statusTones[p.status]}>{statusLabels[p.status]}</StatusPill>
-                <span className="tabular-nums">{p.time}</span>
-                <span className="text-muted-foreground">{p.loc}</span>
-                <div className="flex justify-end">
-                  <button
-                    className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted"
-                    aria-label={`More options for ${p.name}`}
-                  >
-                    <MoreHorizontal className="size-4" />
-                  </button>
-                </div>
+                );
+              })}
+        </div>
+
+        <div className="hidden md:block">
+          <ScrollableTable minWidth={640}>
+              <div className="grid grid-cols-[1fr_120px_120px_140px_80px] bg-[var(--es-neutral-50)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+                <span>{t.manager.member}</span>
+                <span>{t.manager.status}</span>
+                <span>{t.manager.time}</span>
+                <span>{t.manager.location}</span>
+                <span />
               </div>
-            );
-          })}
+
+              {loading && <TeamTableSkeleton />}
+
+              {!loading &&
+                team.map((p) => {
+                  const statusLabels = { in: t.manager.checkedIn, leave: t.manager.onLeave, late: t.manager.late, absent: t.manager.absent };
+                  return (
+                    <div
+                      key={p.code}
+                      className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-[var(--es-neutral-100)] px-5 py-3 text-[13px]"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="grid size-8 place-items-center rounded-full bg-[var(--es-neutral-100)] text-[11px] font-bold text-muted-foreground">
+                          {p.name.charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-medium">{p.name}</div>
+                          <div className="font-mono text-[11px] text-muted-foreground">
+                            {p.code}
+                          </div>
+                        </div>
+                      </div>
+                      <StatusPill tone={statusTones[p.status]}>{statusLabels[p.status]}</StatusPill>
+                      <span className="tabular-nums">{p.time}</span>
+                      <span className="text-muted-foreground">{p.loc}</span>
+                      <div className="flex justify-end">
+                        <button
+                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted"
+                          aria-label={`More options for ${p.name}`}
+                        >
+                          <MoreHorizontal className="size-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+          </ScrollableTable>
+        </div>
       </div>
     </div>
   );

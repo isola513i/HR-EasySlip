@@ -81,7 +81,7 @@ interface AdminTopbarProps {
 
 export function AdminTopbar({ title, subtitle, role, actions, onMenuClick }: AdminTopbarProps) {
   return (
-    <header className="flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
+    <header className="safe-area-pt sticky top-0 z-20 flex h-[60px] shrink-0 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-card/80 lg:px-6">
       <div className="flex items-center gap-3">
         {onMenuClick && (
           <button onClick={onMenuClick} className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted lg:hidden" aria-label="Menu">

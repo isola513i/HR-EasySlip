@@ -75,50 +75,93 @@ export function AttendanceOverview() {
           <p className="text-sm">{t.hr.noAttendance}</p>
         </div>
       ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">{t.hr.code}</TableHead>
-                <TableHead>{t.hr.nameCol}</TableHead>
-                <TableHead className="w-[80px]">{t.hr.clockInCol}</TableHead>
-                <TableHead className="w-[80px]">{t.hr.clockOutCol}</TableHead>
-                <TableHead className="w-[80px]">{t.hr.durationCol}</TableHead>
-                <TableHead className="w-[100px]">{t.hr.locationCol}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map(({ employee, clockIn, clockOut }) => (
-                <TableRow key={employee.id}>
-                  <TableCell className="tabular-nums font-medium">
-                    {employee.employeeCode}
-                  </TableCell>
-                  <TableCell>
-                    {employee.firstNameTh} {employee.lastNameTh}
-                  </TableCell>
-                  <TableCell className="tabular-nums">
-                    {clockIn ? formatTime(clockIn.clockedAt) : "—"}
-                  </TableCell>
-                  <TableCell className="tabular-nums">
-                    {clockOut ? formatTime(clockOut.clockedAt) : "—"}
-                  </TableCell>
-                  <TableCell className="tabular-nums">
-                    {clockIn && clockOut
-                      ? calcDuration(clockIn.clockedAt, clockOut.clockedAt)
-                      : "—"}
-                  </TableCell>
-                  <TableCell>
-                    {clockIn ? (
-                      <Badge variant={LOCATION_VARIANT[clockIn.workLocation] ?? "outline"}>
-                        {clockIn.workLocation}
-                      </Badge>
-                    ) : "—"}
-                  </TableCell>
+        <>
+          <div className="space-y-2 md:hidden">
+            {rows.map(({ employee, clockIn, clockOut }) => (
+              <div
+                key={employee.id}
+                className="rounded-xl border border-border bg-card p-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold">
+                      {employee.firstNameTh} {employee.lastNameTh}
+                    </div>
+                    <div className="text-xs tabular-nums text-muted-foreground">
+                      {employee.employeeCode}
+                    </div>
+                  </div>
+                  {clockIn ? (
+                    <Badge variant={LOCATION_VARIANT[clockIn.workLocation] ?? "outline"}>
+                      {clockIn.workLocation}
+                    </Badge>
+                  ) : null}
+                </div>
+                <div className="mt-2 grid grid-cols-3 gap-2 text-center text-xs">
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.clockInCol}</div>
+                    <div className="tabular-nums font-medium">{clockIn ? formatTime(clockIn.clockedAt) : "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.clockOutCol}</div>
+                    <div className="tabular-nums font-medium">{clockOut ? formatTime(clockOut.clockedAt) : "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.durationCol}</div>
+                    <div className="tabular-nums font-medium">
+                      {clockIn && clockOut ? calcDuration(clockIn.clockedAt, clockOut.clockedAt) : "—"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden rounded-lg border md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">{t.hr.code}</TableHead>
+                  <TableHead>{t.hr.nameCol}</TableHead>
+                  <TableHead className="w-[80px]">{t.hr.clockInCol}</TableHead>
+                  <TableHead className="w-[80px]">{t.hr.clockOutCol}</TableHead>
+                  <TableHead className="w-[80px]">{t.hr.durationCol}</TableHead>
+                  <TableHead className="w-[100px]">{t.hr.locationCol}</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {rows.map(({ employee, clockIn, clockOut }) => (
+                  <TableRow key={employee.id}>
+                    <TableCell className="tabular-nums font-medium">
+                      {employee.employeeCode}
+                    </TableCell>
+                    <TableCell>
+                      {employee.firstNameTh} {employee.lastNameTh}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {clockIn ? formatTime(clockIn.clockedAt) : "—"}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {clockOut ? formatTime(clockOut.clockedAt) : "—"}
+                    </TableCell>
+                    <TableCell className="tabular-nums">
+                      {clockIn && clockOut
+                        ? calcDuration(clockIn.clockedAt, clockOut.clockedAt)
+                        : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {clockIn ? (
+                        <Badge variant={LOCATION_VARIANT[clockIn.workLocation] ?? "outline"}>
+                          {clockIn.workLocation}
+                        </Badge>
+                      ) : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
       )}
     </div>
   );

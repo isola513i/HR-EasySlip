@@ -35,14 +35,14 @@ export function AdminShell({ navItems, pageTitles, defaultTitle, user, children 
 
       {/* Mobile sidebar drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-[260px] p-0">
+        <SheetContent side="left" className="w-[min(85vw,260px)] p-0">
           <AdminSidebar {...sidebarProps} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminTopbar title={title} role={user.role} onMenuClick={() => setMobileOpen(true)} />
-        <main className="flex-1 overflow-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-auto overscroll-contain p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

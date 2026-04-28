@@ -55,17 +55,17 @@ export function PayrollDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-2">
           {YEARS.map((y) => (
             <Button key={y} variant={year === y ? "default" : "outline"} size="sm" onClick={() => setYear(y)}>{y}</Button>
           ))}
         </div>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => downloadEmployeeData().then(() => toast.success(t.hr.exportSuccess)).catch(() => toast.error(t.hr.exportFailed))}>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" className="flex-1 lg:flex-none" onClick={() => downloadEmployeeData().then(() => toast.success(t.hr.exportSuccess)).catch(() => toast.error(t.hr.exportFailed))}>
             <Download className="mr-1.5 size-4" /> {t.hr.payrollEmployeeData}
           </Button>
-          <Button size="sm" variant="outline" onClick={handleDownloadCashout}>
+          <Button size="sm" variant="outline" className="flex-1 lg:flex-none" onClick={handleDownloadCashout}>
             <Download className="mr-1.5 size-4" /> {t.hr.payrollCashout} ({year})
           </Button>
         </div>

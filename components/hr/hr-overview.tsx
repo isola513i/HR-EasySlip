@@ -14,12 +14,12 @@ export function HROverview() {
   if (isLoading) {
     return (
       <div className="flex flex-col gap-5">
-        <div className="grid grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-[120px] rounded-xl" />
           ))}
         </div>
-        <div className="grid grid-cols-[2fr_1fr] gap-5">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr]">
           <Skeleton className="h-[260px] rounded-xl" />
           <Skeleton className="h-[260px] rounded-xl" />
         </div>
@@ -40,7 +40,7 @@ export function HROverview() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-3.5">
         {stats.map((s) => <StatCard key={s.label} {...s} />)}
       </div>
 

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuditLogs } from "@/hooks/use-audit-logs";
 import { formatTime } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 
 export function AuditLog() {
   const t = useT();
@@ -35,8 +36,8 @@ export function AuditLog() {
         </button>
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+        <ScrollableTable minWidth={760}>
         <div className="grid grid-cols-[80px_1fr_180px_1.2fr_120px_70px] border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>{t.hr.auditTime}</span>
           <span>{t.hr.auditActor}</span>
@@ -97,6 +98,7 @@ export function AuditLog() {
               <StatusPill tone="success">OK</StatusPill>
             </div>
           ))}
+        </ScrollableTable>
       </div>
 
       {/* Pagination */}

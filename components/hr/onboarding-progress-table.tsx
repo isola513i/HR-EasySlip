@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { apiFetch } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 
 interface ChecklistProgress {
   id: string;
@@ -89,6 +90,7 @@ export function OnboardingProgressTable() {
       </div>
 
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+        <ScrollableTable minWidth={560}>
         <div className="grid grid-cols-[100px_1fr_120px_100px_80px] border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>{t.onboarding.code}</span><span>{t.onboarding.employeeName}</span><span>{t.onboarding.hireDate}</span><span>{t.onboarding.progress}</span><span>{t.profile.status}</span>
         </div>
@@ -117,6 +119,7 @@ export function OnboardingProgressTable() {
         {!isLoading && checklists.length === 0 && (
           <div className="py-12 text-center text-sm text-muted-foreground">{t.onboarding.noOnboarding}</div>
         )}
+        </ScrollableTable>
       </div>
 
       {/* Detail Dialog */}

@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/use-employees";
 import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog";
 import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
+import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { useT } from "@/lib/i18n/locale-context";
 
 const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
@@ -84,48 +85,52 @@ export function EmployeeDirectory() {
   return (
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
         <SearchInput
           placeholder={t.hr.searchEmployee}
-          className="max-w-[360px]"
+          className="w-full lg:max-w-[360px]"
           value={searchValue}
           onChange={handleSearch}
         />
-        {statusFilters.map((f, i) => (
-          <button
-            key={f.label}
-            onClick={() => handleFilter(i)}
-            className={cn(
-              "rounded-lg border px-3 py-[7px] text-xs font-medium transition-colors",
-              i === activeFilter
-                ? "border-transparent bg-[var(--es-neutral-900)] text-white"
-                : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
-            )}
-          >
-            {f.label}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <Button variant="outline" size="sm" onClick={async () => {
-          try {
-            const res = await fetch("/api/v1/payroll/employees/export");
-            if (!res.ok) throw new Error("Failed");
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a"); a.href = url; a.download = "employees.xlsx";
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            toast.success(t.hr.exportSuccess);
-          } catch { toast.error(t.hr.exportFailed); }
-        }}>
-          <Download className="mr-1.5 size-3.5" /> {t.common.export}
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => setBulkOpen(true)}>
-          <Upload className="mr-1.5 size-3.5" /> {t.hr.bulkImport}
-        </Button>
-        <Button size="sm" onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 size-3.5" /> {t.hr.addEmployee}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          {statusFilters.map((f, i) => (
+            <button
+              key={f.label}
+              onClick={() => handleFilter(i)}
+              className={cn(
+                "rounded-lg border px-3 py-[7px] text-xs font-medium transition-colors",
+                i === activeFilter
+                  ? "border-transparent bg-[var(--es-neutral-900)] text-white"
+                  : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <div className="hidden flex-1 lg:block" />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" className="flex-1 lg:flex-none" onClick={async () => {
+            try {
+              const res = await fetch("/api/v1/payroll/employees/export");
+              if (!res.ok) throw new Error("Failed");
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a"); a.href = url; a.download = "employees.xlsx";
+              document.body.appendChild(a); a.click(); document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              toast.success(t.hr.exportSuccess);
+            } catch { toast.error(t.hr.exportFailed); }
+          }}>
+            <Download className="mr-1.5 size-3.5" /> {t.common.export}
+          </Button>
+          <Button variant="outline" size="sm" className="flex-1 lg:flex-none" onClick={() => setBulkOpen(true)}>
+            <Upload className="mr-1.5 size-3.5" /> {t.hr.bulkImport}
+          </Button>
+          <Button size="sm" className="flex-1 lg:flex-none" onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-1.5 size-3.5" /> {t.hr.addEmployee}
+          </Button>
+        </div>
       </div>
 
       {/* Error */}
@@ -135,76 +140,147 @@ export function EmployeeDirectory() {
         </div>
       )}
 
-      {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-        <div className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-          <span>{t.hr.code}</span>
-          <span>{t.onboarding.employeeName}</span>
-          <span>{t.hr.department}</span>
-          <span>{t.hr.role}</span>
-          <span>Manager</span>
-          <span>{t.profile.status}</span>
-          <span>{t.hr.start}</span>
-          <span />
-        </div>
+      <div className="space-y-2 md:hidden">
         {isLoading
           ? Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 items-center border-t border-[var(--es-neutral-100)] px-4 py-3">
-                <Skeleton className="h-4 w-16" />
-                <div className="space-y-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-40" />
+              <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="mt-2 h-3 w-40" />
+                <div className="mt-3 flex gap-2">
+                  <Skeleton className="h-5 w-16" />
+                  <Skeleton className="h-5 w-16" />
                 </div>
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-4" />
               </div>
             ))
           : items.map((p) => (
               <div
                 key={p.id}
-                className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-[13px]"
+                className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]"
               >
-                <span className="tabular-nums text-xs text-muted-foreground">
-                  {p.employeeCode}
-                </span>
-                <div>
-                  <div className="font-medium">{p.firstNameTh} {p.lastNameTh}</div>
-                  <div className="text-[11px] text-muted-foreground">{p.user?.email ?? "—"}</div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold">
+                      {p.firstNameTh} {p.lastNameTh}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {p.employeeCode} · {p.department?.name ?? "—"}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="-mr-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted" aria-label="Actions">
+                      <MoreHorizontal className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleResetPassword(p.id)}>
+                        <KeyRound className="mr-2 size-3.5" />
+                        {t.password.resetPasswordMenu}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-                <span>{p.department?.name ?? "—"}</span>
-                <RoleBadge role={p.roles?.[0] ?? "EMPLOYEE"} />
-                <span className="text-xs text-muted-foreground">
-                  {p.manager ? `${p.manager.firstNameTh} ${p.manager.lastNameTh}` : "—"}
-                </span>
-                <StatusPill tone={statusTone[p.employmentStatus] ?? "neutral"}>
-                  {p.employmentStatus}
-                </StatusPill>
-                <span className="tabular-nums text-xs text-muted-foreground">
-                  {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
-                </span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
-                    <MoreHorizontal className="size-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleResetPassword(p.id)}>
-                      <KeyRound className="mr-2 size-3.5" />
-                      {t.password.resetPasswordMenu}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <RoleBadge role={p.roles?.[0] ?? "EMPLOYEE"} />
+                  <StatusPill tone={statusTone[p.employmentStatus] ?? "neutral"}>
+                    {p.employmentStatus}
+                  </StatusPill>
+                </div>
+                <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Manager</dt>
+                    <dd className="truncate">{p.manager ? `${p.manager.firstNameTh} ${p.manager.lastNameTh}` : "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.start}</dt>
+                    <dd className="tabular-nums">
+                      {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                    </dd>
+                  </div>
+                  <div className="col-span-2 min-w-0">
+                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Email</dt>
+                    <dd className="truncate">{p.user?.email ?? "—"}</dd>
+                  </div>
+                </dl>
               </div>
             ))}
         {!isLoading && items.length === 0 && !error && (
-          <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card py-16 text-muted-foreground">
             <Users className="size-10 opacity-40" />
             <p className="text-sm">{t.hr.noEmployees}</p>
           </div>
         )}
+      </div>
+
+      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)] md:block">
+        <ScrollableTable minWidth={760}>
+            <div className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <span>{t.hr.code}</span>
+              <span>{t.onboarding.employeeName}</span>
+              <span>{t.hr.department}</span>
+              <span>{t.hr.role}</span>
+              <span>Manager</span>
+              <span>{t.profile.status}</span>
+              <span>{t.hr.start}</span>
+              <span />
+            </div>
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 items-center border-t border-[var(--es-neutral-100)] px-4 py-3">
+                    <Skeleton className="h-4 w-16" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-5 w-16" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-4" />
+                  </div>
+                ))
+              : items.map((p) => (
+                  <div
+                    key={p.id}
+                    className="grid grid-cols-[90px_1.2fr_1fr_140px_1fr_100px_90px_36px] gap-x-3 items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-[13px]"
+                  >
+                    <span className="tabular-nums text-xs text-muted-foreground">
+                      {p.employeeCode}
+                    </span>
+                    <div>
+                      <div className="font-medium">{p.firstNameTh} {p.lastNameTh}</div>
+                      <div className="text-[11px] text-muted-foreground">{p.user?.email ?? "—"}</div>
+                    </div>
+                    <span>{p.department?.name ?? "—"}</span>
+                    <RoleBadge role={p.roles?.[0] ?? "EMPLOYEE"} />
+                    <span className="text-xs text-muted-foreground">
+                      {p.manager ? `${p.manager.firstNameTh} ${p.manager.lastNameTh}` : "—"}
+                    </span>
+                    <StatusPill tone={statusTone[p.employmentStatus] ?? "neutral"}>
+                      {p.employmentStatus}
+                    </StatusPill>
+                    <span className="tabular-nums text-xs text-muted-foreground">
+                      {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                    </span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">
+                        <MoreHorizontal className="size-4" />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleResetPassword(p.id)}>
+                          <KeyRound className="mr-2 size-3.5" />
+                          {t.password.resetPasswordMenu}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                ))}
+            {!isLoading && items.length === 0 && !error && (
+              <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
+                <Users className="size-10 opacity-40" />
+                <p className="text-sm">{t.hr.noEmployees}</p>
+              </div>
+            )}
+        </ScrollableTable>
       </div>
 
       <EmployeeFormDialog
