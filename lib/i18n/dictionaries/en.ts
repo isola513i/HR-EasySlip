@@ -25,6 +25,7 @@ const en = {
     copied: "Copied",
     collapseSidebar: "Collapse sidebar",
     expandSidebar: "Expand sidebar",
+    goToDashboard: "Go to dashboard",
     savedSuccess: "Saved successfully",
     saveFailed: "Save failed",
     deletedSuccess: "Deleted successfully",

@@ -45,6 +45,7 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick, 
   const pathname = usePathname();
   const t = useT();
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+  const homeHref = items.find((item): item is NavItem => !isGroup(item))?.href ?? "/";
 
   return (
     <aside
@@ -60,7 +61,12 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick, 
         collapsed ? "justify-center px-0" : "gap-2.5 px-2",
       )}>
         {!collapsed && (
-          <>
+          <Link
+            href={homeHref}
+            onClick={onNavClick}
+            aria-label={t.common.goToDashboard}
+            className="-mx-1 flex min-w-0 items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
+          >
             <Image
               src="/favicons/apple-touch-icon.png"
               alt="EasySlip"
@@ -73,7 +79,7 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick, 
               <div className="truncate text-sm font-bold tracking-tight">{process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"}</div>
               <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">HR Portal</div>
             </div>
-          </>
+          </Link>
         )}
         {onToggleCollapsed && (
           <button

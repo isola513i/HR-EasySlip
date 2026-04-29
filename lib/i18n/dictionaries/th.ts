@@ -27,6 +27,7 @@ const th = {
     copied: "คัดลอกแล้ว",
     collapseSidebar: "ย่อแถบเมนู",
     expandSidebar: "ขยายแถบเมนู",
+    goToDashboard: "ไปหน้าหลัก",
     savedSuccess: "บันทึกเรียบร้อย",
     saveFailed: "บันทึกไม่สำเร็จ",
     deletedSuccess: "ลบเรียบร้อย",
