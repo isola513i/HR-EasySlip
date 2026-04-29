@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormField, FormFieldError, FormRoot } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 import { sendMagicLink, type SignInActionState } from "./actions";
@@ -15,16 +19,58 @@ interface Props {
   dict: Dictionary["signin"];
 }
 
+const REMEMBER_EMAIL_KEY = "easyslip:remember-email";
+
 export function SignInForm({ dict }: Props) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberEmail, setRememberEmail] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Magic link state
   const [magicLinkState, setMagicLinkState] = useState<SignInActionState>({ status: "idle" });
   const [isSendingMagicLink, setIsSendingMagicLink] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(REMEMBER_EMAIL_KEY);
+      if (stored) {
+        setEmail(stored);
+        setRememberEmail(true);
+      }
+    } catch {
+      // ignore storage access errors (private mode, etc.)
+    }
+  }, []);
+
+  const handleRememberEmailChange = (checked: boolean) => {
+    setRememberEmail(checked);
+    try {
+      if (!checked) {
+        window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
+      } else if (email) {
+        window.localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+      }
+    } catch {
+      // ignore storage access errors
+    }
+  };
+
+  const persistEmailIfRemembered = (value: string) => {
+    if (!rememberEmail) return;
+    try {
+      if (value) {
+        window.localStorage.setItem(REMEMBER_EMAIL_KEY, value);
+      } else {
+        window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
+      }
+    } catch {
+      // ignore storage access errors
+    }
+  };
 
   const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +91,16 @@ export function SignInForm({ dict }: Props) {
       if (!res.ok) {
         setError(data.error ?? dict.invalidCredentials);
         return;
+      }
+
+      try {
+        if (rememberEmail) {
+          window.localStorage.setItem(REMEMBER_EMAIL_KEY, email);
+        } else {
+          window.localStorage.removeItem(REMEMBER_EMAIL_KEY);
+        }
+      } catch {
+        // ignore storage access errors
       }
 
       if (data.data?.mustChangePassword) {
@@ -89,8 +145,8 @@ export function SignInForm({ dict }: Props) {
   return (
     <div className="space-y-5">
       {/* Password login form */}
-      <form onSubmit={handlePasswordLogin} className="space-y-4">
-        <div className="space-y-2">
+      <FormRoot onSubmit={handlePasswordLogin} className="space-y-4">
+        <FormField name="email">
           <Label htmlFor="email">{dict.emailLabel}</Label>
           <Input
             id="email"
@@ -101,36 +157,78 @@ export function SignInForm({ dict }: Props) {
             placeholder={dict.emailPlaceholder}
             disabled={isLoading}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setEmail(value);
+              persistEmailIfRemembered(value);
+            }}
           />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">{dict.passwordLabel}</Label>
-            <Link
-              href="/signin/forgot-password"
-              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+          <FormFieldError inputType="email" />
+        </FormField>
+        <FormField name="password">
+          <Label htmlFor="password">{dict.passwordLabel}</Label>
+          <div className="relative">
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              required
+              placeholder={dict.passwordPlaceholder}
+              disabled={isLoading}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              disabled={isLoading}
+              aria-label={showPassword ? dict.hidePassword : dict.showPassword}
+              aria-pressed={showPassword}
+              className={cn(
+                "absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground",
+                "hover:text-foreground transition-colors",
+                "focus-visible:outline-none focus-visible:text-foreground",
+                "disabled:pointer-events-none disabled:opacity-50",
+              )}
             >
-              {dict.forgotPassword}
-            </Link>
+              {showPassword ? (
+                <EyeOff className="size-4" aria-hidden="true" />
+              ) : (
+                <Eye className="size-4" aria-hidden="true" />
+              )}
+            </button>
           </div>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            placeholder={dict.passwordPlaceholder}
-            disabled={isLoading}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <FormFieldError />
+        </FormField>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="remember-email"
+              checked={rememberEmail}
+              onCheckedChange={(checked) => handleRememberEmailChange(checked === true)}
+              disabled={isLoading}
+            />
+            <Label
+              htmlFor="remember-email"
+              className="text-sm font-normal text-muted-foreground cursor-pointer select-none"
+            >
+              {dict.rememberEmail}
+            </Label>
+          </div>
+          <Link
+            href="/signin/forgot-password"
+            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+          >
+            {dict.forgotPassword}
+          </Link>
         </div>
         {error && <p className="text-destructive text-sm">{error}</p>}
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? dict.submitting : dict.submitButton}
         </Button>
-      </form>
+      </FormRoot>
 
       {/* Divider */}
       <div className="relative">
