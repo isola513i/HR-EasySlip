@@ -1,171 +1,202 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import {
+  AlertTriangle,
+  Clock,
+  Eye,
+  FileText,
+  ListChecks,
+  Lock,
+  Mail,
+  Phone,
+  RefreshCw,
+  Shield,
+  ShieldCheck,
+  UserCheck,
+} from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { getDict } from "@/lib/i18n/get-dict";
+import { TocSidebar } from "./_components/toc-sidebar";
+import {
+  ControllerSection,
+  ListSection,
+  ProsesPurposesSection,
+  ProseSection,
+  type SectionMeta,
+} from "./_components/sections";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.privacy.pageTitle };
+}
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { t } = await getDict();
+  const p = t.privacy;
+  const s = p.sections;
+
+  const sections: SectionMeta[] = [
+    { id: "controller", title: s.controller.title, icon: Shield },
+    { id: "collected", title: s.collected.title, icon: FileText },
+    { id: "purposes", title: s.purposes.title, icon: ListChecks },
+    { id: "disclosure", title: s.disclosure.title, icon: Eye },
+    { id: "retention", title: s.retention.title, icon: Clock },
+    { id: "rights", title: s.rights.title, icon: UserCheck },
+    { id: "security", title: s.security.title, icon: Lock },
+    { id: "breach", title: s.breach.title, icon: AlertTriangle },
+    { id: "changes", title: s.changes.title, icon: RefreshCw },
+  ];
+
   return (
-    <main className="min-h-dvh bg-muted/30 px-6 py-12">
-      <article className="mx-auto max-w-2xl space-y-8">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            นโยบายความเป็นส่วนตัว
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Privacy Policy — EasySlip HR Internal System
-          </p>
-          <p className="text-muted-foreground text-xs">
-            มีผลบังคับใช้ตั้งแต่ มกราคม 2567 / Effective January 2024
-          </p>
-        </header>
+    <main className="min-h-dvh bg-muted/30">
+      {/* Hero */}
+      <header className="es-brand-gradient relative overflow-hidden">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.12), transparent 60%)",
+          }}
+        />
+        <div className="relative mx-auto max-w-6xl px-6 py-14 text-white">
+          <div className="flex items-start gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
+              <ShieldCheck className="size-6" />
+            </span>
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">{p.heading}</h1>
+              <p className="mt-1 text-white/80">{p.subheading}</p>
+              <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium ring-1 ring-white/20">
+                {p.effectiveDate}
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        <Section title="1. ผู้ควบคุมข้อมูลส่วนบุคคล (Data Controller)">
-          <p>บริษัท อีซี่สลิป จำกัด (EasySlip Co., Ltd.)</p>
-          <p>629 หมู่ที่ 6 ตำบลบ้านเป็ด อำเภอเมืองขอนแก่น จ.ขอนแก่น 40000</p>
-          <p>
-            Email:{" "}
-            <a href="mailto:contact@easyslip.com" className="text-primary underline underline-offset-4">
-              contact@easyslip.com
-            </a>{" "}
-            | Tel: 02-114-8806
-          </p>
-          <p className="pt-2 font-medium">
-            เจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล (DPO)
-          </p>
-          <p>ณัฐวุฒิ ภูบุญลาภ</p>
-          <p>
-            Email:{" "}
-            <a href="mailto:nattawut@easyslip.com" className="text-primary underline underline-offset-4">
-              nattawut@easyslip.com
-            </a>{" "}
-            | Tel: 090-270-1908
-          </p>
-        </Section>
+      {/* Body */}
+      <div className="mx-auto max-w-6xl px-6 py-12">
+        <div className="grid gap-10 lg:grid-cols-[220px_1fr] lg:gap-12">
+          <TocSidebar
+            sections={sections.map(({ id, title }) => ({ id, title }))}
+            label={p.onThisPage}
+          />
 
-        <Section title="2. ข้อมูลที่เก็บรวบรวม (Data We Collect)">
-          <p>
-            ระบบ EasySlip HR เก็บรวบรวมข้อมูลส่วนบุคคลของพนักงานเพื่อการบริหารทรัพยากรบุคคลภายในบริษัท:
-          </p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>ข้อมูลส่วนตัว: ชื่อ-นามสกุล, รหัสพนักงาน, ตำแหน่ง, แผนก</li>
-            <li>ข้อมูลติดต่อ: อีเมล, เบอร์โทรศัพท์</li>
-            <li>ข้อมูลการจ้างงาน: วันเริ่มงาน, สถานะการจ้าง, สายบังคับบัญชา</li>
-            <li>ข้อมูลการลงเวลา: เวลาเข้า-ออกงาน, พิกัด GPS (เฉพาะ WFH), IP address</li>
-            <li>ข้อมูลการลา: ประเภทการลา, วันที่ลา, เหตุผล, ใบรับรองแพทย์</li>
-            <li>ข้อมูลทางเทคนิค: Device ID, User Agent, Session tokens</li>
-          </ul>
-        </Section>
+          <div className="space-y-6">
+            <ControllerSection meta={sections[0]} t={s.controller} />
+            <ListSection
+              meta={sections[1]}
+              title={s.collected.title}
+              intro={s.collected.intro}
+              items={[
+                s.collected.item1,
+                s.collected.item2,
+                s.collected.item3,
+                s.collected.item4,
+                s.collected.item5,
+                s.collected.item6,
+              ]}
+            />
+            <ProsesPurposesSection meta={sections[2]} t={s.purposes} />
+            <ListSection
+              meta={sections[3]}
+              title={s.disclosure.title}
+              intro={s.disclosure.intro}
+              items={[
+                s.disclosure.item1,
+                s.disclosure.item2,
+                s.disclosure.item3,
+                s.disclosure.item4,
+              ]}
+            />
+            <ProseSection meta={sections[4]} title={s.retention.title}>
+              <p>{s.retention.body}</p>
+            </ProseSection>
+            <ListSection
+              meta={sections[5]}
+              title={s.rights.title}
+              intro={s.rights.intro}
+              items={[
+                s.rights.item1,
+                s.rights.item2,
+                s.rights.item3,
+                s.rights.item4,
+                s.rights.item5,
+                s.rights.item6,
+                s.rights.item7,
+                s.rights.item8,
+              ]}
+              outro={s.rights.contact}
+            />
+            <ListSection
+              meta={sections[6]}
+              title={s.security.title}
+              items={[
+                s.security.item1,
+                s.security.item2,
+                s.security.item3,
+                s.security.item4,
+                s.security.item5,
+              ]}
+            />
+            <ProseSection meta={sections[7]} title={s.breach.title}>
+              <p>{s.breach.body}</p>
+            </ProseSection>
+            <ProseSection meta={sections[8]} title={s.changes.title}>
+              <p>{s.changes.body}</p>
+            </ProseSection>
 
-        <Section title="3. วัตถุประสงค์ในการประมวลผล (Processing Purposes)">
-          <p className="font-medium">ก. การปฏิบัติตามสัญญาจ้าง</p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>บริหารจัดการเวลาทำงานและการลางาน</li>
-            <li>ส่งออกข้อมูลไปยังระบบ Empeo เพื่อคำนวณเงินเดือน</li>
-            <li>จัดทำรายงานสรุปสำหรับฝ่ายบุคคล</li>
-          </ul>
-          <p className="pt-2 font-medium">ข. ประโยชน์โดยชอบด้วยกฎหมาย</p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>บันทึก Audit Log เพื่อความปลอดภัยของข้อมูล</li>
-            <li>วิเคราะห์ข้อมูลเพื่อปรับปรุงระบบ</li>
-          </ul>
-          <p className="pt-2 font-medium">ค. การปฏิบัติตามกฎหมาย</p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>พระราชบัญญัติคุ้มครองแรงงาน</li>
-            <li>พระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA)</li>
-          </ul>
-        </Section>
-
-        <Section title="4. การเปิดเผยข้อมูล (Data Disclosure)">
-          <p>ข้อมูลส่วนบุคคลอาจถูกเปิดเผยแก่:</p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>พนักงาน HR ที่ได้รับอนุญาต (HR_AUTHORIZED, HRMG) และผู้บริหาร (CEO, CTO, COO)</li>
-            <li>ผู้จัดการสายตรง (เฉพาะข้อมูลผู้ใต้บังคับบัญชา)</li>
-            <li>ผู้ให้บริการระบบ Cloud (NeonDB, Vercel, Resend)</li>
-            <li>หน่วยงานราชการตามที่กฎหมายกำหนด</li>
-          </ul>
-        </Section>
-
-        <Section title="5. ระยะเวลาการเก็บรักษา (Data Retention)">
-          <p>
-            เราเก็บรักษาข้อมูลตลอดระยะเวลาที่ท่านเป็นพนักงานของบริษัท
-            และเป็นระยะเวลาที่จำเป็นตามกฎหมายหลังจากพ้นสภาพการเป็นพนักงาน
-            เมื่อพ้นระยะเวลาดังกล่าว ข้อมูลจะถูกลบหรือทำให้ไม่สามารถระบุตัวบุคคลได้
-          </p>
-        </Section>
-
-        <Section title="6. สิทธิของเจ้าของข้อมูล (Your Rights)">
-          <p>ภายใต้ พ.ร.บ. คุ้มครองข้อมูลส่วนบุคคล (PDPA) ท่านมีสิทธิ:</p>
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>สิทธิในการเพิกถอนความยินยอม</li>
-            <li>สิทธิในการเข้าถึงและขอสำเนาข้อมูล</li>
-            <li>สิทธิในการแก้ไขข้อมูลให้ถูกต้อง</li>
-            <li>สิทธิในการลบข้อมูล</li>
-            <li>สิทธิในการคัดค้านการประมวลผล</li>
-            <li>สิทธิในการโอนย้ายข้อมูล</li>
-            <li>สิทธิในการระงับการประมวลผล</li>
-            <li>สิทธิในการร้องเรียนต่อสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคล</li>
-          </ul>
-          <p className="pt-2">
-            หากต้องการใช้สิทธิ กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล (DPO) ตามข้อ 1
-          </p>
-        </Section>
-
-        <Section title="7. การรักษาความปลอดภัย (Security Measures)">
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>การยืนยันตัวตนด้วย Magic Link (Passwordless)</li>
-            <li>การควบคุมสิทธิ์ตามบทบาท (RBAC) — ข้อมูลเงินเดือนจำกัดเฉพาะผู้มีสิทธิ์</li>
-            <li>Audit Log บันทึกทุกการเปลี่ยนแปลงข้อมูลสำคัญ</li>
-            <li>การเข้ารหัสข้อมูลระหว่างการส่ง (HTTPS/TLS)</li>
-            <li>Session timeout อัตโนมัติเมื่อไม่ใช้งาน</li>
-          </ul>
-        </Section>
-
-        <Section title="8. การแจ้งเหตุละเมิด (Breach Notification)">
-          <p>
-            ในกรณีที่เกิดการละเมิดข้อมูลส่วนบุคคล
-            บริษัทจะแจ้งสำนักงานคณะกรรมการคุ้มครองข้อมูลส่วนบุคคลภายใน 72 ชั่วโมง
-            และแจ้งเจ้าของข้อมูลโดยตรงหากมีความเสี่ยงสูง
-          </p>
-        </Section>
-
-        <Section title="9. การเปลี่ยนแปลงนโยบาย (Policy Changes)">
-          <p>
-            บริษัทสงวนสิทธิ์ในการเปลี่ยนแปลงนโยบายนี้
-            โดยจะแจ้งให้ทราบผ่านระบบ EasySlip HR
-          </p>
-        </Section>
-
-        <footer className="border-t pt-6">
-          <Link
-            href="/"
-            className={buttonVariants({
-              variant: "outline",
-            })}
-          >
-            กลับหน้าหลัก / Back to Home
-          </Link>
-        </footer>
-      </article>
+            <ContactCard
+              heading={p.contactHeading}
+              cta={p.contactCta}
+              dpoLabel={s.controller.dpoLabel}
+              dpoName={s.controller.dpoName}
+            />
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
 
-function Section({
-  title,
-  children,
+function ContactCard({
+  heading,
+  cta,
+  dpoLabel,
+  dpoName,
 }: {
-  title: string;
-  children: React.ReactNode;
+  heading: string;
+  cta: string;
+  dpoLabel: string;
+  dpoName: string;
 }) {
   return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="text-muted-foreground space-y-2 text-sm leading-relaxed">
-        {children}
+    <div className="rounded-2xl border bg-card p-6 ring-1 ring-black/5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Mail className="size-5" />
+          </span>
+          <div>
+            <p className="font-semibold">{heading}</p>
+            <p className="text-sm text-foreground/75">
+              {dpoLabel}: {dpoName}
+            </p>
+            <a
+              href="tel:+66902701908"
+              className="mt-1 inline-flex items-center gap-1.5 text-xs text-foreground/70 hover:text-primary"
+            >
+              <Phone className="size-3" /> 090-270-1908
+            </a>
+          </div>
+        </div>
+        <a
+          href="mailto:nattawut@easyslip.com"
+          className={buttonVariants({ className: "shrink-0" })}
+        >
+          {cta}
+        </a>
       </div>
-    </section>
+    </div>
   );
 }

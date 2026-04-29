@@ -12,25 +12,29 @@ export function LocaleSwitcher() {
     <div
       role="group"
       aria-label="Language"
-      className="inline-flex items-center rounded-full border border-border bg-muted/40 p-0.5 text-[11px] font-medium"
+      className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide"
     >
-      {LOCALES.map((l) => {
+      {LOCALES.map((l, i) => {
         const active = locale === l;
         return (
-          <button
-            key={l}
-            type="button"
-            onClick={() => setLocale(l)}
-            aria-pressed={active}
-            className={cn(
-              "cursor-pointer rounded-full px-2.5 py-1 uppercase tracking-wide transition-colors",
-              active
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {l}
-          </button>
+          <span key={l} className="inline-flex items-center gap-2">
+            {i > 0 ? (
+              <span aria-hidden className="opacity-30">
+                |
+              </span>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => setLocale(l)}
+              aria-pressed={active}
+              className={cn(
+                "cursor-pointer uppercase transition-opacity",
+                active ? "opacity-100" : "opacity-50 hover:opacity-100",
+              )}
+            >
+              {l}
+            </button>
+          </span>
         );
       })}
     </div>

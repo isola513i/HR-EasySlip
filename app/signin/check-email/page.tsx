@@ -1,46 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
-import { getLocale } from "@/lib/i18n/get-locale";
-import { getDictionary } from "@/lib/i18n/dictionaries";
+import { getDict } from "@/lib/i18n/get-dict";
+import { AuthLayout } from "@/components/shared/auth-layout";
+import { getInboxProvider } from "@/lib/email/inbox-providers";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getLocale();
-  const t = getDictionary(locale);
+  const { t } = await getDict();
   return { title: t.checkEmail.pageTitle };
 }
 
-export default async function CheckEmailPage() {
-  const locale = await getLocale();
-  const t = getDictionary(locale);
+interface Props {
+  searchParams: Promise<{ email?: string }>;
+}
+
+export default async function CheckEmailPage({ searchParams }: Props) {
+  const [{ email }, { t }] = await Promise.all([searchParams, getDict()]);
+  const provider = email ? getInboxProvider(email) : null;
 
   return (
-    <main className="min-h-dvh grid place-items-center bg-muted/30 px-6 py-12">
-      <div className="w-full max-w-sm space-y-6 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {t.checkEmail.heading}
-        </h1>
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          {t.checkEmail.instruction}
-        </p>
-        <div className="space-y-2 text-sm">
-          <p className="text-muted-foreground">{t.checkEmail.notFound}</p>
-          <ul className="text-muted-foreground list-inside list-disc space-y-1 text-left">
-            <li>{t.checkEmail.checkSpam}</li>
-            <li>{t.checkEmail.waitMoment}</li>
-            <li>{t.checkEmail.tryAgain}</li>
-          </ul>
-        </div>
+    <AuthLayout
+      heading={t.checkEmail.heading}
+      subtitle={t.checkEmail.instruction}
+      marketingHeading={t.signin.marketingHeading}
+      marketingTagline={t.signin.marketingTagline}
+      copyright={t.signin.copyright}
+      privacyPolicy={t.signin.privacyPolicy}
+    >
+      <div className="space-y-3 rounded-lg border bg-card p-4 text-sm">
+        <p className="font-medium">{t.checkEmail.notFound}</p>
+        <ul className="list-inside list-disc space-y-1 text-muted-foreground">
+          <li>{t.checkEmail.checkSpam}</li>
+          <li>{t.checkEmail.waitMoment}</li>
+          <li>{t.checkEmail.tryAgain}</li>
+        </ul>
+      </div>
+
+      <div className="flex gap-3">
         <Link
           href="/signin"
           className={buttonVariants({
             variant: "outline",
-            className: "w-full",
+            className: "h-12 flex-1 text-base md:h-12",
           })}
         >
           {t.checkEmail.backToSignIn}
         </Link>
+        {provider ? (
+          <a
+            href={provider.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({
+              className: "h-12 flex-1 text-base md:h-12",
+            })}
+          >
+            {t.checkEmail.openInbox.replace("{provider}", provider.name)}
+          </a>
+        ) : null}
       </div>
-    </main>
+    </AuthLayout>
   );
 }

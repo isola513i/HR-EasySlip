@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -122,25 +122,15 @@ export function SignInForm({ dict }: Props) {
     const formData = new FormData();
     formData.set("email", email);
     const result = await sendMagicLink({ status: "idle" }, formData);
+
+    if (result.status === "sent") {
+      router.push(`/signin/check-email?email=${encodeURIComponent(email)}`);
+      return;
+    }
+
     setMagicLinkState(result);
     setIsSendingMagicLink(false);
   };
-
-  if (magicLinkState.status === "sent") {
-    return (
-      <div className="space-y-3 text-sm">
-        <p>
-          {dict.magicLinkSent} <strong>{magicLinkState.email}</strong>
-        </p>
-        <Link
-          href="/signin/check-email"
-          className="text-primary underline underline-offset-4"
-        >
-          {dict.moreDetails}
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-5">
@@ -148,26 +138,37 @@ export function SignInForm({ dict }: Props) {
       <FormRoot onSubmit={handlePasswordLogin} className="space-y-4">
         <FormField name="email">
           <Label htmlFor="email">{dict.emailLabel}</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            placeholder={dict.emailPlaceholder}
-            disabled={isLoading}
-            value={email}
-            onChange={(e) => {
-              const value = e.target.value;
-              setEmail(value);
-              persistEmailIfRemembered(value);
-            }}
-          />
+          <div className="relative">
+            <Mail
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground"
+            />
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              required
+              placeholder={dict.emailPlaceholder}
+              disabled={isLoading}
+              value={email}
+              onChange={(e) => {
+                const value = e.target.value;
+                setEmail(value);
+                persistEmailIfRemembered(value);
+              }}
+              className="h-12 pl-11 md:h-12 md:pl-11"
+            />
+          </div>
           <FormFieldError inputType="email" />
         </FormField>
         <FormField name="password">
           <Label htmlFor="password">{dict.passwordLabel}</Label>
           <div className="relative">
+            <KeyRound
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground"
+            />
             <Input
               id="password"
               name="password"
@@ -178,7 +179,7 @@ export function SignInForm({ dict }: Props) {
               disabled={isLoading}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pr-10"
+              className="h-12 pl-11 pr-11 md:h-12 md:pl-11 md:pr-11"
             />
             <button
               type="button"
@@ -187,7 +188,7 @@ export function SignInForm({ dict }: Props) {
               aria-label={showPassword ? dict.hidePassword : dict.showPassword}
               aria-pressed={showPassword}
               className={cn(
-                "absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground",
+                "absolute inset-y-0 right-0 flex cursor-pointer items-center px-3 text-muted-foreground",
                 "hover:text-foreground transition-colors",
                 "focus-visible:outline-none focus-visible:text-foreground",
                 "disabled:pointer-events-none disabled:opacity-50",
@@ -225,7 +226,11 @@ export function SignInForm({ dict }: Props) {
           </Link>
         </div>
         {error && <p className="text-destructive text-sm">{error}</p>}
-        <Button type="submit" className="w-full" disabled={isLoading}>
+        <Button
+          type="submit"
+          className="h-12 w-full text-base md:h-12"
+          disabled={isLoading}
+        >
           {isLoading ? dict.submitting : dict.submitButton}
         </Button>
       </FormRoot>
@@ -236,7 +241,7 @@ export function SignInForm({ dict }: Props) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-2 text-muted-foreground">
+          <span className="bg-background px-2 text-muted-foreground">
             {dict.orMagicLink}
           </span>
         </div>
@@ -246,7 +251,7 @@ export function SignInForm({ dict }: Props) {
       <Button
         type="button"
         variant="outline"
-        className="w-full"
+        className="h-12 w-full text-base md:h-12"
         disabled={isSendingMagicLink || !email}
         onClick={handleMagicLink}
       >
