@@ -29,7 +29,7 @@ export function AdminShell({ navItems, pageTitles, defaultTitle, user, children 
   return (
     <div className="flex min-h-dvh bg-background">
       {/* Desktop sidebar */}
-      <div className="hidden lg:block">
+      <div className="sticky top-0 hidden h-dvh self-start lg:block">
         <AdminSidebar {...sidebarProps} onNavClick={() => {}} />
       </div>
 

@@ -1,20 +1,38 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { useLocale } from "@/hooks/use-locale";
+import { cn } from "@/lib/utils";
+
+const LOCALES = ["th", "en"] as const;
 
 export function LocaleSwitcher() {
   const { locale, setLocale } = useLocale();
-  const next = locale === "th" ? "en" : "th";
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => setLocale(next)}
-      className="font-mono text-xs"
+    <div
+      role="group"
+      aria-label="Language"
+      className="inline-flex items-center rounded-full border border-border bg-muted/40 p-0.5 text-[11px] font-medium"
     >
-      {locale === "th" ? "EN" : "TH"}
-    </Button>
+      {LOCALES.map((l) => {
+        const active = locale === l;
+        return (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLocale(l)}
+            aria-pressed={active}
+            className={cn(
+              "cursor-pointer rounded-full px-2.5 py-1 uppercase tracking-wide transition-colors",
+              active
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {l}
+          </button>
+        );
+      })}
+    </div>
   );
 }

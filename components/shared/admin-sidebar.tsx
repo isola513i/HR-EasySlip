@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { ChevronsUpDown, LogOut, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { StatusPill } from "@/components/shared/status-pill";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useT } from "@/lib/i18n/locale-context";
 
 export interface NavItem {
   key: string;
@@ -32,6 +40,7 @@ function isGroup(item: NavItem | NavGroup): item is NavGroup {
 
 export function AdminSidebar({ items, role, userName, userInitials, onNavClick }: AdminSidebarProps) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <aside className="flex h-full w-[var(--es-sidebar-width)] shrink-0 flex-col gap-1 border-r border-border bg-card px-3 py-4">
@@ -60,13 +69,41 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick }
         );
       })}
 
-      <div className="mt-auto flex items-center gap-2.5 border-t border-[var(--es-neutral-100)] px-2 pt-3">
-        <div className="es-brand-gradient grid size-8 shrink-0 place-items-center rounded-full text-xs font-bold text-white">{userInitials}</div>
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-xs font-semibold">{userName}</div>
-          <RoleBadge role={role} />
-        </div>
-      </div>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className={cn(
+            "group/user mt-auto flex w-full cursor-pointer items-center gap-2 rounded-md p-1.5 text-left transition-colors",
+            "hover:bg-muted/60 data-popup-open:bg-muted/60",
+            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
+          )}
+          aria-label={t.common.signOut}
+        >
+          <div className="es-brand-gradient grid size-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-white">{userInitials}</div>
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate text-xs font-medium">{userName}</div>
+            <div className="truncate text-[10px] text-muted-foreground">{role}</div>
+          </div>
+          <ChevronsUpDown
+            className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover/user:text-muted-foreground"
+            aria-hidden="true"
+          />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          side="top"
+          sideOffset={6}
+          className="min-w-[180px] p-1"
+        >
+          <DropdownMenuItem
+            variant="destructive"
+            onClick={() => signOut({ callbackUrl: "/signin" })}
+            className="cursor-pointer gap-2 px-2 py-1.5 text-[13px] focus:bg-destructive/5 dark:focus:bg-destructive/15"
+          >
+            <LogOut className="size-4" />
+            {t.common.signOut}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </aside>
   );
 }
