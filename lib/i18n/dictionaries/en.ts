@@ -36,6 +36,17 @@ const en = {
   metadata: {
     description: "EasySlip HR — Attendance, Leave & Approval Management System",
   },
+  errorPage: {
+    title: "Something went wrong",
+    fallbackMessage: "An unexpected error occurred.",
+    tryAgain: "Try again",
+    reloadPage: "Reload page",
+    hmrTitle: "Dev hot-reload glitch",
+    hmrMessage: "A module was swapped while the page was running. Reloading will fix it — your changes are safe.",
+    hmrAutoReload: "Reloading in {seconds}s…",
+    appErrorTitle: "Application Error",
+    criticalMessage: "A critical error occurred.",
+  },
   validation: {
     valueMissing: "This field is required.",
     typeMismatch: "Please enter a valid value.",

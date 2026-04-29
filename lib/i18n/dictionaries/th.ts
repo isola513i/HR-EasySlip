@@ -38,6 +38,17 @@ const th = {
   metadata: {
     description: "ระบบบริหารทรัพยากรบุคคล EasySlip — ลงเวลา ลางาน อนุมัติ",
   },
+  errorPage: {
+    title: "เกิดข้อผิดพลาด",
+    fallbackMessage: "เกิดข้อผิดพลาดที่ไม่คาดคิด",
+    tryAgain: "ลองใหม่",
+    reloadPage: "รีโหลดหน้า",
+    hmrTitle: "Hot-reload สะดุด (Dev)",
+    hmrMessage: "โมดูลถูกอัปเดตขณะหน้ายังเปิดอยู่ กดรีโหลดเพื่อแก้ไข ข้อมูลของคุณยังปลอดภัย",
+    hmrAutoReload: "จะรีโหลดใน {seconds} วิ…",
+    appErrorTitle: "Application Error",
+    criticalMessage: "เกิดข้อผิดพลาดร้ายแรง",
+  },
   validation: {
     valueMissing: "กรุณากรอกข้อมูลในฟิลด์นี้",
     typeMismatch: "กรุณากรอกข้อมูลให้ถูกต้อง",
