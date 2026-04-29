@@ -39,9 +39,13 @@ export function NotificationBell() {
 
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className="relative rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted active:scale-90 active:transition-transform active:duration-100" aria-label="Notifications">
-        <Bell className="size-5" strokeWidth={1.75} />
-        <span className="pointer-events-none absolute right-0.5 top-0.5 grid place-items-center">
+      <button
+        onClick={() => setOpen(!open)}
+        className="relative grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        aria-label="Notifications"
+      >
+        <Bell className="size-[18px]" strokeWidth={1.75} />
+        <span className="pointer-events-none absolute right-1 top-1 grid place-items-center">
           <span aria-hidden="true" className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
           <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
         </span>

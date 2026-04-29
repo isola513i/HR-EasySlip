@@ -1,7 +1,7 @@
-import { AttendanceOverview } from "@/components/hr/attendance-overview";
+import { AttendanceScreen } from "@/components/hr/attendance/attendance-screen";
 
 export const metadata = { title: "Attendance — EasySlip HR" };
 
 export default function AttendancePage() {
-  return <AttendanceOverview />;
+  return <AttendanceScreen />;
 }

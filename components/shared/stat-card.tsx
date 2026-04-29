@@ -1,25 +1,47 @@
+import type { LucideIcon } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 
 type Tone = "success" | "warn" | "error" | "info" | "neutral" | "accent";
 
+const ICON_BG: Record<Tone, string> = {
+  success: "bg-[var(--es-success-50)] text-[var(--es-success-600)]",
+  warn: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]",
+  error: "bg-[var(--es-error-50)] text-[var(--es-error-500)]",
+  info: "bg-[var(--es-info-50)] text-[var(--es-info-500)]",
+  neutral: "bg-muted text-muted-foreground",
+  accent: "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]",
+};
+
 interface StatCardProps {
   label: string;
   value: string;
-  sub: string;
+  sub?: string;
   tone: Tone;
+  icon?: LucideIcon;
 }
 
-export function StatCard({ label, value, sub, tone }: StatCardProps) {
+export function StatCard({ label, value, sub, tone, icon: Icon }: StatCardProps) {
   return (
     <div className="rounded-xl border border-border bg-card p-[18px] shadow-[var(--es-shadow-sm)]">
-      <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-        {label}
-      </div>
-      <div className="tabular-nums mt-1 text-[28px] font-bold leading-tight tracking-tight">
-        {value}
-      </div>
-      <div className="mt-1.5">
-        <StatusPill tone={tone}>{sub}</StatusPill>
+      <div className="flex items-start gap-3">
+        {Icon && (
+          <div className={`grid size-10 shrink-0 place-items-center rounded-xl ${ICON_BG[tone]}`}>
+            <Icon className="size-5" />
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {label}
+          </div>
+          <div className="tabular-nums mt-1 text-[28px] font-bold leading-tight tracking-tight">
+            {value}
+          </div>
+          {sub && (
+            <div className="mt-1.5">
+              <StatusPill tone={tone}>{sub}</StatusPill>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

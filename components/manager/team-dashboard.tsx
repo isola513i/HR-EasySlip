@@ -9,6 +9,7 @@ import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
 import { todayISO, formatTime } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
+import { LATE_THRESHOLD_HOUR, LATE_THRESHOLD_MINUTE } from "@/lib/attendance/constants";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -47,9 +48,6 @@ const statusTones = {
   late: "warn" as const,
   absent: "error" as const,
 };
-
-const LATE_THRESHOLD_HOUR = 9;
-const LATE_THRESHOLD_MINUTE = 15;
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 

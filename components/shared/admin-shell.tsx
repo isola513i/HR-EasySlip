@@ -1,27 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import {
   AdminSidebar,
-  AdminTopbar,
   type NavItem,
   type NavGroup,
 } from "@/components/shared/admin-sidebar";
+import { AdminHeader } from "@/components/shared/admin-header";
 
 const SIDEBAR_COLLAPSED_KEY = "es-sidebar-collapsed";
 
 interface AdminShellProps {
   navItems: (NavItem | NavGroup)[];
-  pageTitles: Record<string, string>;
   defaultTitle: string;
   user: { name: string; role: string };
+  inboxHref?: string;
   children: React.ReactNode;
 }
 
-export function AdminShell({ navItems, pageTitles, defaultTitle, user, children }: AdminShellProps) {
-  const pathname = usePathname();
+export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }: AdminShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -36,20 +34,24 @@ export function AdminShell({ navItems, pageTitles, defaultTitle, user, children 
       try {
         window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
       } catch {
-        // localStorage unavailable (private mode etc.) — non-critical
+        // localStorage unavailable (private mode etc.)
       }
       return next;
     });
   };
 
-  const title = pageTitles[pathname] ?? defaultTitle;
-  const initials = user.name.slice(0, 2) || defaultTitle.slice(0, 2);
+  const userName = user.name || defaultTitle;
+  const initials = (user.name || defaultTitle).slice(0, 2);
 
-  const sidebarProps = { items: navItems, role: user.role, userName: user.name || defaultTitle, userInitials: initials };
+  const sidebarProps = {
+    items: navItems,
+    role: user.role,
+    userName,
+    userInitials: initials,
+  };
 
   return (
     <div className="flex min-h-dvh bg-background">
-      {/* Desktop sidebar */}
       <div className="sticky top-0 hidden h-dvh self-start lg:block">
         <AdminSidebar
           {...sidebarProps}
@@ -59,7 +61,6 @@ export function AdminShell({ navItems, pageTitles, defaultTitle, user, children 
         />
       </div>
 
-      {/* Mobile sidebar drawer */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="w-[min(85vw,260px)] p-0">
           <AdminSidebar {...sidebarProps} onNavClick={() => setMobileOpen(false)} />
@@ -67,10 +68,10 @@ export function AdminShell({ navItems, pageTitles, defaultTitle, user, children 
       </Sheet>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <AdminTopbar
-          title={title}
-          role={user.role}
+        <AdminHeader
+          user={{ name: userName, role: user.role, initials }}
           onMenuClick={() => setMobileOpen(true)}
+          inboxHref={inboxHref}
         />
         <main className="flex-1 overflow-auto overscroll-contain p-4 lg:p-6">{children}</main>
       </div>

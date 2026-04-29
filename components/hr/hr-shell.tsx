@@ -46,27 +46,12 @@ export function HRShell({ user, children }: Props) {
     { key: "settings", href: "/hr/settings", icon: Settings, label: nav.settings },
   ];
 
-  const pageTitles: Record<string, string> = {
-    "/hr/overview": nav.overview,
-    "/hr/employees": nav.employees,
-    "/hr/onboarding": nav.onboarding,
-    "/hr/leave-calendar": nav.leaveCalendar,
-    "/hr/attendance": nav.attendance,
-    "/hr/overtime": nav.overtime,
-    "/hr/holidays": nav.holidays,
-    "/hr/payroll": nav.payroll,
-    "/hr/reports": nav.reports,
-    "/hr/audit": nav.audit,
-    "/hr/pdpa": nav.pdpa,
-    "/hr/settings": nav.settings,
-  };
-
   return (
     <AdminShell
       navItems={navItems}
-      pageTitles={pageTitles}
       defaultTitle={nav.defaultTitle}
       user={user}
+      inboxHref="/hr/audit"
     >
       {children}
     </AdminShell>

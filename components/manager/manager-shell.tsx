@@ -28,19 +28,12 @@ export function ManagerShell({ user, children }: Props) {
     { key: "settings", href: "/manager/settings", icon: Settings, label: nav.settings },
   ];
 
-  const pageTitles: Record<string, string> = {
-    "/manager/inbox": nav.inbox,
-    "/manager/team": nav.team,
-    "/manager/calendar": nav.calendar,
-    "/manager/settings": nav.settings,
-  };
-
   return (
     <AdminShell
       navItems={navItems}
-      pageTitles={pageTitles}
       defaultTitle={nav.defaultTitle}
       user={user}
+      inboxHref="/manager/inbox"
     >
       {children}
     </AdminShell>
