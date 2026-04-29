@@ -180,7 +180,7 @@
   --es-dur-slow: 280ms;
 
   /* Layout */
-  --es-sidebar-width: 240px;
+  --es-sidebar-width: 208px;
   --es-topbar-height: 56px;
   --es-nav-height-mobile: 80px;
 }
@@ -303,6 +303,12 @@
   }
   button, a {
     -webkit-tap-highlight-color: transparent;
+  }
+  /* Tailwind v4 dropped the implicit `button { cursor: pointer }` from
+     preflight; restore it project-wide so interactive elements feel clickable. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
 }
 

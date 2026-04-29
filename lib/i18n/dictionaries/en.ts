@@ -23,6 +23,8 @@ const en = {
     days: "days",
     close: "Close",
     copied: "Copied",
+    collapseSidebar: "Collapse sidebar",
+    expandSidebar: "Expand sidebar",
     savedSuccess: "Saved successfully",
     saveFailed: "Save failed",
     deletedSuccess: "Deleted successfully",

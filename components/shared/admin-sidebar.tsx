@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ChevronsUpDown, LogOut, Menu } from "lucide-react";
+import { ChevronsUpDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { RoleBadge } from "@/components/shared/role-badge";
@@ -32,39 +33,99 @@ interface AdminSidebarProps {
   userName: string;
   userInitials: string;
   onNavClick?: () => void;
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 }
 
 function isGroup(item: NavItem | NavGroup): item is NavGroup {
   return "group" in item;
 }
 
-export function AdminSidebar({ items, role, userName, userInitials, onNavClick }: AdminSidebarProps) {
+export function AdminSidebar({ items, role, userName, userInitials, onNavClick, collapsed = false, onToggleCollapsed }: AdminSidebarProps) {
   const pathname = usePathname();
   const t = useT();
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
 
   return (
-    <aside className="flex h-full w-[var(--es-sidebar-width)] shrink-0 flex-col gap-1 border-r border-border bg-card px-3 py-4">
-      <div className="flex items-center gap-2.5 px-2 pb-4">
-        <div className="es-brand-gradient grid size-7 place-items-center rounded-lg text-[13px] font-extrabold text-white">ES</div>
-        <div>
-          <div className="text-sm font-bold tracking-tight">{process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"}</div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground">HR Portal</div>
-        </div>
+    <aside
+      data-collapsed={collapsed ? "true" : "false"}
+      className={cn(
+        "flex h-full shrink-0 flex-col gap-1 overflow-hidden border-r border-border bg-card py-4",
+        "transition-[width] duration-200 ease-out [will-change:width]",
+        collapsed ? "w-[64px] px-2" : "w-[var(--es-sidebar-width)] px-3",
+      )}
+    >
+      <div className={cn(
+        "flex items-center pb-4",
+        collapsed ? "justify-center px-0" : "gap-2.5 px-2",
+      )}>
+        {!collapsed && (
+          <>
+            <Image
+              src="/favicons/apple-touch-icon.png"
+              alt="EasySlip"
+              width={28}
+              height={28}
+              className="size-7 shrink-0 rounded-lg"
+              priority
+            />
+            <div className="min-w-0">
+              <div className="truncate text-sm font-bold tracking-tight">{process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"}</div>
+              <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">HR Portal</div>
+            </div>
+          </>
+        )}
+        {onToggleCollapsed && (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            aria-label={collapsed ? t.common.expandSidebar : t.common.collapseSidebar}
+            title={collapsed ? t.common.expandSidebar : t.common.collapseSidebar}
+            className={cn(
+              "inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
+              collapsed ? "" : "ml-auto",
+            )}
+          >
+            <ToggleIcon className="size-4" />
+          </button>
+        )}
       </div>
 
       {items.map((item, i) => {
         if (isGroup(item)) {
+          if (collapsed) {
+            return <div key={`g-${i}`} className="mx-2 my-2 h-px bg-border/60" aria-hidden="true" />;
+          }
           return <div key={`g-${i}`} className="px-2.5 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{item.group}</div>;
         }
         const active = pathname.startsWith(item.href);
         return (
-          <Link key={item.key} href={item.href} onClick={onNavClick} className={cn(
-            "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
-            active ? "bg-[var(--es-accent-50)] font-semibold text-[var(--es-accent-700)]" : "text-muted-foreground hover:bg-muted",
-          )}>
-            <item.icon className="size-[18px]" />
-            <span className="flex-1">{item.label}</span>
-            {item.badge && <StatusPill tone="error" dot={false}>{item.badge}</StatusPill>}
+          <Link
+            key={item.key}
+            href={item.href}
+            onClick={onNavClick}
+            title={collapsed ? item.label : undefined}
+            aria-label={collapsed ? item.label : undefined}
+            className={cn(
+              "relative flex items-center rounded-lg text-[13px] font-medium transition-colors",
+              collapsed ? "size-9 justify-center self-center" : "w-full gap-2.5 px-2.5 py-2",
+              active ? "bg-[var(--es-accent-50)] font-semibold text-[var(--es-accent-700)]" : "text-muted-foreground hover:bg-muted",
+            )}
+          >
+            <item.icon className="size-[18px] shrink-0" />
+            {!collapsed && (
+              <>
+                <span className="flex-1 truncate">{item.label}</span>
+                {item.badge && <StatusPill tone="error" dot={false}>{item.badge}</StatusPill>}
+              </>
+            )}
+            {collapsed && item.badge && (
+              <span
+                aria-hidden="true"
+                className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-destructive"
+              />
+            )}
           </Link>
         );
       })}
@@ -72,21 +133,27 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick }
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "group/user mt-auto flex w-full cursor-pointer items-center gap-2 rounded-md p-1.5 text-left transition-colors",
+            "group/user mt-auto flex cursor-pointer items-center rounded-md p-1.5 text-left transition-colors",
             "hover:bg-muted/60 data-popup-open:bg-muted/60",
             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
+            collapsed ? "self-center" : "w-full gap-2",
           )}
-          aria-label={t.common.signOut}
+          aria-label={collapsed ? userName : t.common.signOut}
+          title={collapsed ? userName : undefined}
         >
           <div className="es-brand-gradient grid size-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-white">{userInitials}</div>
-          <div className="min-w-0 flex-1 leading-tight">
-            <div className="truncate text-xs font-medium">{userName}</div>
-            <div className="truncate text-[10px] text-muted-foreground">{role}</div>
-          </div>
-          <ChevronsUpDown
-            className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover/user:text-muted-foreground"
-            aria-hidden="true"
-          />
+          {!collapsed && (
+            <>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="truncate text-xs font-medium">{userName}</div>
+                <div className="truncate text-[10px] text-muted-foreground">{role}</div>
+              </div>
+              <ChevronsUpDown
+                className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover/user:text-muted-foreground"
+                aria-hidden="true"
+              />
+            </>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"

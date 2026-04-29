@@ -41,7 +41,7 @@ export default async function CheckEmailPage({ searchParams }: Props) {
           href="/signin"
           className={buttonVariants({
             variant: "outline",
-            className: "h-12 flex-1 text-base md:h-12",
+            className: "h-12 flex-1 cursor-pointer text-base md:h-12",
           })}
         >
           {t.checkEmail.backToSignIn}
@@ -52,7 +52,7 @@ export default async function CheckEmailPage({ searchParams }: Props) {
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({
-              className: "h-12 flex-1 text-base md:h-12",
+              className: "h-12 flex-1 cursor-pointer text-base md:h-12",
             })}
           >
             {t.checkEmail.openInbox.replace("{provider}", provider.name)}

@@ -40,7 +40,7 @@ export default async function SignInErrorPage({
         href="/signin"
         className={buttonVariants({
           variant: "outline",
-          className: "h-12 w-full text-base md:h-12",
+          className: "h-12 w-full cursor-pointer text-base md:h-12",
         })}
       >
         {t.checkEmail.backToSignIn}

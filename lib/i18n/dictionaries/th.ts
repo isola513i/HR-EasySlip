@@ -25,6 +25,8 @@ const th = {
     days: "วัน",
     close: "ปิด",
     copied: "คัดลอกแล้ว",
+    collapseSidebar: "ย่อแถบเมนู",
+    expandSidebar: "ขยายแถบเมนู",
     savedSuccess: "บันทึกเรียบร้อย",
     saveFailed: "บันทึกไม่สำเร็จ",
     deletedSuccess: "ลบเรียบร้อย",
@@ -140,7 +142,7 @@ const th = {
     checkSpam: "ตรวจสอบในกล่องจดหมายขยะ / Spam",
     waitMoment: "รอสักครู่ — บางครั้งอาจใช้เวลา 1–2 นาที",
     tryAgain: "ลองส่งใหม่อีกครั้ง",
-    backToSignIn: "กลับไปหน้า sign in",
+    backToSignIn: "กลับไปหน้าเข้าสู่ระบบ",
     openInbox: "เปิดใน {provider}",
   },
   password: {
