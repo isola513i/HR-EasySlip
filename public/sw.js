@@ -9,7 +9,7 @@
 // Phase 1 MVP: lightweight — no Workbox dependency.
 // ════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = "easyslip-v2";
+const CACHE_NAME = "easyslip-v3";
 const OFFLINE_URL = "/offline.html";
 
 const APP_SHELL = [
