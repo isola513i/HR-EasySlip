@@ -15,94 +15,7 @@ import {
 } from "lucide-react";
 import { AdminShell } from "@/components/shared/admin-shell";
 import type { NavItem, NavGroup } from "@/components/shared/admin-sidebar";
-
-const navItems: (NavItem | NavGroup)[] = [
-  { group: "Dashboard" },
-  {
-    key: "overview",
-    href: "/hr/overview",
-    icon: LayoutGrid,
-    label: "Overview",
-  },
-  { group: "People" },
-  {
-    key: "employees",
-    href: "/hr/employees",
-    icon: Users,
-    label: "Employees",
-  },
-  {
-    key: "onboarding",
-    href: "/hr/onboarding",
-    icon: ClipboardCheck,
-    label: "Onboarding",
-  },
-  {
-    key: "leave",
-    href: "/hr/leave-calendar",
-    icon: CalendarDays,
-    label: "Leave Calendar",
-  },
-  {
-    key: "attendance",
-    href: "/hr/attendance",
-    icon: Clock,
-    label: "Attendance",
-  },
-  {
-    key: "holidays",
-    href: "/hr/holidays",
-    icon: CalendarCheck,
-    label: "Public Holidays",
-  },
-  { group: "Payroll" },
-  {
-    key: "payroll",
-    href: "/hr/payroll",
-    icon: Banknote,
-    label: "Payroll Export",
-  },
-  {
-    key: "reports",
-    href: "/hr/reports",
-    icon: FileBarChart,
-    label: "Reports",
-  },
-  { group: "Compliance" },
-  {
-    key: "audit",
-    href: "/hr/audit",
-    icon: Scroll,
-    label: "Audit Log",
-  },
-  {
-    key: "pdpa",
-    href: "/hr/pdpa",
-    icon: ShieldCheck,
-    label: "PDPA Consent",
-  },
-  { group: "System" },
-  {
-    key: "settings",
-    href: "/hr/settings",
-    icon: Settings,
-    label: "Settings",
-  },
-];
-
-const pageTitles: Record<string, string> = {
-  "/hr/overview": "Overview",
-  "/hr/employees": "Employees",
-  "/hr/onboarding": "Onboarding",
-  "/hr/leave-calendar": "Leave Calendar",
-  "/hr/attendance": "Attendance",
-  "/hr/holidays": "Public Holidays",
-  "/hr/payroll": "Payroll Export",
-  "/hr/reports": "Reports",
-  "/hr/audit": "Audit Log",
-  "/hr/pdpa": "PDPA Consent",
-  "/hr/settings": "Settings",
-};
+import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
   user: { name: string; role: string };
@@ -110,11 +23,47 @@ interface Props {
 }
 
 export function HRShell({ user, children }: Props) {
+  const t = useT();
+  const nav = t.hr.nav;
+
+  const navItems: (NavItem | NavGroup)[] = [
+    { group: nav.groupDashboard },
+    { key: "overview", href: "/hr/overview", icon: LayoutGrid, label: nav.overview },
+    { group: nav.groupPeople },
+    { key: "employees", href: "/hr/employees", icon: Users, label: nav.employees },
+    { key: "onboarding", href: "/hr/onboarding", icon: ClipboardCheck, label: nav.onboarding },
+    { key: "leave", href: "/hr/leave-calendar", icon: CalendarDays, label: nav.leaveCalendar },
+    { key: "attendance", href: "/hr/attendance", icon: Clock, label: nav.attendance },
+    { key: "holidays", href: "/hr/holidays", icon: CalendarCheck, label: nav.holidays },
+    { group: nav.groupPayroll },
+    { key: "payroll", href: "/hr/payroll", icon: Banknote, label: nav.payroll },
+    { key: "reports", href: "/hr/reports", icon: FileBarChart, label: nav.reports },
+    { group: nav.groupCompliance },
+    { key: "audit", href: "/hr/audit", icon: Scroll, label: nav.audit },
+    { key: "pdpa", href: "/hr/pdpa", icon: ShieldCheck, label: nav.pdpa },
+    { group: nav.groupSystem },
+    { key: "settings", href: "/hr/settings", icon: Settings, label: nav.settings },
+  ];
+
+  const pageTitles: Record<string, string> = {
+    "/hr/overview": nav.overview,
+    "/hr/employees": nav.employees,
+    "/hr/onboarding": nav.onboarding,
+    "/hr/leave-calendar": nav.leaveCalendar,
+    "/hr/attendance": nav.attendance,
+    "/hr/holidays": nav.holidays,
+    "/hr/payroll": nav.payroll,
+    "/hr/reports": nav.reports,
+    "/hr/audit": nav.audit,
+    "/hr/pdpa": nav.pdpa,
+    "/hr/settings": nav.settings,
+  };
+
   return (
     <AdminShell
       navItems={navItems}
       pageTitles={pageTitles}
-      defaultTitle="HR Admin"
+      defaultTitle={nav.defaultTitle}
       user={user}
     >
       {children}
