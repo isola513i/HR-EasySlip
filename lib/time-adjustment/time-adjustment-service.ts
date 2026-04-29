@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
+import { isSensitiveDataRole } from "@/lib/security/role-helpers";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { TimeAdjSubmit, TimeAdjFilters } from "./schemas";
 
@@ -85,9 +86,7 @@ export async function getDetail(id: string, caller: Caller) {
   // Ownership check: owner, direct manager, or HR
   const isOwner = request.employeeId === caller.employeeId;
   const isManager = request.employee.managerId === caller.employeeId;
-  const isHR = caller.roles.some((r) =>
-    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
-  );
+  const isHR = isSensitiveDataRole(caller.roles);
   if (!isOwner && !isManager && !isHR) {
     throw new DomainError(ErrorCodes.NOT_OWNER, {}, 403);
   }

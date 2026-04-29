@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { calculateWorkingDays } from "./working-days";
+import { isSensitiveDataRole } from "@/lib/security/role-helpers";
 import type { Role } from "@prisma/client";
 import type { LeavePreviewInput, LeaveFilters } from "./schemas";
 
@@ -102,9 +103,7 @@ export async function getLeaveRequestDetail(
   const isOwner = request.employeeId === caller.employeeId;
   const isApprover = request.approverId === caller.employeeId;
   const isManager = request.employee.managerId === caller.employeeId;
-  const isHR = caller.roles.some((r) =>
-    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
-  );
+  const isHR = isSensitiveDataRole(caller.roles);
   if (!isOwner && !isApprover && !isManager && !isHR) {
     throw new DomainError(ErrorCodes.NOT_OWNER, {}, 403);
   }
@@ -121,9 +120,7 @@ export async function getTeamCalendar(
   const endDate = new Date(year, month, 0);
 
   // HR roles see all employees, managers see only their team
-  const isHR = caller.roles?.some((r) =>
-    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
-  );
+  const isHR = caller.roles ? isSensitiveDataRole(caller.roles) : false;
 
   let employeeFilter: { in: string[] } | undefined;
   if (!isHR) {

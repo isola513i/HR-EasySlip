@@ -5,12 +5,13 @@ import { parseBody } from "@/lib/api/validate";
 import { apiOk } from "@/lib/api/response";
 import { sendNotificationEmail } from "@/lib/email/notification-service";
 import { authEndpointLimiter } from "@/lib/security/rate-limit";
+import { writeAuditLog } from "@/lib/audit/logger";
 
 const ForgotPasswordSchema = z.object({ email: z.string().email() });
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 
-export const POST = withApiHandler(async (req, _ctx) => {
+export const POST = withApiHandler(async (req, ctx) => {
   const { email } = await parseBody(req, ForgotPasswordSchema);
   const emailLower = email.toLowerCase();
 
@@ -23,13 +24,23 @@ export const POST = withApiHandler(async (req, _ctx) => {
   const token = crypto.randomUUID();
   const expires = new Date(Date.now() + TOKEN_EXPIRY_MS);
 
-  // Atomic replace: delete existing + create new in a single transaction
+  // Atomic replace: delete existing + create new in a single batched transaction
   await prisma.$transaction([
     prisma.verificationToken.deleteMany({ where: { identifier: `reset:${emailLower}` } }),
     prisma.verificationToken.create({
       data: { identifier: `reset:${emailLower}`, token, expires },
     }),
   ]);
+
+  // Audit outside the txn so an audit failure doesn't roll back the token
+  writeAuditLog({
+    actorId: user.id,
+    action: "auth.password_reset_requested",
+    entityType: "User",
+    entityId: user.id,
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
+  }).catch((err) => console.error("[forgot-password audit]", err));
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const resetUrl = `${appUrl}/signin/reset-password?token=${token}&email=${encodeURIComponent(emailLower)}`;

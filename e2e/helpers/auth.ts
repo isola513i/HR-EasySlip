@@ -22,4 +22,7 @@ export async function loginAs(page: Page, role: keyof typeof ROLE_EMAILS) {
   if (!res.ok()) {
     throw new Error(`Login failed for ${role}: ${res.status()} ${await res.text()}`);
   }
+
+  // Grant PDPA consent so layout-level requireConsent doesn't redirect mid-test.
+  await page.request.post(`${BASE_URL}/api/v1/consent/grant`).catch(() => {});
 }

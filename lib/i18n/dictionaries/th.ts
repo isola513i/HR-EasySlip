@@ -452,6 +452,22 @@ const th = {
     status: "สถานะ",
     onLeave: "ลางาน",
     absent: "ขาดงาน",
+    tabs: {
+      leave: "ลางาน",
+      timeAdjustment: "ขอแก้ไขเวลา",
+      overtime: "OT",
+    },
+    timeAdjustment: {
+      requested: "เวลาที่ขอ",
+      clockIn: "เข้างาน",
+      clockOut: "ออกงาน",
+      attachment: "ดูไฟล์แนบ",
+    },
+    overtime: {
+      WEEKDAY: "วันธรรมดา",
+      HOLIDAY: "วันหยุด",
+      HOLIDAY_WORK: "วันหยุดทำงาน",
+    },
   },
   hr: {
     nav: {
@@ -466,6 +482,7 @@ const th = {
       onboarding: "การเริ่มงาน",
       leaveCalendar: "ปฏิทินการลา",
       attendance: "การลงเวลา",
+      overtime: "OT",
       holidays: "วันหยุดประจำปี",
       payroll: "ส่งออกเงินเดือน",
       reports: "รายงาน",
@@ -614,6 +631,26 @@ const th = {
     pdpaEntityId: "รหัส Entity",
     pdpaIP: "IP",
     pdpaNoEvents: "ไม่มีเหตุการณ์ความยินยอม",
+    overtime: {
+      totalRecords: "จำนวนรายการ",
+      totalHours: "ชั่วโมงที่อนุมัติ",
+      colType: "ประเภท",
+      colHours: "ชั่วโมง",
+      colRate: "อัตรา",
+      colReason: "เหตุผล",
+      empty: "ไม่มีรายการ OT ตามเงื่อนไขที่เลือก",
+      overrideHint: "HR สามารถอนุมัติแทนได้เมื่อหัวหน้างานไม่สะดวก",
+      confirmHrApprove: "อนุมัติแบบ HR override? ระบบจะข้ามหัวหน้างานที่กำหนดไว้",
+      overrideApproved: "อนุมัติแล้ว (HR override)",
+      overrideRejected: "ปฏิเสธแล้ว (HR override)",
+      status: {
+        PENDING: "รออนุมัติ",
+        APPROVED: "อนุมัติแล้ว",
+        REJECTED: "ปฏิเสธ",
+        CANCELLED: "ยกเลิก",
+        WITHDRAWN: "ถอนคำขอ",
+      },
+    },
   },
   offline: {
     youreOffline: "คุณออฟไลน์อยู่",

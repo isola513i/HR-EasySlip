@@ -1,7 +1,3 @@
-// ════════════════════════════════════════════════════════════════
-// Overtime Approval Service — approve, reject, pending (Manager ops)
-// ════════════════════════════════════════════════════════════════
-
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
@@ -36,33 +32,50 @@ export async function getPendingOTForApprover(
   return { items, total, page, perPage };
 }
 
-export async function approveOT(
+interface DecideOptions {
+  reason?: string;
+  /** When true, skip the assigned-approver ownership check.
+   *  Caller must already be authorized at the route boundary (HR_ROLES). */
+  hrOverride?: boolean;
+}
+
+async function decideOT(
   caller: Caller,
   id: string,
+  decision: "APPROVED" | "REJECTED",
   meta: RequestMeta,
+  opts: DecideOptions = {},
 ) {
+  const { reason, hrOverride = false } = opts;
+
   return prisma.$transaction(async (tx) => {
     const request = await tx.overtimeRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
     if (request.status !== "PENDING") {
       throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
     }
-    if (request.approverId !== caller.employeeId) {
+    if (!hrOverride && request.approverId !== caller.employeeId) {
       throw new DomainError(ErrorCodes.NOT_APPROVER, {}, 403);
     }
 
     const updated = await tx.overtimeRequest.update({
       where: { id },
-      data: { status: "APPROVED", approvedAt: new Date() },
+      data: decision === "APPROVED"
+        ? { status: "APPROVED", approvedAt: new Date() }
+        : { status: "REJECTED", rejectedReason: reason },
     });
 
+    const baseAction = decision === "APPROVED" ? "overtime.approve" : "overtime.reject";
     await writeAuditLog({
       actorId: caller.userId,
-      action: "overtime.approve",
+      action: hrOverride ? `${baseAction}.hr_override` : baseAction,
       entityType: "OvertimeRequest",
       entityId: id,
       before: request,
       after: updated,
+      reason: hrOverride
+        ? (reason ? `HR override: ${reason}` : "HR override")
+        : reason,
       ipAddress: meta.ip,
       userAgent: meta.userAgent,
     }, tx);
@@ -71,39 +84,14 @@ export async function approveOT(
   });
 }
 
-export async function rejectOT(
-  caller: Caller,
-  id: string,
-  reason: string,
-  meta: RequestMeta,
-) {
-  return prisma.$transaction(async (tx) => {
-    const request = await tx.overtimeRequest.findUnique({ where: { id } });
-    if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
-    if (request.status !== "PENDING") {
-      throw new DomainError(ErrorCodes.ALREADY_PROCESSED);
-    }
-    if (request.approverId !== caller.employeeId) {
-      throw new DomainError(ErrorCodes.NOT_APPROVER, {}, 403);
-    }
+export const approveOT = (caller: Caller, id: string, meta: RequestMeta) =>
+  decideOT(caller, id, "APPROVED", meta);
 
-    const updated = await tx.overtimeRequest.update({
-      where: { id },
-      data: { status: "REJECTED", rejectedReason: reason },
-    });
+export const rejectOT = (caller: Caller, id: string, reason: string, meta: RequestMeta) =>
+  decideOT(caller, id, "REJECTED", meta, { reason });
 
-    await writeAuditLog({
-      actorId: caller.userId,
-      action: "overtime.reject",
-      entityType: "OvertimeRequest",
-      entityId: id,
-      before: request,
-      after: updated,
-      reason,
-      ipAddress: meta.ip,
-      userAgent: meta.userAgent,
-    }, tx);
+export const hrApproveOT = (caller: Caller, id: string, meta: RequestMeta) =>
+  decideOT(caller, id, "APPROVED", meta, { hrOverride: true });
 
-    return updated;
-  });
-}
+export const hrRejectOT = (caller: Caller, id: string, reason: string, meta: RequestMeta) =>
+  decideOT(caller, id, "REJECTED", meta, { reason, hrOverride: true });

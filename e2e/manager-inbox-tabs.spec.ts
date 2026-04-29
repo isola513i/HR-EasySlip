@@ -1,0 +1,37 @@
+import { test, expect } from "./helpers/fixtures";
+
+test.describe("Manager Inbox — 3-tab approval surface", () => {
+  test.use({ role: "manager" });
+
+  test("renders all three tabs (Leave / Time Adjustment / Overtime)", async ({ page }) => {
+    await page.goto("/manager/inbox");
+    await page.waitForLoadState("networkidle");
+
+    await expect(page.getByRole("tab", { name: /leave|ลางาน/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("tab", { name: /time adjustment|ขอแก้ไขเวลา/i })).toBeVisible();
+    await expect(page.getByRole("tab", { name: /^overtime$|^OT$/i })).toBeVisible();
+  });
+
+  test("can switch to Time Adjustment tab", async ({ page }) => {
+    await page.goto("/manager/inbox");
+    await page.waitForLoadState("networkidle");
+
+    await page.getByRole("tab", { name: /time adjustment|ขอแก้ไขเวลา/i }).click();
+
+    // Either pending requests appear, or the empty-state copy is shown
+    const empty = page.getByText(/no pending|ไม่มีคำขอ/i);
+    const cards = page.locator("[role='tabpanel']").filter({ hasText: /clock|เข้างาน|ออกงาน/i });
+    await expect(empty.or(cards).first()).toBeVisible({ timeout: 10_000 });
+  });
+
+  test("can switch to Overtime tab", async ({ page }) => {
+    await page.goto("/manager/inbox");
+    await page.waitForLoadState("networkidle");
+
+    await page.getByRole("tab", { name: /^overtime$|^OT$/i }).click();
+
+    const empty = page.getByText(/no pending|ไม่มีคำขอ/i);
+    // Tab panel should at minimum render (loaded), with either empty state or content
+    await expect(empty.or(page.locator("[role='tabpanel']"))).toBeVisible({ timeout: 10_000 });
+  });
+});

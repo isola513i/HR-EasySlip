@@ -44,6 +44,18 @@ export async function getConsentStatus(userId: string) {
 }
 
 export async function grantConsent(userId: string, meta: RequestMeta) {
+  const existing = await prisma.consentRecord.findFirst({
+    where: {
+      userId,
+      purpose: CONSENT_PURPOSE,
+      version: CONSENT_VERSION,
+      granted: true,
+      withdrawnAt: null,
+    },
+    orderBy: { grantedAt: "desc" },
+  });
+  if (existing) return existing;
+
   const record = await prisma.consentRecord.create({
     data: {
       userId,

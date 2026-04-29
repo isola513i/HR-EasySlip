@@ -450,6 +450,22 @@ const en = {
     status: "Status",
     onLeave: "On leave",
     absent: "Absent",
+    tabs: {
+      leave: "Leave",
+      timeAdjustment: "Time Adjustment",
+      overtime: "Overtime",
+    },
+    timeAdjustment: {
+      requested: "Requested time",
+      clockIn: "Clock-in",
+      clockOut: "Clock-out",
+      attachment: "View attachment",
+    },
+    overtime: {
+      WEEKDAY: "Weekday",
+      HOLIDAY: "Holiday",
+      HOLIDAY_WORK: "Holiday work",
+    },
   },
   hr: {
     nav: {
@@ -464,6 +480,7 @@ const en = {
       onboarding: "Onboarding",
       leaveCalendar: "Leave Calendar",
       attendance: "Attendance",
+      overtime: "Overtime",
       holidays: "Public Holidays",
       payroll: "Payroll Export",
       reports: "Reports",
@@ -612,6 +629,26 @@ const en = {
     pdpaEntityId: "Entity ID",
     pdpaIP: "IP",
     pdpaNoEvents: "No consent events found",
+    overtime: {
+      totalRecords: "OT records",
+      totalHours: "Approved hours",
+      colType: "Type",
+      colHours: "Hours",
+      colRate: "Rate",
+      colReason: "Reason",
+      empty: "No overtime records match the selected filter",
+      overrideHint: "HR can override pending requests when manager is unavailable",
+      confirmHrApprove: "Approve as HR override? This bypasses the assigned manager.",
+      overrideApproved: "Approved (HR override)",
+      overrideRejected: "Rejected (HR override)",
+      status: {
+        PENDING: "Pending",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        CANCELLED: "Cancelled",
+        WITHDRAWN: "Withdrawn",
+      },
+    },
   },
   offline: {
     youreOffline: "You're offline.",

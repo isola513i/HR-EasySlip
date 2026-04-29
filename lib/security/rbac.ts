@@ -38,6 +38,8 @@ export const CUTOFF_OVERRIDE_ROLES: readonly Role[] = [
   "HR_AUTHORIZED",
 ] as const;
 
+export { SENSITIVE_DATA_ROLES, isSensitiveDataRole } from "./role-helpers";
+
 export interface AuthResult {
   userId: string;
   email: string | undefined;

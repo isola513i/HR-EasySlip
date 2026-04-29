@@ -45,6 +45,8 @@ tmp/
 
 # ----- Testing / coverage -----
 /coverage
+/test-results/
+/playwright-report/
 
 # ----- Logs -----
 *.log
@@ -60,6 +62,7 @@ Thumbs.db
 
 # ----- IDE / misc — keep .claude/settings.json, exclude local overrides -----
 .claude/settings.local.json
+.claude/worktrees/
 .vscode/
 .idea/
 *.swp

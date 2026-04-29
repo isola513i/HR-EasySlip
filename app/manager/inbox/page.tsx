@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { ApprovalInbox } from "@/components/manager/approval-inbox";
+import { InboxTabs } from "@/components/manager/inbox-tabs";
 
 export const metadata: Metadata = { title: "Approval Inbox" };
 
 export default function ManagerInboxPage() {
-  return <ApprovalInbox />;
+  return <InboxTabs />;
 }

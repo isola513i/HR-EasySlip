@@ -29,6 +29,28 @@ export function formatDate(iso: string): string {
   });
 }
 
+/** Format ISO date string to "5 Apr" or "5 Apr 26" / "5 Apr 2026" en-GB style. */
+export function formatShortDate(
+  iso: string,
+  year: "none" | "2-digit" | "numeric" = "none",
+): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    ...(year !== "none" && { year }),
+  });
+}
+
+/** Format ISO date string to "5 Apr, 14:30" en-GB. */
+export function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 /** Get today's date as YYYY-MM-DD string */
 export function todayISO(): string {
   const d = new Date();

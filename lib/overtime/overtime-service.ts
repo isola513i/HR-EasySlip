@@ -183,3 +183,48 @@ export async function getMyOTRequests(employeeId: string, filters: OTFilters) {
 
   return { items, total, page: filters.page, perPage: filters.perPage };
 }
+
+/** HR org-wide aggregate over the full filtered set (not paginated). */
+export async function getOTSummaryForHR(filters: Pick<OTFilters, "status">) {
+  const where = {
+    ...(filters.status ? { status: filters.status } : {}),
+  };
+
+  const agg = await prisma.overtimeRequest.aggregate({
+    where,
+    _count: { _all: true },
+    _sum: { hoursApproved: true },
+  });
+
+  return {
+    totalRecords: agg._count._all,
+    totalHours: Number(agg._sum.hoursApproved ?? 0),
+  };
+}
+
+/** HR org-wide listing of OT requests (no approver scoping). */
+export async function getAllOTForHR(filters: OTFilters) {
+  const where = {
+    ...(filters.status ? { status: filters.status } : {}),
+  };
+
+  const [items, total] = await Promise.all([
+    prisma.overtimeRequest.findMany({
+      where,
+      include: {
+        employee: {
+          select: { firstNameTh: true, lastNameTh: true, employeeCode: true },
+        },
+        approver: {
+          select: { firstNameTh: true, lastNameTh: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (filters.page - 1) * filters.perPage,
+      take: filters.perPage,
+    }),
+    prisma.overtimeRequest.count({ where }),
+  ]);
+
+  return { items, total, page: filters.page, perPage: filters.perPage };
+}

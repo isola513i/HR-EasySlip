@@ -9,6 +9,7 @@ import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ClockInput, AttendanceFilters, BackfillInput } from "./schemas";
 import { getBangkokDayBounds, validateClockAction } from "./clock-validation";
+import { isSensitiveDataRole } from "@/lib/security/role-helpers";
 
 interface ClockMeta extends RequestMeta {
   deviceId?: string;
@@ -91,9 +92,7 @@ export async function getTeamRecords(
   const dayEnd = new Date(date + "T23:59:59.999Z");
 
   // HR roles see all employees, managers see only their team
-  const isHR = caller.roles.some((r) =>
-    (["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as string[]).includes(r),
-  );
+  const isHR = isSensitiveDataRole(caller.roles);
 
   let employeeFilter: { in: string[] } | undefined;
   if (!isHR) {
