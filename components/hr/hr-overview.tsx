@@ -6,6 +6,7 @@ import { useHRDashboard } from "@/hooks/use-hr-dashboard";
 import { useT } from "@/lib/i18n/locale-context";
 import { AttendanceTrendChart } from "@/components/hr/attendance-trend-chart";
 import { LeaveTrendChart } from "@/components/hr/leave-trend-chart";
+import { ManpowerBoard } from "@/components/hr/manpower-board";
 
 export function HROverview() {
   const { data, isLoading, error } = useHRDashboard();
@@ -50,30 +51,8 @@ export function HROverview() {
         <LeaveTrendChart data={data.leaveTrend} />
       </div>
 
-      {/* Headcount breakdown */}
-      <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
-        <div className="mb-3 text-[15px] font-semibold">{t.hr.headcount}</div>
-        {data.headcount.length === 0 ? (
-          <div className="py-8 text-center text-sm text-muted-foreground">{t.hr.noEmployeeData}</div>
-        ) : (
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2.5 lg:grid-cols-4">
-            {data.headcount.map((h) => {
-              const pct = data.totalActive > 0 ? Math.round((h.count / data.totalActive) * 100) : 0;
-              return (
-                <div key={h.status}>
-                  <div className="mb-[3px] flex justify-between text-xs">
-                    <span>{h.status}</span>
-                    <span className="tabular-nums text-muted-foreground">{h.count} · {pct}%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[var(--es-neutral-100)]">
-                    <div className="h-full rounded-full bg-[var(--es-accent-500)]" style={{ width: `${Math.min(pct, 100)}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {/* Manpower (replaces headcount breakdown) */}
+      <ManpowerBoard />
     </div>
   );
 }
