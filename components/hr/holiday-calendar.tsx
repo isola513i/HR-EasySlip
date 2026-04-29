@@ -13,6 +13,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useHolidays, type Holiday } from "@/hooks/use-holidays";
@@ -120,7 +121,7 @@ export function HolidayCalendar() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader><DialogTitle>{isNew ? t.hr.addHolidayTitle : t.hr.editHolidayTitle}</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label>{t.hr.holidayDate}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+            <div className="space-y-1.5"><Label>{t.hr.holidayDate}</Label><DatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} className="w-full" /></div>
             <div><Label>{t.hr.holidayNameTh}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t.hr.holidayNameThPlaceholder} /></div>
             <div><Label>{t.hr.holidayNameEn}</Label><Input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} placeholder={t.hr.holidayNameEnPlaceholder} /></div>
             <label className="flex items-center gap-2 text-sm">

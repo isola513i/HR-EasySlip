@@ -73,7 +73,7 @@ export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }
           onMenuClick={() => setMobileOpen(true)}
           inboxHref={inboxHref}
         />
-        <main className="flex-1 overflow-auto overscroll-contain p-4 lg:p-6">{children}</main>
+        <main className="min-w-0 flex-1 p-4 lg:p-6">{children}</main>
       </div>
     </div>
   );

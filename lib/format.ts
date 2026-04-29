@@ -41,6 +41,13 @@ export function formatShortDate(
   });
 }
 
+/** Format "YYYY-MM" key to short month name (e.g. "2026-04" → "Apr"). */
+export function formatMonthShort(monthKey: string): string {
+  const [y, m] = monthKey.split("-").map(Number);
+  if (!y || !m) return monthKey;
+  return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short" });
+}
+
 /** Format ISO date string to "5 Apr, 14:30" en-GB. */
 export function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("en-GB", {

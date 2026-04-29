@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FileBarChart, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useT } from "@/lib/i18n/locale-context";
@@ -99,8 +99,8 @@ export function ReportBuilder() {
           <div className="space-y-1.5">
             <Label>{t.hr.dateRange}</Label>
             <div className="flex gap-2">
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+              <DatePicker value={dateFrom} onChange={setDateFrom} max={dateTo || undefined} className="flex-1" />
+              <DatePicker value={dateTo} onChange={setDateTo} min={dateFrom || undefined} className="flex-1" />
             </div>
           </div>
           <div className="space-y-1.5">

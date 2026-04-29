@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { HROverview } from "@/components/hr/hr-overview";
+import { auth } from "@/lib/auth";
+import { DashboardScreen } from "@/components/hr/dashboard/dashboard-screen";
 
-export const metadata: Metadata = { title: "HR Overview" };
+export const metadata: Metadata = { title: "HR Dashboard" };
 
-export default function HROverviewPage() {
-  return <HROverview />;
+export default async function HROverviewPage() {
+  const session = await auth();
+  const firstName = session?.user?.employee?.firstNameTh ?? "";
+  return <DashboardScreen firstName={firstName} />;
 }

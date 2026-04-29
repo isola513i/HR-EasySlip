@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -176,7 +177,7 @@ export function EmployeeFormDialog({ open, onClose, onCreated, onCreate }: Props
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label htmlFor="hireDate">{t.hr.hireDateLabel} *</Label>
-              <Input id="hireDate" type="date" value={form.hireDate} onChange={set("hireDate")} />
+              <DatePicker value={form.hireDate} onChange={(v) => setForm((p) => ({ ...p, hireDate: v }))} className="w-full" />
             </div>
             <div className="space-y-1">
               <Label>{t.hr.workShift}</Label>

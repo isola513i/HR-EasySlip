@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { StatusPill } from "@/components/shared/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/hooks/use-locale";
 import { useT } from "@/lib/i18n/locale-context";
@@ -172,6 +174,10 @@ interface DatePickerProps {
 }
 
 function DatePicker({ date, dateLabel, isToday, onPrev, onNext, onChange, onToday, todayLabel }: DatePickerProps) {
+  const [open, setOpen] = useState(false);
+  const [y, m, d] = date.split("-").map(Number);
+  const selected = y && m && d ? new Date(y, m - 1, d) : undefined;
+
   return (
     <div className="flex items-center gap-1">
       <button
@@ -182,15 +188,28 @@ function DatePicker({ date, dateLabel, isToday, onPrev, onNext, onChange, onToda
       >
         <ChevronLeft className="size-3.5" />
       </button>
-      <label className="relative inline-flex cursor-pointer items-center rounded-md px-2 py-1 text-xs tabular-nums text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-        <span>{dateLabel}</span>
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => e.target.value && onChange(e.target.value)}
-          className="absolute inset-0 cursor-pointer opacity-0"
-        />
-      </label>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger
+          className="cursor-pointer rounded-md px-2 py-1 text-xs tabular-nums text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-[var(--ring)] data-popup-open:bg-muted data-popup-open:text-foreground"
+        >
+          {dateLabel}
+        </PopoverTrigger>
+        <PopoverContent align="center" className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={selected}
+            defaultMonth={selected}
+            onSelect={(picked) => {
+              if (!picked) return;
+              const yy = picked.getFullYear();
+              const mm = String(picked.getMonth() + 1).padStart(2, "0");
+              const dd = String(picked.getDate()).padStart(2, "0");
+              onChange(`${yy}-${mm}-${dd}`);
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
       <button
         type="button"
         onClick={onNext}

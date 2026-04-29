@@ -2,6 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StatusPill } from "@/components/shared/status-pill";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { SearchInput } from "@/components/shared/search-input";
@@ -61,14 +68,17 @@ export function TodayAttendanceTable({ date }: Props) {
       <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-5 py-3.5">
         <div className="flex-1 text-base font-semibold">{t.hr.attendance.todayAttendance}</div>
         <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
-          <select
-            value={dept}
-            onChange={(e) => setDept(e.target.value)}
-            className="rounded-md border border-border bg-card px-2.5 py-1.5 text-xs"
-          >
-            <option value="all">{t.hr.attendance.allDepartments}</option>
-            {departments.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-          </select>
+          <Select value={dept} onValueChange={(v) => v && setDept(v)}>
+            <SelectTrigger size="sm" className="min-w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">{t.hr.attendance.allDepartments}</SelectItem>
+              {departments.map(([id, name]) => (
+                <SelectItem key={id} value={id}>{name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <SearchInput
             value={query}
             onChange={setQuery}
