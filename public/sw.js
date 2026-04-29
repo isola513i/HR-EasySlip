@@ -9,7 +9,7 @@
 // Phase 1 MVP: lightweight — no Workbox dependency.
 // ════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = "easyslip-v3";
+const CACHE_NAME = "easyslip-v4";
 const OFFLINE_URL = "/offline.html";
 
 const APP_SHELL = [
@@ -17,8 +17,8 @@ const APP_SHELL = [
   "/signin",
   OFFLINE_URL,
   "/manifest.webmanifest",
-  "/icons/icon-192.svg",
-  "/icons/icon-512.svg",
+  "/favicons/favicon-32x32.png",
+  "/favicons/apple-touch-icon.png",
 ];
 
 // ── Install: pre-cache app shell ──
