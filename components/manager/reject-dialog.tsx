@@ -45,6 +45,8 @@ export function RejectDialog({ open, onClose, onConfirm, employeeName }: Props) 
           </DialogTitle>
         </DialogHeader>
         <Textarea
+          id="reject-reason"
+          aria-label={t.manager.rejectReason}
           placeholder={t.manager.rejectReason}
           value={reason}
           onChange={(e) => setReason(e.target.value)}

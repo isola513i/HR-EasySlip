@@ -12,12 +12,14 @@ import { DetailSheet } from "@/components/manager/detail-sheet";
 import { RejectDialog } from "@/components/manager/reject-dialog";
 import { useApprovalInbox } from "@/hooks/use-approval-inbox";
 import { useT } from "@/lib/i18n/locale-context";
+import { useFormat } from "@/hooks/use-format";
 import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import type { ApprovalRow } from "@/types/manager";
 
 export function ApprovalInbox() {
   const t = useT();
+  const fmt = useFormat();
   const { rows, isLoading, error: fetchError, approve, reject, bulkDecision } = useApprovalInbox();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detailRow, setDetailRow] = useState<ApprovalRow | null>(null);
@@ -150,7 +152,7 @@ export function ApprovalInbox() {
             >
               <div className="flex items-start gap-2">
                 <span onClick={stop} className="pt-0.5">
-                  <Checkbox checked={sel} onCheckedChange={() => toggle(r.id)} aria-label={`Select ${name}`} />
+                  <Checkbox checked={sel} onCheckedChange={() => toggle(r.id)} aria-label={t.manager.selectAriaOne.replace("{name}", name)} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold">{name}</div>
@@ -183,7 +185,7 @@ export function ApprovalInbox() {
                 <span className="text-muted-foreground">{t.manager.daysCol}</span>
               </div>
               <div className="mt-1.5 text-xs">
-                {new Date(r.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – {new Date(r.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                {fmt.formatShortDate(r.startDate)} – {fmt.formatShortDate(r.endDate)}
               </div>
               {r.reason && <div className="mt-1 truncate text-[11px] text-muted-foreground">{r.reason}</div>}
             </div>
@@ -194,7 +196,7 @@ export function ApprovalInbox() {
       <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)] md:block">
         <ScrollableTable minWidth={820}>
             <div className="grid grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              <Checkbox checked={selected.size === rows.length && rows.length > 0} onCheckedChange={toggleAll} aria-label="Select all" />
+              <Checkbox checked={selected.size === rows.length && rows.length > 0} onCheckedChange={toggleAll} aria-label={t.manager.selectAriaAll} />
               <span>{t.manager.employee}</span><span>{t.manager.type}</span><span>{t.manager.dates}</span><span>{t.manager.daysCol}</span><span>{t.manager.submitted}</span><span />
             </div>
 
@@ -213,7 +215,7 @@ export function ApprovalInbox() {
                     sel && "bg-[var(--es-accent-50)]",
                   )}>
 
-                  <span onClick={stop}><Checkbox checked={sel} onCheckedChange={() => toggle(r.id)} aria-label={`Select ${name}`} /></span>
+                  <span onClick={stop}><Checkbox checked={sel} onCheckedChange={() => toggle(r.id)} aria-label={t.manager.selectAriaOne.replace("{name}", name)} /></span>
                   <div>
                     <div className="font-semibold">{name}</div>
                     <div className="font-mono text-[11px] text-muted-foreground">{r.employee.employeeCode}</div>
@@ -223,11 +225,11 @@ export function ApprovalInbox() {
                     {r.attachmentUrl && <StatusPill tone="info" dot={false}>PDF</StatusPill>}
                   </div>
                   <div>
-                    <div>{new Date(r.startDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} – {new Date(r.endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                    <div>{fmt.formatShortDate(r.startDate)} – {fmt.formatShortDate(r.endDate)}</div>
                     <div className="truncate text-[11px] text-muted-foreground">{r.reason}</div>
                   </div>
                   <div className="tabular-nums font-semibold">{r.daysRequested}</div>
-                  <div className="text-xs text-muted-foreground">{new Date(r.createdAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</div>
+                  <div className="text-xs text-muted-foreground">{fmt.formatShortDate(r.createdAt)}</div>
                   <div className="flex justify-end gap-0.5">
                     <button title={t.manager.approve} aria-label={`${t.manager.approve} ${name}`} onClick={(e) => { stop(e); handleApprove(r.id); }} className="rounded-md p-1.5 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]"><Check className="size-4" /></button>
                     <button title={t.manager.reject} aria-label={`${t.manager.reject} ${name}`} onClick={(e) => { stop(e); setRejectTarget(r); }} className="rounded-md p-1.5 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"><X className="size-4" /></button>
@@ -252,7 +254,7 @@ export function ApprovalInbox() {
 
       <DetailSheet row={detailRow} onClose={() => setDetailRow(null)} onApprove={handleApprove} onReject={(id) => setRejectTarget(rows.find((r) => r.id === id) ?? null)} />
       <RejectDialog open={!!rejectTarget} onClose={() => setRejectTarget(null)} onConfirm={handleReject} employeeName={rejectTarget ? `${rejectTarget.employee.firstNameTh} ${rejectTarget.employee.lastNameTh}` : undefined} />
-      <RejectDialog open={bulkRejectOpen} onClose={() => setBulkRejectOpen(false)} onConfirm={handleBulkReject} employeeName={`${selected.size} requests`} />
+      <RejectDialog open={bulkRejectOpen} onClose={() => setBulkRejectOpen(false)} onConfirm={handleBulkReject} employeeName={t.manager.nRequests.replace("{n}", String(selected.size))} />
     </div>
   );
 }

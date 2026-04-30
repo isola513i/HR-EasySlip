@@ -3,13 +3,21 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
 
+export type PayrollCycleStatus = "OPEN" | "LOCKED" | "EXPORTED";
+
+export const PAYROLL_STATUS_TONE: Record<PayrollCycleStatus, "info" | "warn" | "success"> = {
+  OPEN: "info",
+  LOCKED: "warn",
+  EXPORTED: "success",
+};
+
 export interface PayrollCycle {
   id: string;
   year: number;
   month: number;
   cycleStart: string;
   cycleEnd: string;
-  status: "OPEN" | "LOCKED" | "EXPORTED";
+  status: PayrollCycleStatus;
   lockedAt: string | null;
 }
 

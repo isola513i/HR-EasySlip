@@ -56,9 +56,10 @@ export function OTRequestForm() {
 
         {/* Date */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium">{t.ot.date}</label>
+          <label htmlFor="ot-date" className="mb-1.5 block text-[13px] font-medium">{t.ot.date}</label>
           <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
             <input
+              id="ot-date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -75,11 +76,12 @@ export function OTRequestForm() {
         ) : (
           <>
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">
+              <label htmlFor="ot-start" className="mb-1.5 block text-[13px] font-medium">
                 {t.ot.assignedStart}
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
+                  id="ot-start"
                   type="datetime-local"
                   value={assignedStart}
                   onChange={(e) => setAssignedStart(e.target.value)}
@@ -88,11 +90,12 @@ export function OTRequestForm() {
               </div>
             </div>
             <div>
-              <label className="mb-1.5 block text-[13px] font-medium">
+              <label htmlFor="ot-end" className="mb-1.5 block text-[13px] font-medium">
                 {t.ot.assignedEnd}
               </label>
               <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
                 <input
+                  id="ot-end"
                   type="datetime-local"
                   value={assignedEnd}
                   min={assignedStart}
@@ -109,10 +112,11 @@ export function OTRequestForm() {
 
         {/* Reason */}
         <div>
-          <label className="mb-1.5 block text-[13px] font-medium">
+          <label htmlFor="ot-reason" className="mb-1.5 block text-[13px] font-medium">
             {t.ot.reason}
           </label>
           <Textarea
+            id="ot-reason"
             placeholder={t.ot.reasonPlaceholder}
             rows={3}
             value={reason}

@@ -1,31 +1,115 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Check, X, Clock, FileBarChart, ShieldAlert } from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
-import { Skeleton } from "@/components/ui/skeleton";
-import { StatusPill } from "@/components/shared/status-pill";
-import { ScrollableTable } from "@/components/shared/scrollable-table";
+import { Button } from "@/components/ui/button";
 import { RejectDialog } from "@/components/manager/reject-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { useHrOvertime, type OTStatusFilter, type HrOvertimeRow } from "@/hooks/use-hr-overtime";
+import { useHrOvertime, type HrOvertimeRow } from "@/hooks/use-hr-overtime";
+import { downloadCSV, rowsToCSV } from "@/lib/export/csv-download";
 import { useT } from "@/lib/i18n/locale-context";
-import { formatShortDate } from "@/lib/format";
+import { OvertimeKpis } from "@/components/hr/overtime/overtime-kpis";
+import { PendingOvertimeList } from "@/components/hr/overtime/pending-overtime-list";
+import { TopOtEmployees, type TopOTRow } from "@/components/hr/overtime/top-ot-employees";
+import { MonthlyTrendsChart, type TrendPoint } from "@/components/hr/overtime/monthly-trends-chart";
 
-const FILTERS = ["PENDING", "APPROVED", "REJECTED", "ALL"] as const satisfies readonly OTStatusFilter[];
-const GRID = "grid-cols-[1.3fr_90px_110px_70px_80px_1.4fr_100px_90px]";
+function monthKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
 
-const STATUS_TONE: Record<HrOvertimeRow["status"], "info" | "success" | "error" | "neutral"> = {
-  PENDING: "info",
-  APPROVED: "success",
-  REJECTED: "error",
-  CANCELLED: "neutral",
-  WITHDRAWN: "neutral",
-};
+function buildTopOT(rows: HrOvertimeRow[]): TopOTRow[] {
+  const map = new Map<string, TopOTRow>();
+  for (const r of rows) {
+    if (r.status !== "APPROVED" || !r.hoursApproved) continue;
+    const key = r.employee.employeeCode;
+    const hours = Number(r.hoursApproved);
+    const existing = map.get(key);
+    if (existing) existing.hours += hours;
+    else
+      map.set(key, {
+        employeeCode: key,
+        name: `${r.employee.firstNameTh} ${r.employee.lastNameTh}`,
+        hours,
+      });
+  }
+  return [...map.values()].sort((a, b) => b.hours - a.hours).slice(0, 5);
+}
+
+function buildTrends(rows: HrOvertimeRow[]): TrendPoint[] {
+  const sums = new Map<string, number>();
+  const today = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    sums.set(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`, 0);
+  }
+  for (const r of rows) {
+    if (r.status !== "APPROVED" || !r.hoursApproved) continue;
+    const k = monthKey(r.date);
+    if (sums.has(k)) sums.set(k, sums.get(k)! + Number(r.hoursApproved));
+  }
+  return [...sums.entries()].map(([monthKey, hours]) => ({ monthKey, hours }));
+}
+
+function buildKpis(rows: HrOvertimeRow[]) {
+  const today = new Date();
+  const thisMonthKey = monthKey(today.toISOString());
+  const lastMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const lastMonthKey = monthKey(lastMonthDate.toISOString());
+
+  let monthHours = 0;
+  let pendingCount = 0;
+  let approvedCount = 0;
+  let approvedThisMonth = 0;
+  let approvedLastMonth = 0;
+  const monthEmployees = new Set<string>();
+
+  for (const r of rows) {
+    const k = monthKey(r.date);
+    const hours = r.hoursApproved ? Number(r.hoursApproved) : 0;
+    const isThis = k === thisMonthKey;
+    const isLast = k === lastMonthKey;
+
+    if (isThis && hours > 0) {
+      monthHours += hours;
+      monthEmployees.add(r.employee.employeeCode);
+    }
+    if (r.status === "PENDING") pendingCount += 1;
+    if (r.status === "APPROVED") {
+      approvedCount += 1;
+      if (isThis) approvedThisMonth += 1;
+      if (isLast) approvedLastMonth += 1;
+    }
+  }
+
+  const approvedDeltaPct =
+    approvedLastMonth === 0
+      ? null
+      : ((approvedThisMonth - approvedLastMonth) / approvedLastMonth) * 100;
+
+  const avg = monthEmployees.size === 0 ? 0 : monthHours / monthEmployees.size;
+  return { monthHours, pendingCount, approvedCount, approvedDeltaPct, avg };
+}
+
+function buildOvertimeCSV(rows: HrOvertimeRow[]): string {
+  const header = ["EmployeeCode", "Name", "Date", "Type", "Hours", "Rate", "Status", "Reason"] as const;
+  const data = rows.map((r) => [
+    r.employee.employeeCode,
+    `${r.employee.firstNameTh} ${r.employee.lastNameTh}`,
+    r.date,
+    r.overtimeType,
+    r.hoursApproved ?? "",
+    r.rateMultiplier,
+    r.status,
+    r.reason ?? "",
+  ]);
+  return rowsToCSV(header, data);
+}
 
 export function OvertimeOverview() {
   const t = useT();
-  const { rows, summary, status, setStatus, isLoading, error, approve, reject } = useHrOvertime();
+  const { rows, isLoading, error, approve, reject } = useHrOvertime();
   const [rejectTarget, setRejectTarget] = useState<HrOvertimeRow | null>(null);
   const [approveTarget, setApproveTarget] = useState<HrOvertimeRow | null>(null);
 
@@ -49,116 +133,59 @@ export function OvertimeOverview() {
     }
   }, [rejectTarget, reject, t.hr.overtime.overrideRejected, t.manager.rejectFailed]);
 
+  const pending = useMemo(() => rows.filter((r) => r.status === "PENDING").slice(0, 5), [rows]);
+  const top = useMemo(() => buildTopOT(rows), [rows]);
+  const trends = useMemo(() => buildTrends(rows), [rows]);
+  const kpis = useMemo(() => buildKpis(rows), [rows]);
+
+  const handleExport = () => {
+    if (rows.length === 0) {
+      toast.error(t.hr.exportFailed);
+      return;
+    }
+    downloadCSV(buildOvertimeCSV(rows), `overtime-${new Date().toISOString().slice(0, 10)}.csv`);
+    toast.success(t.hr.exportSuccess);
+  };
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            <FileBarChart className="size-3.5" /> {t.hr.overtime.totalRecords}
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">{summary.totalRecords}</div>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-bold tracking-tight">{t.hr.overtime.pageTitle}</h1>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">{t.hr.overtime.pageSubtitle}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-            <Clock className="size-3.5" /> {t.hr.overtime.totalHours}
-          </div>
-          <div className="mt-1 text-2xl font-semibold tabular-nums">{summary.totalHours.toFixed(2)}</div>
-        </div>
+        <Button variant="outline" onClick={handleExport} className="gap-1.5">
+          <Download className="size-4" />
+          {t.hr.overtime.exportReport}
+        </Button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        {FILTERS.map((s) => {
-          const active = s === status;
-          const label = s === "ALL" ? t.common.all : t.hr.overtime.status[s];
-          return (
-            <button
-              key={s}
-              onClick={() => setStatus(s)}
-              className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-colors ${
-                active
-                  ? "border-[var(--es-accent-600)] bg-[var(--es-accent-50)] text-[var(--es-accent-700)]"
-                  : "border-border bg-card hover:bg-muted"
-              }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-        {status === "PENDING" && (
-          <span className="ml-auto inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-            <ShieldAlert className="size-3.5" /> {t.hr.overtime.overrideHint}
-          </span>
-        )}
-      </div>
+      <OvertimeKpis
+        totalHours={kpis.monthHours}
+        pendingCount={kpis.pendingCount}
+        approvedCount={kpis.approvedCount}
+        approvedDeltaPct={kpis.approvedDeltaPct}
+        avgPerEmployee={kpis.avg}
+        isLoading={isLoading}
+      />
 
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12 w-full rounded-md" />)}
-        </div>
-      ) : error ? (
-        <div className="py-12 text-center text-[var(--es-error-500)]">{error}</div>
-      ) : rows.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">{t.hr.overtime.empty}</div>
-      ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-          <ScrollableTable minWidth={1000}>
-            <div className={`grid ${GRID} items-center border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
-              <span>{t.manager.employee}</span>
-              <span>{t.manager.dates}</span>
-              <span>{t.hr.overtime.colType}</span>
-              <span>{t.hr.overtime.colHours}</span>
-              <span>{t.hr.overtime.colRate}</span>
-              <span>{t.hr.overtime.colReason}</span>
-              <span>{t.manager.status}</span>
-              <span />
-            </div>
-            {rows.map((r) => {
-              const name = `${r.employee.firstNameTh} ${r.employee.lastNameTh}`;
-              const isPending = r.status === "PENDING";
-              return (
-                <div key={r.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-4 py-3 text-[13px]`}>
-                  <div>
-                    <div className="font-semibold">{name}</div>
-                    <div className="font-mono text-[11px] text-muted-foreground">{r.employee.employeeCode}</div>
-                  </div>
-                  <div className="tabular-nums">{formatShortDate(r.date, "2-digit")}</div>
-                  <div>{t.manager.overtime[r.overtimeType]}</div>
-                  <div className="tabular-nums">{r.hoursApproved ?? "—"}</div>
-                  <div className="tabular-nums">×{r.rateMultiplier}</div>
-                  <div className="line-clamp-2 text-xs text-muted-foreground">{r.reason}</div>
-                  <div>
-                    <StatusPill tone={STATUS_TONE[r.status]} dot>
-                      {t.hr.overtime.status[r.status]}
-                    </StatusPill>
-                  </div>
-                  <div className="flex justify-end gap-0.5">
-                    {isPending && (
-                      <>
-                        <button
-                          title={`${t.manager.approve} (HR override)`}
-                          aria-label={`${t.manager.approve} ${name}`}
-                          onClick={() => setApproveTarget(r)}
-                          className="rounded-md p-1.5 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]"
-                        >
-                          <Check className="size-4" />
-                        </button>
-                        <button
-                          title={`${t.manager.reject} (HR override)`}
-                          aria-label={`${t.manager.reject} ${name}`}
-                          onClick={() => setRejectTarget(r)}
-                          className="rounded-md p-1.5 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"
-                        >
-                          <X className="size-4" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </ScrollableTable>
+      {error && (
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          {error}
         </div>
       )}
+
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <PendingOvertimeList
+          rows={pending}
+          isLoading={isLoading}
+          onApprove={setApproveTarget}
+          onReject={setRejectTarget}
+        />
+        <TopOtEmployees rows={top} isLoading={isLoading} />
+      </div>
+
+      <MonthlyTrendsChart data={trends} isLoading={isLoading} />
 
       <RejectDialog
         open={!!rejectTarget}

@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import {
   AdminSidebar,
   type NavItem,
   type NavGroup,
 } from "@/components/shared/admin-sidebar";
 import { AdminHeader } from "@/components/shared/admin-header";
+import { useT } from "@/lib/i18n/locale-context";
 
 const SIDEBAR_COLLAPSED_KEY = "es-sidebar-collapsed";
 
@@ -20,6 +21,7 @@ interface AdminShellProps {
 }
 
 export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }: AdminShellProps) {
+  const t = useT();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -61,7 +63,9 @@ export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-[min(85vw,260px)] p-0">
+        <SheetContent side="left" className="w-[min(85vw,260px)] p-0" showCloseButton={false}>
+          <SheetTitle className="sr-only">{t.common.menu}</SheetTitle>
+          <SheetDescription className="sr-only">{defaultTitle}</SheetDescription>
           <AdminSidebar {...sidebarProps} onNavClick={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>

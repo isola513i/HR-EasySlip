@@ -26,6 +26,7 @@ import { useEmployees } from "@/hooks/use-employees";
 import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { useT } from "@/lib/i18n/locale-context";
+import { useFormat } from "@/hooks/use-format";
 
 const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
   ACTIVE: "success",
@@ -36,6 +37,7 @@ const statusTone: Record<string, "success" | "warn" | "error" | "neutral"> = {
 
 export function EmployeeDirectory() {
   const t = useT();
+  const fmt = useFormat();
   const statusFilters = [
     { label: t.common.all, value: "" },
     { label: t.hr.active, value: "ACTIVE" },
@@ -156,7 +158,7 @@ export function EmployeeDirectory() {
                     </div>
                   </div>
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="-mr-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted" aria-label="Actions">
+                    <DropdownMenuTrigger className="-mr-1 rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted" aria-label={t.hr.actions}>
                       <MoreHorizontal className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
@@ -175,17 +177,17 @@ export function EmployeeDirectory() {
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                   <div>
-                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Manager</dt>
+                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.manager}</dt>
                     <dd className="truncate">{p.manager ? `${p.manager.firstNameTh} ${p.manager.lastNameTh}` : "—"}</dd>
                   </div>
                   <div>
                     <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.start}</dt>
                     <dd className="tabular-nums">
-                      {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                      {p.hireDate ? fmt.formatShortDate(p.hireDate, "2-digit") : "—"}
                     </dd>
                   </div>
                   <div className="col-span-2 min-w-0">
-                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">Email</dt>
+                    <dt className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.hr.email}</dt>
                     <dd className="truncate">{p.user?.email ?? "—"}</dd>
                   </div>
                 </dl>
@@ -206,7 +208,7 @@ export function EmployeeDirectory() {
               <span>{t.onboarding.employeeName}</span>
               <span>{t.hr.department}</span>
               <span>{t.hr.role}</span>
-              <span>Manager</span>
+              <span>{t.hr.manager}</span>
               <span>{t.profile.status}</span>
               <span>{t.hr.start}</span>
               <span />
@@ -248,7 +250,7 @@ export function EmployeeDirectory() {
                       {p.employmentStatus}
                     </StatusPill>
                     <span className="tabular-nums text-xs text-muted-foreground">
-                      {p.hireDate ? new Date(p.hireDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                      {p.hireDate ? fmt.formatShortDate(p.hireDate, "2-digit") : "—"}
                     </span>
                     <DropdownMenu>
                       <DropdownMenuTrigger className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted">

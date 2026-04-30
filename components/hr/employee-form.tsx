@@ -109,12 +109,19 @@ export function EmployeeForm({ onCreate, onSuccess, cancelHref }: Props) {
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="hireDate">{t.hr.hireDateLabel} *</Label>
-          <DatePicker value={form.hireDate} onChange={(v) => setForm((p) => ({ ...p, hireDate: v }))} className="w-full" />
+          <DatePicker
+            value={form.hireDate}
+            onChange={(v) => setForm((p) => ({ ...p, hireDate: v }))}
+            placeholder={t.common.selectDate}
+            className="w-full"
+          />
         </div>
         <div className="space-y-1.5">
           <Label>{t.hr.workShift}</Label>
           <Select value={form.workShift} onValueChange={(v) => { if (v) setForm((p) => ({ ...p, workShift: v })); }}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue>{(value) => value === "EVENING" ? t.hr.eveningShift : t.hr.morningShift}</SelectValue>
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="MORNING">{t.hr.morningShift}</SelectItem>
               <SelectItem value="EVENING">{t.hr.eveningShift}</SelectItem>

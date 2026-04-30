@@ -2,9 +2,12 @@
 
 import * as React from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { th as thLocale } from "date-fns/locale/th";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useLocale } from "@/hooks/use-locale";
+import { useT } from "@/lib/i18n/locale-context";
 
 interface DatePickerProps {
   /** ISO YYYY-MM-DD or empty string */
@@ -31,25 +34,30 @@ function toISO(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-function format(iso: string): string {
+function formatLabel(iso: string, localeTag: string): string {
   const d = toDate(iso);
   if (!d) return "";
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(localeTag, { day: "numeric", month: "short", year: "numeric" });
 }
 
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Select date",
+  placeholder,
   disabled,
   min,
   max,
   className,
 }: DatePickerProps) {
+  const t = useT();
+  const { locale } = useLocale();
+  const localeTag = locale === "th" ? "th-TH" : "en-GB";
+  const dpLocale = locale === "th" ? thLocale : undefined;
   const [open, setOpen] = React.useState(false);
   const selected = toDate(value);
   const minDate = min ? toDate(min) : undefined;
   const maxDate = max ? toDate(max) : undefined;
+  const finalPlaceholder = placeholder ?? t.common.selectDate;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -66,11 +74,12 @@ export function DatePicker({
         )}
       >
         <CalendarIcon className="size-4 shrink-0 text-muted-foreground" />
-        <span className="truncate">{value ? format(value) : placeholder}</span>
+        <span className="truncate">{value ? formatLabel(value, localeTag) : finalPlaceholder}</span>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-auto p-0">
         <Calendar
           mode="single"
+          locale={dpLocale}
           selected={selected}
           defaultMonth={selected}
           onSelect={(d) => {

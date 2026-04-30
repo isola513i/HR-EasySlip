@@ -11,6 +11,15 @@ function fmtDate(iso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+const EVENT_PALETTE = [
+  { bg: "bg-[var(--es-accent-50)]", icon: "text-[var(--es-accent-600)]", strip: "bg-[var(--es-accent-400)]" },
+  { bg: "bg-[var(--es-info-50)]", icon: "text-[var(--es-info-600)]", strip: "bg-[var(--es-info-500)]" },
+  { bg: "bg-[var(--es-success-50)]", icon: "text-[var(--es-success-600)]", strip: "bg-[var(--es-success-500)]" },
+  { bg: "bg-[var(--es-warn-50)]", icon: "text-[var(--es-warn-600)]", strip: "bg-[var(--es-warn-500)]" },
+  { bg: "bg-[#fdf2f8]", icon: "text-[#be185d]", strip: "bg-[#ec4899]" },
+  { bg: "bg-[#f3e8ff]", icon: "text-[#7e22ce]", strip: "bg-[#a855f7]" },
+] as const;
+
 export function UpcomingEvents() {
   const t = useT();
   const { locale } = useLocale();
@@ -28,16 +37,18 @@ export function UpcomingEvents() {
             {t.hr.dashboard.noUpcomingEvents}
           </div>
         )}
-        {!isLoading && data.map((ev) => {
+        {!isLoading && data.map((ev, i) => {
           const title = locale === "en" && ev.titleEn ? ev.titleEn : ev.title;
+          const tone = EVENT_PALETTE[i % EVENT_PALETTE.length];
           return (
             <div
               key={ev.id}
-              className="rounded-lg bg-[var(--es-accent-50)] px-4 py-3"
+              className={`relative overflow-hidden rounded-lg px-4 py-3 pl-5 ${tone.bg}`}
             >
+              <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${tone.strip}`} />
               <div className="text-[13px] font-semibold leading-tight text-foreground">{title}</div>
               <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <CalendarDays className="size-3.5" />
+                <CalendarDays className={`size-3.5 ${tone.icon}`} />
                 <span className="tabular-nums">{fmtDate(ev.date)}</span>
               </div>
             </div>

@@ -6,6 +6,9 @@ import { z } from "zod";
 
 export const AuditQuerySchema = z.object({
   entityType: z.string().optional(),
+  module: z
+    .enum(["EMPLOYEES", "LEAVE", "ATTENDANCE", "OVERTIME", "PAYROLL", "REPORTS", "SETTINGS", "OTHER"])
+    .optional(),
   actorId: z.string().optional(),
   from: z.string().date().optional(),
   to: z.string().date().optional(),

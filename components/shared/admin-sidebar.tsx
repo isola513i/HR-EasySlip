@@ -13,6 +13,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useT } from "@/lib/i18n/locale-context";
 
 export interface NavItem {
@@ -103,12 +108,11 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
           return <div key={`g-${i}`} className="px-2.5 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{item.group}</div>;
         }
         const active = pathname.startsWith(item.href);
-        return (
+        const link = (
           <Link
             key={item.key}
             href={item.href}
             onClick={onNavClick}
-            title={collapsed ? item.label : undefined}
             aria-label={collapsed ? item.label : undefined}
             className={cn(
               "relative flex items-center rounded-lg text-[13px] font-medium transition-colors",
@@ -131,6 +135,15 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
             )}
           </Link>
         );
+        if (collapsed) {
+          return (
+            <Tooltip key={item.key}>
+              <TooltipTrigger render={link} />
+              <TooltipContent side="right" sideOffset={10}>{item.label}</TooltipContent>
+            </Tooltip>
+          );
+        }
+        return link;
       })}
 
       <DropdownMenu>

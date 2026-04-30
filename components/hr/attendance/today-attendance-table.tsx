@@ -69,8 +69,14 @@ export function TodayAttendanceTable({ date }: Props) {
         <div className="flex-1 text-base font-semibold">{t.hr.attendance.todayAttendance}</div>
         <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
           <Select value={dept} onValueChange={(v) => v && setDept(v)}>
-            <SelectTrigger size="sm" className="min-w-[160px]">
-              <SelectValue />
+            <SelectTrigger size="sm" className="min-w-[180px]">
+              <SelectValue>
+                {(value) =>
+                  value === "all"
+                    ? t.hr.attendance.allDepartments
+                    : departments.find(([id]) => id === value)?.[1] ?? t.hr.attendance.allDepartments
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t.hr.attendance.allDepartments}</SelectItem>

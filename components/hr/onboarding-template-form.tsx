@@ -99,7 +99,9 @@ export function OnboardingTemplateForm({ open, onClose, onSave, existing }: Prop
                   <Input value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} placeholder={t.onboarding.itemTitle} className="text-sm" />
                   <Input value={item.description} onChange={(e) => updateItem(idx, "description", e.target.value)} placeholder={t.onboarding.itemDesc} className="text-xs" />
                   <Select value={item.category} onValueChange={(v) => { if (v) updateItem(idx, "category", v); }}>
-                    <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue>{(value) => CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] ?? value}</SelectValue>
+                    </SelectTrigger>
                     <SelectContent>
                       {ONBOARDING_CATEGORIES.map((cat) => (
                         <SelectItem key={cat} value={cat}>{CATEGORY_LABELS[cat]}</SelectItem>

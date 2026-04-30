@@ -12,6 +12,8 @@ export interface HrOvertimeRow {
   reason: string;
   status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED" | "WITHDRAWN";
   createdAt: string;
+  assignedStart: string | null;
+  assignedEnd: string | null;
   approverId: string | null;
   employee: {
     firstNameTh: string;
@@ -34,7 +36,7 @@ export type OTStatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 export function useHrOvertime() {
   const [rows, setRows] = useState<HrOvertimeRow[]>([]);
   const [summary, setSummary] = useState<Summary>({ totalRecords: 0, totalHours: 0 });
-  const [status, setStatus] = useState<OTStatusFilter>("PENDING");
+  const [status, setStatus] = useState<OTStatusFilter>("ALL");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

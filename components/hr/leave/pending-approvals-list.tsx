@@ -1,23 +1,16 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Calendar, Clock, Filter as FilterIcon, Check, X, CheckCircle2 } from "lucide-react";
+import { Calendar, Clock, Check, X, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EmployeeAvatar } from "@/components/hr/attendance/employee-avatar";
 import { RejectDialog } from "@/components/manager/reject-dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import { formatShortDate } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
+import { useFormat } from "@/hooks/use-format";
 import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
 import type { PendingLeaveRow } from "@/lib/leave/leave-org-stats-service";
 
@@ -32,9 +25,30 @@ type TypeFilter = "ALL" | "ANNUAL" | "SICK" | "PERSONAL" | "OTHER";
 
 export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props) {
   const t = useT();
+  const fmt = useFormat();
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("ALL");
   const [rejectTarget, setRejectTarget] = useState<PendingLeaveRow | null>(null);
   const [approveTarget, setApproveTarget] = useState<PendingLeaveRow | null>(null);
+
+  const filters: Array<{ value: TypeFilter; label: string }> = [
+    { value: "ALL", label: t.common.all },
+    { value: "ANNUAL", label: t.leave.annual },
+    { value: "SICK", label: t.leave.sick },
+    { value: "PERSONAL", label: t.leave.personal },
+    { value: "OTHER", label: t.hr.leave.otherTypes },
+  ];
+
+  const counts = useMemo(() => {
+    const acc: Record<TypeFilter, number> = { ALL: rows.length, ANNUAL: 0, SICK: 0, PERSONAL: 0, OTHER: 0 };
+    for (const r of rows) {
+      if (r.leaveType === "ANNUAL" || r.leaveType === "SICK" || r.leaveType === "PERSONAL") {
+        acc[r.leaveType] += 1;
+      } else {
+        acc.OTHER += 1;
+      }
+    }
+    return acc;
+  }, [rows]);
 
   const filtered = useMemo(() => {
     if (typeFilter === "ALL") return rows;
@@ -72,27 +86,35 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
 
   return (
     <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+      <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-base font-semibold">{t.hr.leave.pendingApprovals}</div>
-        <Popover>
-          <PopoverTrigger className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-[13px] outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-[var(--ring)]">
-            <FilterIcon className="size-4 text-muted-foreground" />
-            {t.hr.leave.filter}
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-56 p-3">
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{t.hr.leave.leaveType}</div>
-            <Select value={typeFilter} onValueChange={(v) => v && setTypeFilter(v as TypeFilter)}>
-              <SelectTrigger size="sm" className="w-full"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">{t.common.all}</SelectItem>
-                <SelectItem value="ANNUAL">{t.leave.annual}</SelectItem>
-                <SelectItem value="SICK">{t.leave.sick}</SelectItem>
-                <SelectItem value="PERSONAL">{t.leave.personal}</SelectItem>
-                <SelectItem value="OTHER">{t.hr.leave.otherTypes}</SelectItem>
-              </SelectContent>
-            </Select>
-          </PopoverContent>
-        </Popover>
+        <div className="flex flex-wrap items-center gap-1.5">
+          {filters.map((f) => {
+            const active = typeFilter === f.value;
+            const count = counts[f.value];
+            return (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setTypeFilter(f.value)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full border px-3 py-[5px] text-[12px] font-medium transition-colors",
+                  active
+                    ? "border-transparent bg-[var(--es-neutral-900)] text-white"
+                    : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
+                )}
+              >
+                {f.label}
+                <span className={cn(
+                  "tabular-nums text-[11px]",
+                  active ? "text-white/70" : "text-muted-foreground/70",
+                )}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 p-5">
@@ -119,7 +141,7 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-muted-foreground">
                     <span className="inline-flex items-center gap-1 tabular-nums">
                       <Calendar className="size-3.5" />
-                      {formatShortDate(r.startDate, "numeric")} – {formatShortDate(r.endDate, "numeric")}
+                      {fmt.formatShortDate(r.startDate, "numeric")} – {fmt.formatShortDate(r.endDate, "numeric")}
                     </span>
                     <span className="inline-flex items-center gap-1 tabular-nums">
                       <Clock className="size-3.5" />

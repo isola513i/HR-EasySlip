@@ -131,7 +131,7 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
                   <p className="text-sm font-medium">{t.hr.importSuccess} ({created.length})</p>
                   <Button variant="ghost" size="sm" onClick={handleCopyAll}>
                     {copied ? <Check className="mr-1 size-3 text-green-600" /> : <Copy className="mr-1 size-3" />}
-                    {copied ? t.common.copied : "Copy All"}
+                    {copied ? t.common.copied : t.common.copyAll}
                   </Button>
                 </div>
                 <div className="max-h-60 overflow-y-auto rounded-lg border bg-muted/50 p-3 font-mono text-xs space-y-1">

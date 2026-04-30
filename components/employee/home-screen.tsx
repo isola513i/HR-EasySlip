@@ -85,10 +85,10 @@ function LeaveQuotaSkeleton() {
   );
 }
 
-function RecentActivitySkeleton() {
+function RecentActivitySkeleton({ label }: { label: string }) {
   return (
     <div>
-      <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Recent</div>
+      <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
       <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < 2 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
@@ -252,7 +252,7 @@ export function EmployeeHome({ user, dict }: Props) {
 
         {/* Recent activity */}
         {activityLoading ? (
-          <RecentActivitySkeleton />
+          <RecentActivitySkeleton label={dict.employee.recent} />
         ) : (
           <div>
             <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">{dict.employee.recent}</div>
