@@ -5,6 +5,7 @@ import { LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -35,10 +36,12 @@ export function UserMenu({ name, initials, role }: Props) {
         </span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="min-w-[220px] p-1">
-        <DropdownMenuLabel className="px-2 py-1.5">
-          <div className="truncate text-[13px] font-semibold leading-tight">{name}</div>
-          <div className="truncate text-[11px] font-normal text-muted-foreground">{role}</div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="px-2 py-1.5">
+            <div className="truncate text-[13px] font-semibold leading-tight">{name}</div>
+            <div className="truncate text-[11px] font-normal text-muted-foreground">{role}</div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

@@ -3,7 +3,6 @@
 import {
   LayoutGrid,
   Users,
-  ClipboardCheck,
   FileBarChart,
   CalendarDays,
   CalendarCheck,
@@ -31,7 +30,6 @@ export function HRShell({ user, children }: Props) {
     { key: "overview", href: "/hr/overview", icon: LayoutGrid, label: nav.overview },
     { group: nav.groupPeople },
     { key: "employees", href: "/hr/employees", icon: Users, label: nav.employees },
-    { key: "onboarding", href: "/hr/onboarding", icon: ClipboardCheck, label: nav.onboarding },
     { key: "leave", href: "/hr/leave", icon: CalendarDays, label: nav.leave },
     { key: "attendance", href: "/hr/attendance", icon: Clock, label: nav.attendance },
     { key: "overtime", href: "/hr/overtime", icon: Clock, label: nav.overtime },

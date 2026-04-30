@@ -47,7 +47,6 @@ export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }
     items: navItems,
     role: user.role,
     userName,
-    userInitials: initials,
   };
 
   return (

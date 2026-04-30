@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusPill } from "@/components/shared/status-pill";
 import {
@@ -29,7 +29,6 @@ interface AdminSidebarProps {
   items: (NavItem | NavGroup)[];
   role: string;
   userName: string;
-  userInitials: string;
   onNavClick?: () => void;
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
@@ -39,7 +38,7 @@ function isGroup(item: NavItem | NavGroup): item is NavGroup {
   return "group" in item;
 }
 
-export function AdminSidebar({ items, role, userName, userInitials, onNavClick, collapsed = false, onToggleCollapsed }: AdminSidebarProps) {
+export function AdminSidebar({ items, role, userName, onNavClick, collapsed = false, onToggleCollapsed }: AdminSidebarProps) {
   const pathname = usePathname();
   const t = useT();
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
@@ -137,18 +136,19 @@ export function AdminSidebar({ items, role, userName, userInitials, onNavClick, 
       <DropdownMenu>
         <DropdownMenuTrigger
           className={cn(
-            "group/user mt-auto flex cursor-pointer items-center rounded-md p-1.5 text-left transition-colors",
+            "group/user mt-auto flex cursor-pointer items-center rounded-md text-left transition-colors",
             "hover:bg-muted/60 data-popup-open:bg-muted/60",
             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
-            collapsed ? "self-center" : "w-full gap-2",
+            collapsed ? "size-9 justify-center self-center text-muted-foreground" : "w-full gap-2 p-1.5",
           )}
           aria-label={collapsed ? userName : t.common.signOut}
           title={collapsed ? userName : undefined}
         >
-          <div className="es-brand-gradient grid size-8 shrink-0 place-items-center rounded-full text-[11px] font-semibold text-white">{userInitials}</div>
-          {!collapsed && (
+          {collapsed ? (
+            <User className="size-4" aria-hidden="true" />
+          ) : (
             <>
-              <div className="min-w-0 flex-1 leading-tight">
+              <div className="min-w-0 flex-1 px-1 leading-tight">
                 <div className="truncate text-xs font-medium">{userName}</div>
                 <div className="truncate text-[10px] text-muted-foreground">{role}</div>
               </div>

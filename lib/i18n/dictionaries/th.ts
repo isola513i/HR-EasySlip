@@ -598,6 +598,7 @@ const th = {
     exportSuccess: "ส่งออกข้อมูลเรียบร้อย",
     exportFailed: "ส่งออกไม่สำเร็จ",
     addEmployeeTitle: "เพิ่มพนักงาน",
+    newEmployeeSubtitle: "สร้างข้อมูลพนักงานใหม่ ระบบจะสร้างรหัสผ่านเริ่มต้นให้อัตโนมัติ",
     employeeCode: "รหัสพนักงาน",
     firstNameTh: "ชื่อ (TH)",
     lastNameTh: "นามสกุล (TH)",

@@ -1,12 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Download, Plus, Upload, MoreHorizontal, Users, KeyRound, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
-import { SearchInput } from "@/components/shared/search-input";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useEmployees } from "@/hooks/use-employees";
-import { EmployeeFormDialog } from "@/components/hr/employee-form-dialog";
 import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { useT } from "@/lib/i18n/locale-context";
@@ -43,10 +42,8 @@ export function EmployeeDirectory() {
     { label: t.hr.probation, value: "PROBATION" },
     { label: t.hr.suspended, value: "SUSPENDED" },
   ];
-  const { items, isLoading, error, setSearch, setStatus, create, refetch } = useEmployees();
+  const { items, isLoading, error, setStatus, refetch } = useEmployees();
   const [activeFilter, setActiveFilter] = useState(0);
-  const [searchValue, setSearchValue] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
   const [resetResult, setResetResult] = useState<{ tempPassword: string; employeeCode: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -72,11 +69,6 @@ export function EmployeeDirectory() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSearch = (v: string) => {
-    setSearchValue(v);
-    setSearch(v);
-  };
-
   const handleFilter = (idx: number) => {
     setActiveFilter(idx);
     setStatus(statusFilters[idx].value);
@@ -86,12 +78,6 @@ export function EmployeeDirectory() {
     <div className="flex flex-col gap-4">
       {/* Toolbar */}
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-        <SearchInput
-          placeholder={t.hr.searchEmployee}
-          className="w-full lg:max-w-[360px]"
-          value={searchValue}
-          onChange={handleSearch}
-        />
         <div className="flex flex-wrap items-center gap-2">
           {statusFilters.map((f, i) => (
             <button
@@ -127,9 +113,12 @@ export function EmployeeDirectory() {
           <Button variant="outline" size="sm" className="flex-1 lg:flex-none" onClick={() => setBulkOpen(true)}>
             <Upload className="mr-1.5 size-3.5" /> {t.hr.bulkImport}
           </Button>
-          <Button size="sm" className="flex-1 lg:flex-none" onClick={() => setDialogOpen(true)}>
+          <Link
+            href="/hr/employees/new"
+            className={cn(buttonVariants({ size: "sm" }), "flex-1 lg:flex-none")}
+          >
             <Plus className="mr-1.5 size-3.5" /> {t.hr.addEmployee}
-          </Button>
+          </Link>
         </div>
       </div>
 
@@ -282,13 +271,6 @@ export function EmployeeDirectory() {
             )}
         </ScrollableTable>
       </div>
-
-      <EmployeeFormDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        onCreated={() => refetch()}
-        onCreate={create}
-      />
 
       <BulkImportDialog
         open={bulkOpen}

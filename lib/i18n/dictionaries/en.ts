@@ -596,6 +596,7 @@ const en = {
     exportSuccess: "Export successful",
     exportFailed: "Export failed",
     addEmployeeTitle: "Add Employee",
+    newEmployeeSubtitle: "Create a new employee record. An initial password will be generated.",
     employeeCode: "Employee Code",
     firstNameTh: "First Name (TH)",
     lastNameTh: "Last Name (TH)",
