@@ -71,7 +71,7 @@ export function ForgotPasswordForm() {
           type="email"
           autoComplete="email"
           required
-          placeholder="name@company.co.th"
+          placeholder={t.signin.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={isLoading}

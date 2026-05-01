@@ -1,7 +1,14 @@
 "use client";
 
-import { X, RefreshCw, Trash2, Clock } from "lucide-react";
+import { RefreshCw, Trash2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useT } from "@/lib/i18n/locale-context";
 import type { PendingRequest } from "@/lib/offline/offline-queue";
 
@@ -37,18 +44,13 @@ interface Props {
 export function OfflineQueuePanel({ open, onClose, items, isOnline, onCancel, onRetry }: Props) {
   const t = useT();
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="fixed inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative w-full max-w-sm rounded-t-2xl bg-card p-5 shadow-lg sm:rounded-2xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">{t.offline.queuedItems}</h3>
-          <button onClick={onClose} className="rounded-md p-1 text-muted-foreground hover:bg-muted">
-            <X className="size-4" />
-          </button>
-        </div>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>{t.offline.queuedItems}</DialogTitle>
+          <DialogDescription className="sr-only">{t.offline.queuedItems}</DialogDescription>
+        </DialogHeader>
 
         {items.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t.offline.noQueuedItems}</p>
@@ -64,7 +66,9 @@ export function OfflineQueuePanel({ open, onClose, items, isOnline, onCancel, on
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => item.id && onCancel(item.id)}
+                  aria-label={t.common.delete}
                   className="rounded-md p-1 text-muted-foreground hover:text-destructive"
                 >
                   <Trash2 className="size-3.5" />
@@ -78,13 +82,13 @@ export function OfflineQueuePanel({ open, onClose, items, isOnline, onCancel, on
           <Button
             onClick={onRetry}
             disabled={!isOnline}
-            className="mt-4 w-full"
+            className="w-full"
             variant="outline"
           >
             <RefreshCw className="mr-1.5 size-3.5" /> {t.offline.retryAll}
           </Button>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

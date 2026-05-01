@@ -69,7 +69,7 @@ export function TodayAttendanceTable({ date }: Props) {
         <div className="flex-1 text-base font-semibold">{t.hr.attendance.todayAttendance}</div>
         <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
           <Select value={dept} onValueChange={(v) => v && setDept(v)}>
-            <SelectTrigger size="sm" className="min-w-[180px]">
+            <SelectTrigger className="h-10 min-w-[180px]">
               <SelectValue>
                 {(value) =>
                   value === "all"

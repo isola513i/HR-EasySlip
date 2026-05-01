@@ -61,6 +61,7 @@ const docsSecurityHeaders = securityHeaders.map((h) => {
 });
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   async headers() {
     return [
       {

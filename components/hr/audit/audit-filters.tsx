@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -46,14 +46,6 @@ export function AuditFilters({
         />
       </label>
 
-      <button
-        type="button"
-        className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
-      >
-        <Filter className="size-4 text-muted-foreground" />
-        {t.hr.audit.filters}
-      </button>
-
       <Select value={moduleFilter} onValueChange={(v) => v && onModuleChange(v as AuditModule | "ALL")}>
         <SelectTrigger className="h-10 min-w-[160px]">
           <SelectValue>
@@ -69,7 +61,7 @@ export function AuditFilters({
       </Select>
 
       <Select value={dateRange} onValueChange={(v) => v && onDateRangeChange(v as AuditDateRange)}>
-        <SelectTrigger className="h-10 min-w-[150px]">
+        <SelectTrigger className="h-10 min-w-[160px]">
           <SelectValue>
             {(value) => t.hr.audit.ranges[value as AuditDateRange]}
           </SelectValue>

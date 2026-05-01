@@ -18,6 +18,7 @@ export default async function HRLayout({
   return (
     <HRShell
       user={{
+        id: user.userId,
         name: `${user.firstNameTh ?? ""} ${user.lastNameTh ?? ""}`.trim(),
         role: user.roles[0] ?? "HR_AUTHORIZED",
       }}

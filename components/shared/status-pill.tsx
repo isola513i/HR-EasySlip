@@ -47,7 +47,6 @@ export function StatusPill({
           className={cn("size-[5px] shrink-0 rounded-full", dotColors[tone])}
         />
       )}
-      <span className="sr-only">{tone}: </span>
       {children}
     </span>
   );

@@ -3,21 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { ChevronsUpDown, LogOut, PanelLeftClose, PanelLeftOpen, User } from "lucide-react";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusPill } from "@/components/shared/status-pill";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { LocaleToggle } from "@/components/shared/locale-toggle";
 import { useT } from "@/lib/i18n/locale-context";
 
 export interface NavItem {
@@ -53,7 +47,7 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
     <aside
       data-collapsed={collapsed ? "true" : "false"}
       className={cn(
-        "flex h-full shrink-0 flex-col gap-1 overflow-hidden border-r border-border bg-card py-4",
+        "flex h-full shrink-0 flex-col gap-1.5 overflow-hidden border-r border-border bg-card py-5",
         "transition-[width] duration-200 ease-out [will-change:width]",
         collapsed ? "w-[64px] px-2" : "w-[var(--es-sidebar-width)] px-3",
       )}
@@ -66,7 +60,6 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
           <Link
             href={homeHref}
             onClick={onNavClick}
-            aria-label={t.common.goToDashboard}
             className="-mx-1 flex min-w-0 items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
           >
             <Image
@@ -103,9 +96,9 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
       {items.map((item, i) => {
         if (isGroup(item)) {
           if (collapsed) {
-            return <div key={`g-${i}`} className="mx-2 my-2 h-px bg-border/60" aria-hidden="true" />;
+            return <div key={`g-${i}`} className="mx-2 my-2.5 h-px bg-border/60" aria-hidden="true" />;
           }
-          return <div key={`g-${i}`} className="px-2.5 pb-1 pt-3 text-[10px] font-bold uppercase tracking-[0.06em] text-muted-foreground">{item.group}</div>;
+          return <div key={`g-${i}`} className="px-2.5 pb-1.5 pt-4 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{item.group}</div>;
         }
         const active = pathname.startsWith(item.href);
         const link = (
@@ -115,12 +108,12 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
             onClick={onNavClick}
             aria-label={collapsed ? item.label : undefined}
             className={cn(
-              "relative flex items-center rounded-lg text-[13px] font-medium transition-colors",
-              collapsed ? "size-9 justify-center self-center" : "w-full gap-2.5 px-2.5 py-2",
+              "relative flex items-center rounded-lg text-[14px] font-medium transition-colors",
+              collapsed ? "size-10 justify-center self-center" : "w-full gap-3 px-3 py-2.5",
               active ? "bg-[var(--es-accent-50)] font-semibold text-[var(--es-accent-700)]" : "text-muted-foreground hover:bg-muted",
             )}
           >
-            <item.icon className="size-[18px] shrink-0" />
+            <item.icon className="size-5 shrink-0" />
             {!collapsed && (
               <>
                 <span className="flex-1 truncate">{item.label}</span>
@@ -146,48 +139,17 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
         return link;
       })}
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          className={cn(
-            "group/user mt-auto flex cursor-pointer items-center rounded-md text-left transition-colors",
-            "hover:bg-muted/60 data-popup-open:bg-muted/60",
-            "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
-            collapsed ? "size-9 justify-center self-center text-muted-foreground" : "w-full gap-2 p-1.5",
-          )}
-          aria-label={collapsed ? userName : t.common.signOut}
-          title={collapsed ? userName : undefined}
-        >
-          {collapsed ? (
-            <User className="size-4" aria-hidden="true" />
-          ) : (
-            <>
-              <div className="min-w-0 flex-1 px-1 leading-tight">
-                <div className="truncate text-xs font-medium">{userName}</div>
-                <div className="truncate text-[10px] text-muted-foreground">{role}</div>
-              </div>
-              <ChevronsUpDown
-                className="size-3.5 shrink-0 text-muted-foreground/60 transition-colors group-hover/user:text-muted-foreground"
-                aria-hidden="true"
-              />
-            </>
-          )}
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="end"
-          side="top"
-          sideOffset={6}
-          className="min-w-[180px] p-1"
-        >
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="cursor-pointer gap-2 px-2 py-1.5 text-[13px] focus:bg-destructive/5 dark:focus:bg-destructive/15"
-          >
-            <LogOut className="size-4" />
-            {t.common.signOut}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div
+        className={cn(
+          "mt-auto flex shrink-0 pt-3",
+          collapsed ? "flex-col items-center gap-2" : "items-stretch",
+        )}
+      >
+        <LocaleToggle
+          variant={collapsed ? "compact" : "full"}
+          className={collapsed ? undefined : "w-full"}
+        />
+      </div>
     </aside>
   );
 }

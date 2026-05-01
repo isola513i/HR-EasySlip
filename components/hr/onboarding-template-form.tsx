@@ -94,13 +94,13 @@ export function OnboardingTemplateForm({ open, onClose, onSave, existing }: Prop
           <div className="space-y-2">
             <Label>{t.onboarding.checklistItems} *</Label>
             {items.map((item, idx) => (
-              <div key={idx} className="flex items-start gap-2 rounded-lg border p-2.5">
+              <div key={idx} className="flex items-start gap-2 rounded-xl border p-2.5">
                 <div className="flex-1 space-y-1.5">
                   <Input value={item.title} onChange={(e) => updateItem(idx, "title", e.target.value)} placeholder={t.onboarding.itemTitle} className="text-sm" />
                   <Input value={item.description} onChange={(e) => updateItem(idx, "description", e.target.value)} placeholder={t.onboarding.itemDesc} className="text-xs" />
                   <Select value={item.category} onValueChange={(v) => { if (v) updateItem(idx, "category", v); }}>
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue>{(value) => CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] ?? value}</SelectValue>
+                    <SelectTrigger className="h-10 text-xs">
+                      <SelectValue>{(value) => CATEGORY_LABELS[value as keyof typeof CATEGORY_LABELS] ?? String(value)}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {ONBOARDING_CATEGORIES.map((cat) => (

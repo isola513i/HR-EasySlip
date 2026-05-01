@@ -9,7 +9,7 @@ import { UserMenu } from "@/components/shared/user-menu";
 import { useT } from "@/lib/i18n/locale-context";
 
 interface AdminHeaderProps {
-  user: { name: string; role: string; initials: string };
+  user: { id: string; name: string; role: string; initials: string };
   onMenuClick?: () => void;
   inboxHref?: string;
 }
@@ -87,7 +87,7 @@ export function AdminHeader({ user, onMenuClick, inboxHref = "/employee/inbox" }
           <Mail className="size-[18px]" strokeWidth={1.75} />
         </Link>
 
-        <NotificationBell />
+        <NotificationBell userId={user.id} />
 
         <span aria-hidden="true" className="mx-1 hidden h-7 w-px bg-border sm:block" />
 

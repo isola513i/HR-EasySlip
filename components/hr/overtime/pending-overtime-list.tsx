@@ -84,6 +84,7 @@ export function PendingOvertimeList({ rows, isLoading, onApprove, onReject }: Pr
                     <X className="size-3.5" /> {t.manager.reject}
                   </Button>
                   <Button
+                    variant="success"
                     size="sm"
                     className="gap-1"
                     onClick={() => onApprove(r)}

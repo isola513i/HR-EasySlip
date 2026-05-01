@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DatePicker } from "@/components/ui/date-picker";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useOTRequests } from "@/hooks/use-ot-requests";
 import { useT } from "@/lib/i18n/locale-context";
@@ -55,17 +56,9 @@ export function OTRequestForm() {
         </Tabs>
 
         {/* Date */}
-        <div>
-          <label htmlFor="ot-date" className="mb-1.5 block text-[13px] font-medium">{t.ot.date}</label>
-          <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
-            <input
-              id="ot-date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border-none bg-transparent text-[15px] font-semibold outline-none"
-            />
-          </div>
+        <div className="space-y-1.5">
+          <label htmlFor="ot-date" className="block text-[13px] font-medium">{t.ot.date}</label>
+          <DatePicker value={date} onChange={setDate} className="w-full" />
         </div>
 
         {/* Weekday info / Holiday fields */}
@@ -75,34 +68,30 @@ export function OTRequestForm() {
           </div>
         ) : (
           <>
-            <div>
-              <label htmlFor="ot-start" className="mb-1.5 block text-[13px] font-medium">
+            <div className="space-y-1.5">
+              <label htmlFor="ot-start" className="block text-[13px] font-medium">
                 {t.ot.assignedStart}
               </label>
-              <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
-                <input
-                  id="ot-start"
-                  type="datetime-local"
-                  value={assignedStart}
-                  onChange={(e) => setAssignedStart(e.target.value)}
-                  className="w-full border-none bg-transparent text-[15px] font-semibold outline-none"
-                />
-              </div>
+              <input
+                id="ot-start"
+                type="datetime-local"
+                value={assignedStart}
+                onChange={(e) => setAssignedStart(e.target.value)}
+                className="h-10 w-full rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+              />
             </div>
-            <div>
-              <label htmlFor="ot-end" className="mb-1.5 block text-[13px] font-medium">
+            <div className="space-y-1.5">
+              <label htmlFor="ot-end" className="block text-[13px] font-medium">
                 {t.ot.assignedEnd}
               </label>
-              <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
-                <input
-                  id="ot-end"
-                  type="datetime-local"
-                  value={assignedEnd}
-                  min={assignedStart}
-                  onChange={(e) => setAssignedEnd(e.target.value)}
-                  className="w-full border-none bg-transparent text-[15px] font-semibold outline-none"
-                />
-              </div>
+              <input
+                id="ot-end"
+                type="datetime-local"
+                value={assignedEnd}
+                min={assignedStart}
+                onChange={(e) => setAssignedEnd(e.target.value)}
+                className="h-10 w-full rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+              />
             </div>
             <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
               {t.ot.holidayInfo}
@@ -111,8 +100,8 @@ export function OTRequestForm() {
         )}
 
         {/* Reason */}
-        <div>
-          <label htmlFor="ot-reason" className="mb-1.5 block text-[13px] font-medium">
+        <div className="space-y-1.5">
+          <label htmlFor="ot-reason" className="block text-[13px] font-medium">
             {t.ot.reason}
           </label>
           <Textarea

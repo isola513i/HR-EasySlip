@@ -10,12 +10,12 @@ import {
 import { AdminHeader } from "@/components/shared/admin-header";
 import { useT } from "@/lib/i18n/locale-context";
 
-const SIDEBAR_COLLAPSED_KEY = "es-sidebar-collapsed";
+const SIDEBAR_COLLAPSED_KEY_PREFIX = "es-sidebar-collapsed";
 
 interface AdminShellProps {
   navItems: (NavItem | NavGroup)[];
   defaultTitle: string;
-  user: { name: string; role: string };
+  user: { id: string; name: string; role: string };
   inboxHref?: string;
   children: React.ReactNode;
 }
@@ -24,17 +24,18 @@ export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }
   const t = useT();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const collapsedKey = `${SIDEBAR_COLLAPSED_KEY_PREFIX}:${user.id}`;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setCollapsed(window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1");
-  }, []);
+    setCollapsed(window.localStorage.getItem(collapsedKey) === "1");
+  }, [collapsedKey]);
 
   const toggleCollapsed = () => {
     setCollapsed((prev) => {
       const next = !prev;
       try {
-        window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, next ? "1" : "0");
+        window.localStorage.setItem(collapsedKey, next ? "1" : "0");
       } catch {
         // localStorage unavailable (private mode etc.)
       }
@@ -72,7 +73,7 @@ export function AdminShell({ navItems, defaultTitle, user, inboxHref, children }
 
       <div className="flex min-w-0 flex-1 flex-col">
         <AdminHeader
-          user={{ name: userName, role: user.role, initials }}
+          user={{ id: user.id, name: userName, role: user.role, initials }}
           onMenuClick={() => setMobileOpen(true)}
           inboxHref={inboxHref}
         />

@@ -20,7 +20,7 @@ interface Props {
   title: string;
   description?: string;
   confirmLabel?: string;
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "success";
 }
 
 export function ConfirmDialog({

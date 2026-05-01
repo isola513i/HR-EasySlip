@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import type { AuditQuery } from "./schemas";
 import { categorizeAction, moduleForEntity, type AuditCategory } from "./categories";
+import { ACTION_LABELS_EN, ACTION_LABELS_TH } from "./action-labels";
 
 const MODULE_ENTITIES: Record<string, string[]> = {
   EMPLOYEES: ["Employee", "LeaveQuota"],
@@ -16,25 +17,52 @@ const MODULE_ENTITIES: Record<string, string[]> = {
   SETTINGS: ["User", "SystemConfig", "ConsentRecord"],
 };
 
+const KNOWN_ENTITIES = Object.values(MODULE_ENTITIES).flat();
+
+function actionsMatchingLabel(query: string): string[] {
+  const q = query.toLowerCase();
+  const matches = new Set<string>();
+  for (const [code, label] of Object.entries(ACTION_LABELS_EN)) {
+    if (label.toLowerCase().includes(q)) matches.add(code);
+  }
+  for (const [code, label] of Object.entries(ACTION_LABELS_TH)) {
+    if (label.toLowerCase().includes(q)) matches.add(code);
+  }
+  return [...matches];
+}
+
 function buildWhere(filters: AuditQuery) {
-  const moduleEntities = filters.module ? MODULE_ENTITIES[filters.module] : undefined;
-  return {
-    ...(filters.entityType && { entityType: filters.entityType }),
-    ...(moduleEntities && moduleEntities.length > 0 && { entityType: { in: moduleEntities } }),
-    ...(filters.actorId && { actorId: filters.actorId }),
-    ...(filters.action && {
-      OR: [
-        { action: { contains: filters.action } },
-        { entityType: { contains: filters.action } },
-      ],
-    }),
-    ...((filters.from || filters.to) && {
-      createdAt: {
-        ...(filters.from && { gte: new Date(filters.from) }),
-        ...(filters.to && { lte: new Date(filters.to + "T23:59:59.999Z") }),
-      },
-    }),
-  };
+  const where: Record<string, unknown> = {};
+
+  if (filters.entityType) where.entityType = filters.entityType;
+
+  if (filters.module === "OTHER") {
+    where.entityType = { notIn: KNOWN_ENTITIES };
+  } else if (filters.module) {
+    const moduleEntities = MODULE_ENTITIES[filters.module];
+    if (moduleEntities?.length) where.entityType = { in: moduleEntities };
+  }
+
+  if (filters.actorId) where.actorId = filters.actorId;
+
+  if (filters.action) {
+    const q = filters.action;
+    const labelMatches = actionsMatchingLabel(q);
+    where.OR = [
+      { action: { contains: q, mode: "insensitive" } },
+      { entityType: { contains: q, mode: "insensitive" } },
+      ...(labelMatches.length > 0 ? [{ action: { in: labelMatches } }] : []),
+    ];
+  }
+
+  if (filters.from || filters.to) {
+    where.createdAt = {
+      ...(filters.from && { gte: new Date(filters.from) }),
+      ...(filters.to && { lte: new Date(filters.to + "T23:59:59.999Z") }),
+    };
+  }
+
+  return where;
 }
 
 export async function queryLogs(filters: AuditQuery) {

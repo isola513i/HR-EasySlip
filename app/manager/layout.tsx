@@ -18,6 +18,7 @@ export default async function ManagerLayout({
   return (
     <ManagerShell
       user={{
+        id: user.userId,
         name: `${user.firstNameTh ?? ""} ${user.lastNameTh ?? ""}`.trim(),
         role: user.roles[0] ?? "MANAGER",
       }}

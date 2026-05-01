@@ -247,7 +247,7 @@ export function ApprovalInbox() {
             <div className="hidden h-5 w-px bg-border sm:block" />
             <button onClick={() => setSelected(new Set())} className="rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-[13px] font-medium transition-colors hover:bg-muted">{t.common.cancel}</button>
             <button onClick={() => setBulkRejectOpen(true)} className="flex items-center gap-1.5 rounded-md border border-[var(--es-error-500)] bg-card px-3 py-[7px] text-[13px] font-semibold text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"><X className="size-3.5" /> {t.manager.rejectAll}</button>
-            <button onClick={handleBulkApprove} className="flex items-center gap-1.5 rounded-md bg-[var(--es-accent-600)] px-3.5 py-[7px] text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(61,70,204,0.2)] transition-colors hover:bg-[var(--es-accent-700)]"><Check className="size-3.5" /> {t.manager.approveAll}</button>
+            <button onClick={handleBulkApprove} className="flex items-center gap-1.5 rounded-md bg-[var(--es-success-600)] px-3.5 py-[7px] text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(22,163,74,0.2)] transition-colors hover:bg-[var(--es-success-700)]"><Check className="size-3.5" /> {t.manager.approveAll}</button>
           </div>
         </div>
       )}

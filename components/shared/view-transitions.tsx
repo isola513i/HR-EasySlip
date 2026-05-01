@@ -18,7 +18,7 @@ export function ViewTransitions() {
       document as Document & { startViewTransition?: (cb: () => void) => unknown }
     ).startViewTransition;
     if (typeof startViewTransition !== "function") return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const onClick = (e: MouseEvent) => {
       if (e.defaultPrevented) return;

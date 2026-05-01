@@ -10,8 +10,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useSettings, type SystemSetting } from "@/hooks/use-settings";
+import { useT } from "@/lib/i18n/locale-context";
+import { useFormat } from "@/hooks/use-format";
 
-const GROUP_LABELS: Record<string, string> = { leave: "Leave", payroll: "Payroll", attendance: "Attendance", pdpa: "PDPA" };
+type SettingsGroupKey = keyof ReturnType<typeof useT>["hr"]["settings"]["groups"];
 
 function groupSettings(settings: SystemSetting[]): Record<string, SystemSetting[]> {
   const groups: Record<string, SystemSetting[]> = {};
@@ -23,11 +25,9 @@ function groupSettings(settings: SystemSetting[]): Record<string, SystemSetting[
   return groups;
 }
 
-function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
-}
-
 function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key: string, value: string | number | boolean) => Promise<void> }) {
+  const t = useT();
+  const fmt = useFormat();
   const original = setting.value;
   const [draft, setDraft] = useState<string | number | boolean>(original);
   const [saving, setSaving] = useState(false);
@@ -35,8 +35,8 @@ function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key:
 
   async function handleSave() {
     setSaving(true);
-    try { await onSave(setting.key, draft); toast.success("บันทึกเรียบร้อย"); }
-    catch (err) { toast.error(err instanceof Error ? err.message : "บันทึกไม่สำเร็จ"); }
+    try { await onSave(setting.key, draft); toast.success(t.common.savedSuccess); }
+    catch (err) { toast.error(err instanceof Error ? err.message : t.common.saveFailed); }
     finally { setSaving(false); }
   }
 
@@ -49,7 +49,7 @@ function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key:
         <Label className="text-sm font-medium">{setting.description ?? setting.key}</Label>
         <p className="text-[11px] text-muted-foreground">
           <code>{setting.key}</code>
-          {setting.updatedAt && <span className="ml-2">Updated: {formatDateTime(setting.updatedAt)}</span>}
+          {setting.updatedAt && <span className="ml-2">{t.common.updated}: {fmt.formatDateTime(setting.updatedAt)}</span>}
         </p>
       </div>
       {isBool ? (
@@ -59,13 +59,14 @@ function SettingRow({ setting, onSave }: { setting: SystemSetting; onSave: (key:
           onChange={(e) => setDraft(isNum ? Number(e.target.value) : e.target.value)} />
       )}
       <Button size="sm" variant={dirty ? "default" : "outline"} disabled={!dirty || saving} onClick={handleSave}>
-        <Save className="mr-1.5 size-3.5" />{saving ? "Saving..." : "Save"}
+        <Save className="mr-1.5 size-3.5" />{saving ? t.common.saving : t.common.save}
       </Button>
     </div>
   );
 }
 
 export function SettingsPanel() {
+  const t = useT();
   const { settings, isLoading, error, update } = useSettings();
   const groups = groupSettings(settings);
 
@@ -89,7 +90,7 @@ export function SettingsPanel() {
     return <div className="flex h-[300px] items-center justify-center text-sm text-destructive">{error}</div>;
   }
   if (settings.length === 0) {
-    return <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">No settings configured yet.</div>;
+    return <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">{t.hr.settings.empty}</div>;
   }
 
   return (
@@ -97,7 +98,9 @@ export function SettingsPanel() {
       {Object.entries(groups).map(([prefix, items]) => (
         <Card key={prefix}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">{GROUP_LABELS[prefix] ?? prefix}</CardTitle>
+            <CardTitle className="text-base">
+              {t.hr.settings.groups[prefix as SettingsGroupKey] ?? prefix}
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {items.map((s) => <SettingRow key={s.key} setting={s} onSave={update} />)}

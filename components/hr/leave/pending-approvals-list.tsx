@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { EmployeeAvatar } from "@/components/hr/attendance/employee-avatar";
 import { RejectDialog } from "@/components/manager/reject-dialog";
-import { ConfirmDialog } from "@/components/shared/confirm-dialog";
+import { ApproveLeaveDialog } from "@/components/hr/leave/approve-leave-dialog";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
@@ -151,10 +151,10 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
                   {r.reason && <div className="mt-1.5 line-clamp-2 text-[13px]">{r.reason}</div>}
                 </div>
                 <div className="flex shrink-0 gap-2">
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setRejectTarget(r)}>
+                  <Button variant="destructive" size="sm" className="gap-1" onClick={() => setRejectTarget(r)}>
                     <X className="size-3.5" />{t.manager.reject}
                   </Button>
-                  <Button size="sm" className="gap-1" onClick={() => setApproveTarget(r)}>
+                  <Button variant="success" size="sm" className="gap-1" onClick={() => setApproveTarget(r)}>
                     <Check className="size-3.5" />{t.manager.approve}
                   </Button>
                 </div>
@@ -170,13 +170,10 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
         onConfirm={handleReject}
         employeeName={rejectTarget ? `${rejectTarget.employee.firstNameTh} ${rejectTarget.employee.lastNameTh}` : undefined}
       />
-      <ConfirmDialog
-        open={!!approveTarget}
+      <ApproveLeaveDialog
+        row={approveTarget}
         onClose={() => setApproveTarget(null)}
         onConfirm={handleApprove}
-        title={t.hr.leave.confirmApproveTitle}
-        description={approveTarget ? `${approveTarget.employee.firstNameTh} ${approveTarget.employee.lastNameTh} · ${approveTarget.daysRequested} ${t.hr.leave.daysUnit}` : undefined}
-        confirmLabel={t.manager.approve}
       />
     </div>
   );

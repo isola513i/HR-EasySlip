@@ -86,7 +86,7 @@ export function DetailSheet({ row, onClose, onApprove, onReject }: Props) {
             </button>
             <button
               onClick={() => { onApprove(row.id); onClose(); }}
-              className="flex-[2] rounded-md bg-[var(--es-accent-600)] py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(61,70,204,0.2)] transition-colors hover:bg-[var(--es-accent-700)]"
+              className="flex-[2] rounded-md bg-[var(--es-success-600)] py-3 text-sm font-semibold text-white shadow-[0_1px_2px_rgba(22,163,74,0.2)] transition-colors hover:bg-[var(--es-success-700)]"
             >
               {t.manager.approveRequest}
             </button>

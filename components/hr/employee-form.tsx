@@ -81,11 +81,11 @@ export function EmployeeForm({ onCreate, onSuccess, cancelHref }: Props) {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label htmlFor="empCode">{t.hr.employeeCode} *</Label>
-          <Input id="empCode" value={form.employeeCode} onChange={set("employeeCode")} placeholder="ES0001" />
+          <Input id="empCode" value={form.employeeCode} onChange={set("employeeCode")} placeholder={t.hr.employeeCodePlaceholder} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="empEmail">{t.profile.email} *</Label>
-          <Input id="empEmail" type="email" value={form.email} onChange={set("email")} placeholder="name@company.com" />
+          <Input id="empEmail" type="email" value={form.email} onChange={set("email")} placeholder={t.signin.emailPlaceholder} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="fnTh">{t.hr.firstNameTh} *</Label>
@@ -105,7 +105,7 @@ export function EmployeeForm({ onCreate, onSuccess, cancelHref }: Props) {
         </div>
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="empPhone">{t.profile.phone}</Label>
-          <Input id="empPhone" value={form.phone} onChange={set("phone")} placeholder="0xx-xxx-xxxx" />
+          <Input id="empPhone" value={form.phone} onChange={set("phone")} placeholder={t.profile.phonePlaceholder} />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="hireDate">{t.hr.hireDateLabel} *</Label>
@@ -119,7 +119,7 @@ export function EmployeeForm({ onCreate, onSuccess, cancelHref }: Props) {
         <div className="space-y-1.5">
           <Label>{t.hr.workShift}</Label>
           <Select value={form.workShift} onValueChange={(v) => { if (v) setForm((p) => ({ ...p, workShift: v })); }}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="h-10 w-full">
               <SelectValue>{(value) => value === "EVENING" ? t.hr.eveningShift : t.hr.morningShift}</SelectValue>
             </SelectTrigger>
             <SelectContent>

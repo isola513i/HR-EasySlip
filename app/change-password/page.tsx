@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { getDict } from "@/lib/i18n/get-dict";
 import { ChangePasswordForm } from "./change-password-form";
 
-export const metadata: Metadata = {
-  title: "Change Password — EasySlip HR",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getDict();
+  return { title: t.password.changeTitle };
+}
 
-export default function ChangePasswordPage() {
+export default async function ChangePasswordPage() {
+  const { t } = await getDict();
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -19,9 +22,9 @@ export default function ChangePasswordPage() {
             className="rounded-xl"
             priority
           />
-          <h1 className="text-xl font-bold tracking-tight">เปลี่ยนรหัสผ่าน</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t.password.changeTitle}</h1>
           <p className="text-center text-sm text-muted-foreground">
-            กรุณาตั้งรหัสผ่านใหม่ก่อนเข้าใช้งานระบบ
+            {t.password.mustChange}
           </p>
         </div>
 

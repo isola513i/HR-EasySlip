@@ -27,7 +27,12 @@ export function OnboardingBanner({ remaining }: Props) {
       >
         {t.onboarding.bannerAction}
       </Link>
-      <button onClick={() => setDismissed(true)} className="shrink-0 rounded-md p-0.5 text-[var(--es-accent-400)] hover:text-[var(--es-accent-700)]">
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label={t.common.dismiss}
+        className="shrink-0 rounded-md p-0.5 text-[var(--es-accent-400)] hover:text-[var(--es-accent-700)]"
+      >
         <X className="size-3.5" />
       </button>
     </div>

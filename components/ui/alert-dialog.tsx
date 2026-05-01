@@ -118,7 +118,7 @@ function AlertDialogAction({
   variant = "default",
   ...props
 }: AlertDialogPrimitive.Close.Props & {
-  variant?: "default" | "destructive";
+  variant?: "default" | "destructive" | "success";
 }) {
   return (
     <AlertDialogPrimitive.Close

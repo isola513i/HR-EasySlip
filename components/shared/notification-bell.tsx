@@ -18,16 +18,24 @@ interface NotifItem {
   createdAt: string;
 }
 
-const READ_KEY = "es-notif-last-read-at";
+const READ_KEY_PREFIX = "es-notif-last-read-at";
 
-function readLastReadAt(): number {
+function readKeyFor(userId: string) {
+  return `${READ_KEY_PREFIX}:${userId}`;
+}
+
+function readLastReadAt(userId: string): number {
   if (typeof window === "undefined") return 0;
-  const raw = window.localStorage.getItem(READ_KEY);
+  const raw = window.localStorage.getItem(readKeyFor(userId));
   const n = raw ? Number(raw) : 0;
   return Number.isFinite(n) ? n : 0;
 }
 
-export function NotificationBell() {
+interface NotificationBellProps {
+  userId: string;
+}
+
+export function NotificationBell({ userId }: NotificationBellProps) {
   const t = useT();
   const { locale } = useLocale();
   const [open, setOpen] = useState(false);
@@ -37,9 +45,9 @@ export function NotificationBell() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setLastReadAt(readLastReadAt());
+    setLastReadAt(readLastReadAt(userId));
     setHydrated(true);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     setLoading(true);
@@ -59,7 +67,7 @@ export function NotificationBell() {
   const persistLastReadAt = (ts: number) => {
     setLastReadAt(ts);
     try {
-      window.localStorage.setItem(READ_KEY, String(ts));
+      window.localStorage.setItem(readKeyFor(userId), String(ts));
     } catch {
       // ignore
     }

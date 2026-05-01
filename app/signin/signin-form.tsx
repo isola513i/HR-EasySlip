@@ -157,7 +157,7 @@ export function SignInForm({ dict }: Props) {
                 setEmail(value);
                 persistEmailIfRemembered(value);
               }}
-              className="h-12 pl-11 md:h-12 md:pl-11"
+              className="pl-11"
             />
           </div>
           <FormFieldError inputType="email" />
@@ -179,7 +179,7 @@ export function SignInForm({ dict }: Props) {
               disabled={isLoading}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-12 pl-11 pr-11 md:h-12 md:pl-11 md:pr-11"
+              className="pl-11 pr-11"
             />
             <button
               type="button"
@@ -228,7 +228,7 @@ export function SignInForm({ dict }: Props) {
         {error && <p className="text-destructive text-sm">{error}</p>}
         <Button
           type="submit"
-          className="h-12 w-full text-base md:h-12"
+          className="h-10 w-full"
           disabled={isLoading}
         >
           {isLoading ? dict.submitting : dict.submitButton}
@@ -251,7 +251,7 @@ export function SignInForm({ dict }: Props) {
       <Button
         type="button"
         variant="outline"
-        className="h-12 w-full text-base md:h-12"
+        className="h-10 w-full"
         disabled={isSendingMagicLink || !email}
         onClick={handleMagicLink}
       >

@@ -59,7 +59,7 @@ export function CyclesTable({
         </div>
         <Select value={String(year)} onValueChange={(v) => v && onYearChange(Number(v))}>
           <SelectTrigger className="h-10 min-w-[140px]">
-            <SelectValue>{(value) => value}</SelectValue>
+            <SelectValue>{(value) => String(value)}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             {yearOptions.map((y) => (

@@ -17,7 +17,7 @@ import type { NavItem, NavGroup } from "@/components/shared/admin-sidebar";
 import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
-  user: { name: string; role: string };
+  user: { id: string; name: string; role: string };
   children: React.ReactNode;
 }
 
