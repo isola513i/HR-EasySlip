@@ -3,7 +3,7 @@
 import { Shield } from "lucide-react";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 
 interface Props {
   policy: PdpaOverview["policy"];

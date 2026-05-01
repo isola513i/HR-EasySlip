@@ -2,7 +2,7 @@
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { useT } from "@/lib/i18n/locale-context";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 
 interface Props {
   totals: PdpaOverview["totals"];

@@ -3,7 +3,7 @@
 import { CheckCircle2, AlertCircle, XCircle, ShieldCheck } from "lucide-react";
 import { KpiCard, KpiGrid } from "@/components/shared/kpi-card";
 import { useT } from "@/lib/i18n/locale-context";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 
 interface Props {
   totals: PdpaOverview["totals"];

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 
 export function usePdpaOverview() {
   const [data, setData] = useState<PdpaOverview | null>(null);

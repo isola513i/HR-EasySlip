@@ -1,7 +1,7 @@
 "use client";
 
 import { useT } from "@/lib/i18n/locale-context";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 import type { ConsentCategory } from "@/lib/consent/categories";
 
 interface Props {

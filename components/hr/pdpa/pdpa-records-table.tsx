@@ -8,7 +8,7 @@ import { getInitials } from "@/lib/employee/initials";
 import { openMailto } from "@/lib/email/open-mailto";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
-import type { PdpaOverview } from "@/lib/consent/consent-service";
+import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
 import type { ConsentStatus } from "@/lib/consent/categories";
 
 const GRID = "grid-cols-[1.5fr_120px_1.5fr_140px_120px_120px_100px]";

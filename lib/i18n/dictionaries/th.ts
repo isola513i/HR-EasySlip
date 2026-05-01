@@ -50,7 +50,7 @@ const th = {
     dismiss: "ปิด",
     language: "ภาษา",
     switchLanguageThai: "เปลี่ยนเป็นภาษาไทย",
-    switchLanguageEnglish: "Switch to English",
+    switchLanguageEnglish: "เปลี่ยนเป็นภาษาอังกฤษ",
   },
   metadata: {
     description: "ระบบบริหารทรัพยากรบุคคล EasySlip — ลงเวลา ลางาน อนุมัติ",
