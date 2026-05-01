@@ -41,7 +41,6 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
   const pathname = usePathname();
   const t = useT();
   const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
-  const homeHref = items.find((item): item is NavItem => !isGroup(item))?.href ?? "/";
 
   return (
     <aside
@@ -53,15 +52,11 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
       )}
     >
       <div className={cn(
-        "flex items-center pb-4",
-        collapsed ? "justify-center px-0" : "gap-2.5 px-2",
+        "relative flex items-center pb-4",
+        collapsed ? "justify-center px-0" : "justify-center px-2",
       )}>
         {!collapsed && (
-          <Link
-            href={homeHref}
-            onClick={onNavClick}
-            className="-mx-1 flex min-w-0 items-center gap-2.5 rounded-md px-1 py-0.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50"
-          >
+          <div className="flex min-w-0 items-center gap-2.5">
             <Image
               src="/favicons/apple-touch-icon.png"
               alt="EasySlip"
@@ -74,7 +69,7 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
               <div className="truncate text-sm font-bold tracking-tight">{process.env.NEXT_PUBLIC_APP_NAME ?? "EasySlip"}</div>
               <div className="truncate text-[10px] uppercase tracking-widest text-muted-foreground">HR Portal</div>
             </div>
-          </Link>
+          </div>
         )}
         {onToggleCollapsed && (
           <button
@@ -85,7 +80,7 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
             className={cn(
               "inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
               "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/50",
-              collapsed ? "" : "ml-auto",
+              collapsed ? "" : "absolute right-2 top-1/2 -translate-y-[calc(50%+8px)]",
             )}
           >
             <ToggleIcon className="size-4" />
