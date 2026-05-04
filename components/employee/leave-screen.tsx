@@ -1,16 +1,23 @@
 "use client";
 
-import { Paperclip } from "lucide-react";
+import { useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { CalendarDays, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useLeaveForm } from "@/hooks/use-leave-form";
+import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { useT } from "@/lib/i18n/locale-context";
 
 export function LeaveScreen() {
   const t = useT();
+  const { policy } = useAttendancePolicy();
+  const morningRange = `${policy.halfday.morningStart}–${policy.halfday.morningEnd}`;
+  const afternoonRange = `${policy.halfday.afternoonStart}–${policy.halfday.afternoonEnd}`;
 
   const LEAVE_TYPES = [
     { key: "SICK" as const, label: t.leave.sick, sub: t.leave.sickDesc },
@@ -21,8 +28,8 @@ export function LeaveScreen() {
 
   const DURATIONS = [
     { key: "FULL" as const, label: t.leave.fullDay, sub: t.leave.fullDay },
-    { key: "MORNING" as const, label: t.leave.morning, sub: t.leave.morningTime },
-    { key: "AFTERNOON" as const, label: t.leave.afternoon, sub: t.leave.afternoonTime },
+    { key: "MORNING" as const, label: t.leave.morning, sub: morningRange },
+    { key: "AFTERNOON" as const, label: t.leave.afternoon, sub: afternoonRange },
   ];
 
   const {
@@ -31,6 +38,17 @@ export function LeaveScreen() {
     reason, setReason, preview, isSubmitting,
     isLoadingQuotas, quotaError, submit, getBalance,
   } = useLeaveForm();
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const qStart = searchParams.get("startDate");
+    const qEnd = searchParams.get("endDate");
+    const isoRx = /^\d{4}-\d{2}-\d{2}$/;
+    if (qStart && isoRx.test(qStart)) setStartDate(qStart);
+    if (qEnd && isoRx.test(qEnd)) setEndDate(qEnd);
+    // intentionally only on initial render (when query params change via navigation, the page remounts)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async () => {
     try {
@@ -46,6 +64,17 @@ export function LeaveScreen() {
       <MobileTopbar title={t.leave.title} backHref="/employee/today" />
 
       <div className="flex flex-col gap-4 p-4">
+        <Link
+          href="/employee/leave/calendar"
+          className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3 text-[13px] shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
+        >
+          <span className="flex items-center gap-2">
+            <CalendarDays className="size-4 text-[var(--es-accent-600)]" />
+            <span className="font-medium">{t.myLeaveCalendar.title}</span>
+          </span>
+          <span className="text-[11px] text-muted-foreground">{t.myLeaveCalendar.subtitle}</span>
+        </Link>
+
         {/* Leave type picker */}
         <div>
           <label className="mb-2 block text-[13px] font-medium">{t.leave.type}</label>
