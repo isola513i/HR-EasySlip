@@ -10,6 +10,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import type { EmploymentStatus, PrismaClient, Role } from '@prisma/client';
+import { hashPassword } from '../../lib/auth/password-utils';
 import type { OrgMap } from './organization';
 
 type SeedEmployee = {
@@ -26,6 +27,9 @@ type SeedEmployee = {
   probationEndDate?: string; // ISO date
   employmentStatus: EmploymentStatus;
   managerCode?: string; // resolved in pass 2
+  /** Plaintext password to seed (bcrypt-hashed at runtime). Only used for
+   * test accounts on the development branch — DO NOT enable in main. */
+  testPassword?: string;
 };
 
 const EMPLOYEES: SeedEmployee[] = [
@@ -259,6 +263,25 @@ const EMPLOYEES: SeedEmployee[] = [
     managerCode: 'ES0009',
   },
 
+  // ─── Test: development-branch login account ───
+  // Password "test1234" — used only for QA on dev branch. Production
+  // should never expose this account; gate the seed run accordingly.
+  {
+    code: 'ES0100',
+    email: 'dev.v001+emp.test@gmail.com',
+    firstNameTh: 'ทดสอบ',
+    lastNameTh: 'พนักงาน',
+    firstNameEn: 'Test',
+    lastNameEn: 'Employee',
+    roles: ['EMPLOYEE'],
+    departmentCode: 'ENG',
+    positionName: 'Software Engineer',
+    hireDate: '2024-01-15',
+    employmentStatus: 'ACTIVE',
+    managerCode: 'ES0006',
+    testPassword: 'test1234',
+  },
+
   // ─── Test: SUSPENDED block ───
   {
     code: 'ES0099',
@@ -301,10 +324,20 @@ export async function seedEmployees(
       );
     }
 
+    const passwordHash = seed.testPassword
+      ? await hashPassword(seed.testPassword)
+      : undefined;
+
     const user = await prisma.user.upsert({
       where: { email: seed.email },
-      create: { email: seed.email, emailVerified: new Date() },
-      update: {},
+      create: {
+        email: seed.email,
+        emailVerified: new Date(),
+        ...(passwordHash && { passwordHash, mustChangePassword: false }),
+      },
+      update: passwordHash
+        ? { passwordHash, mustChangePassword: false }
+        : {},
     });
 
     const employee = await prisma.employee.upsert({
