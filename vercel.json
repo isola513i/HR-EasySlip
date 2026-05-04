@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/v1/system/cron/daily-quota",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/v1/system/cron/cutoff-lock",
+      "schedule": "30 17 * * *"
+    }
+  ]
+}

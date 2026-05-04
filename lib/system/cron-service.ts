@@ -24,7 +24,20 @@ export async function dailyQuotaTick() {
     logger.error("Failed to send outbox alert", { error: err?.message }),
   );
 
-  return { ...result, cyclesEnsured: cycles?.created ?? 0 };
+  // Weekly audit prune — Sunday in Bangkok time. Folded into the daily
+  // tick so we stay within the 2-cron limit on Vercel Hobby plan; the
+  // prune itself is idempotent when retention is satisfied.
+  const bkk = new Date(Date.now() + 7 * 3600_000);
+  let pruned: number | null = null;
+  if (bkk.getUTCDay() === 0) {
+    const r = await pruneOldAuditLogs().catch((err) => {
+      logger.error("Failed to prune audit logs", { error: err?.message });
+      return null;
+    });
+    pruned = r?.deletedCount ?? null;
+  }
+
+  return { ...result, cyclesEnsured: cycles?.created ?? 0, pruned };
 }
 
 /** Build (year, month) for current month and next month based on Bangkok wall-clock. */
