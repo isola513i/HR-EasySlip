@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileBarChart, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { apiFetch } from "@/lib/api/client";
 import { useT } from "@/lib/i18n/locale-context";
+import { ReportPreview } from "@/components/hr/report-preview";
+
+interface Department { id: string; name: string; code: string }
+const ALL_DEPARTMENTS = "__ALL__";
 
 const REPORT_TYPES = [
   { value: "ATTENDANCE_SUMMARY", icon: "clock" },
@@ -32,7 +38,13 @@ export function ReportBuilder() {
   const [format, setFormat] = useState("EXCEL");
   const [dateFrom, setDateFrom] = useState(defaults.dateFrom);
   const [dateTo, setDateTo] = useState(defaults.dateTo);
+  const [departmentId, setDepartmentId] = useState<string>(ALL_DEPARTMENTS);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  useEffect(() => {
+    apiFetch<Department[]>("/api/v1/hr/departments").then(setDepartments).catch(() => {});
+  }, []);
 
   const typeLabels: Record<string, string> = {
     ATTENDANCE_SUMMARY: t.hr.attendanceSummary,
@@ -47,7 +59,13 @@ export function ReportBuilder() {
       const res = await fetch("/api/v1/hr/reports/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, format, dateFrom, dateTo }),
+        body: JSON.stringify({
+          type,
+          format,
+          dateFrom,
+          dateTo,
+          ...(departmentId !== ALL_DEPARTMENTS ? { departmentId } : {}),
+        }),
       });
 
       if (!res.ok) {
@@ -95,13 +113,27 @@ export function ReportBuilder() {
 
       {/* Filters */}
       <div className="rounded-xl border bg-card p-5 shadow-[var(--es-shadow-sm)]">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="space-y-1.5">
             <Label>{t.hr.dateRange}</Label>
             <div className="flex gap-2">
               <DatePicker value={dateFrom} onChange={setDateFrom} max={dateTo || undefined} className="flex-1" />
               <DatePicker value={dateTo} onChange={setDateTo} min={dateFrom || undefined} className="flex-1" />
             </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t.hr.department}</Label>
+            <Select value={departmentId} onValueChange={(v) => { if (v) setDepartmentId(v); }}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL_DEPARTMENTS}>{t.hr.employees.allDepartments}</SelectItem>
+                {departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label>{t.hr.format}</Label>
@@ -124,6 +156,13 @@ export function ReportBuilder() {
           </div>
         </div>
       </div>
+
+      <ReportPreview
+        type={type}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        departmentId={departmentId === ALL_DEPARTMENTS ? undefined : departmentId}
+      />
     </div>
   );
 }
