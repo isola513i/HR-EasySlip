@@ -14,10 +14,19 @@ export interface QuotaInfo {
   available: number;
 }
 
+export interface OverlapInfo {
+  id: string;
+  startDate: string;
+  endDate: string;
+  status: "PENDING" | "APPROVED";
+  leaveType: string;
+}
+
 interface PreviewResult {
   days: number;
   available: number | null;
   sufficient: boolean;
+  overlap: OverlapInfo | null;
 }
 
 export function useLeaveForm() {

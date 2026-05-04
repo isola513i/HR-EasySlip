@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useLeaveForm } from "@/hooks/use-leave-form";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
+import { bangkokTodayKey } from "@/lib/datetime/bangkok";
 import { useT } from "@/lib/i18n/locale-context";
 
 export function LeaveScreen() {
@@ -18,6 +19,20 @@ export function LeaveScreen() {
   const { policy } = useAttendancePolicy();
   const morningRange = `${policy.halfday.morningStart}–${policy.halfday.morningEnd}`;
   const afternoonRange = `${policy.halfday.afternoonStart}–${policy.halfday.afternoonEnd}`;
+
+  // Allow up to 1 year ahead. Backdating is restricted to 7 days for SICK
+  // leave use-cases; the backend enforces the final policy.
+  const todayKey = bangkokTodayKey();
+  const minStart = (() => {
+    const d = new Date(`${todayKey}T00:00:00.000Z`);
+    d.setUTCDate(d.getUTCDate() - 7);
+    return d.toISOString().slice(0, 10);
+  })();
+  const maxEnd = (() => {
+    const d = new Date(`${todayKey}T00:00:00.000Z`);
+    d.setUTCFullYear(d.getUTCFullYear() + 1);
+    return d.toISOString().slice(0, 10);
+  })();
 
   const LEAVE_TYPES = [
     { key: "SICK" as const, label: t.leave.sick, sub: t.leave.sickDesc },
@@ -49,6 +64,10 @@ export function LeaveScreen() {
     // intentionally only on initial render (when query params change via navigation, the page remounts)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (quotaError) toast.error(t.leave.quotaLoadFailed);
+  }, [quotaError, t.leave.quotaLoadFailed]);
 
   const handleSubmit = async () => {
     try {
@@ -99,11 +118,25 @@ export function LeaveScreen() {
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.leave.from}</div>
-              <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); if (!endDate || e.target.value > endDate) setEndDate(e.target.value); }} className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none" />
+              <input
+                type="date"
+                value={startDate}
+                min={minStart}
+                max={maxEnd}
+                onChange={(e) => { setStartDate(e.target.value); if (!endDate || e.target.value > endDate) setEndDate(e.target.value); }}
+                className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none"
+              />
             </div>
             <div className="rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 py-2">
               <div className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.leave.to}</div>
-              <input type="date" value={endDate} min={startDate} onChange={(e) => setEndDate(e.target.value)} className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none" />
+              <input
+                type="date"
+                value={endDate}
+                min={startDate || minStart}
+                max={maxEnd}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="mt-0.5 w-full border-none bg-transparent text-[15px] font-semibold outline-none"
+              />
             </div>
           </div>
         </div>
@@ -151,11 +184,27 @@ export function LeaveScreen() {
           </div>
         )}
 
+        {preview?.overlap && (
+          <div className="rounded-[10px] border border-[var(--es-error-200)] bg-[var(--es-error-50)] p-3 text-[12px] text-[var(--es-error-700)]">
+            {t.leave.overlapWarning
+              .replace("{leaveType}", preview.overlap.leaveType)
+              .replace("{startDate}", preview.overlap.startDate)
+              .replace("{endDate}", preview.overlap.endDate)
+              .replace("{status}", preview.overlap.status)}
+          </div>
+        )}
+
         {/* Submit */}
         <Button
           className="w-full"
           size="lg"
-          disabled={isSubmitting || !startDate || !endDate || !reason.trim() || (preview !== null && !preview.sufficient)}
+          disabled={
+            isSubmitting
+            || !startDate
+            || !endDate
+            || !reason.trim()
+            || (preview !== null && (!preview.sufficient || !!preview.overlap))
+          }
           onClick={handleSubmit}
         >
           {isSubmitting ? t.leave.submitting : t.leave.submit}
