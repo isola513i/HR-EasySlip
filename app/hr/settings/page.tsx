@@ -1,4 +1,4 @@
-import { SettingsPanel } from "@/components/hr/settings-panel";
+import { SettingsPanel } from "@/components/hr/settings/settings-panel";
 
 export const metadata = { title: "Settings — EasySlip HR" };
 

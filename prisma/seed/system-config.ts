@@ -34,10 +34,15 @@ const DEFAULTS: ConfigEntry[] = [
   // ─── Attendance: policy ───
   { key: 'attendance.late_threshold_minutes', value: 15, description: 'เวลาสาย (นาที) ที่จะ flag' },
   { key: 'attendance.gps.capture_enabled', value: true, description: 'เก็บ GPS ตอน clock in/out (log only)' },
-  { key: 'attendance.gps.enforce_geofence', value: false, description: 'Phase 1 ไม่บังคับ geofence' },
+
+  // ─── Geofence (soft-warning only per Phase 1 spec) ───
+  { key: 'attendance.gps.enforce_geofence', value: false, description: 'เปิดเตือนเมื่อ clock-in นอกพื้นที่ (log-only ไม่บล็อก)' },
+  { key: 'attendance.geofence.center_lat', value: 13.7563, description: 'Latitude จุดศูนย์กลางออฟฟิศ' },
+  { key: 'attendance.geofence.center_lng', value: 100.5018, description: 'Longitude จุดศูนย์กลางออฟฟิศ' },
+  { key: 'attendance.geofence.radius_meters', value: 500, description: 'รัศมี geofence (เมตร)' },
 
   // ─── PDPA ───
-  { key: 'pdpa.consent.current_version', value: '1.0.0', description: 'Version ปัจจุบันของ PDPA consent' },
+  { key: 'pdpa.consent.current_version', value: '1.0', description: 'Version ปัจจุบันของ PDPA consent (bump เพื่อบังคับให้ทุกคน re-consent)' },
   { key: 'pdpa.audit_log.retention_days', value: 90, description: 'Audit log retention (ข้อมูลย้อนหลัง)' },
 ];
 
