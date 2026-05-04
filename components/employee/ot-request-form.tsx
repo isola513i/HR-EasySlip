@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import { OfflineQueuedError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,6 +34,10 @@ export function OTRequestForm() {
         }
       }
     } catch (err) {
+      if (err instanceof OfflineQueuedError) {
+        toast.info(t.clock.offlineQueued, { duration: 6000 });
+        return;
+      }
       toast.error(err instanceof Error ? err.message : t.ot.submitFailed);
     }
   };

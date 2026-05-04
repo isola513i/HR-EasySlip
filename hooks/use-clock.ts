@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, OfflineQueuedError } from "@/lib/api/client";
 import { bangkokTodayKey } from "@/lib/datetime/bangkok";
 
 type ClockState = "loading" | "idle" | "clocking" | "done" | "error";
@@ -38,6 +38,7 @@ export function useClock() {
   const [clockedTime, setClockedTime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [geofenceWarning, setGeofenceWarning] = useState<{ distanceMeters: number; radiusMeters: number } | null>(null);
+  const [queuedOffline, setQueuedOffline] = useState(false);
 
   // Fetch GPS + today's records on mount
   useEffect(() => {
@@ -103,6 +104,12 @@ export function useClock() {
       }
       setClockState("done");
     } catch (err) {
+      if (err instanceof OfflineQueuedError) {
+        setQueuedOffline(true);
+        setClockedTime("—");
+        setClockState("done");
+        return;
+      }
       setError(err instanceof Error ? err.message : "Clock failed");
       setClockState("error");
     }
@@ -113,11 +120,12 @@ export function useClock() {
     setClockedTime(null);
     setError(null);
     setGeofenceWarning(null);
+    setQueuedOffline(false);
     setClockState("idle");
   }, []);
 
   return {
     clockState, clockType, location, setLocation,
-    coords, gpsStatus, clockedTime, error, geofenceWarning, handleClock, reset,
+    coords, gpsStatus, clockedTime, error, geofenceWarning, queuedOffline, handleClock, reset,
   };
 }

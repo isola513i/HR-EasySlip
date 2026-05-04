@@ -1,4 +1,5 @@
 import type { ApiPaginated } from "@/types/api";
+import { offlineFetch } from "@/lib/offline/offline-fetch";
 
 export class ApiClientError extends Error {
   constructor(
@@ -12,30 +13,39 @@ export class ApiClientError extends Error {
   }
 }
 
+export class OfflineQueuedError extends Error {
+  constructor() {
+    super("OFFLINE_QUEUED");
+    this.name = "OfflineQueuedError";
+  }
+}
+
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  // Apply timeout unless caller already provided an AbortSignal
   const needsTimeout = !options?.signal;
   const ctrl = needsTimeout ? new AbortController() : undefined;
   const timer = ctrl ? setTimeout(() => ctrl.abort(), DEFAULT_TIMEOUT_MS) : undefined;
 
   try {
-    const res = await fetch(url, {
+    const res = await offlineFetch(url, {
       headers: { "Content-Type": "application/json", ...options?.headers },
       ...options,
       ...(ctrl && { signal: ctrl.signal }),
     });
-  const json = await res.json();
-  if (!json.ok) {
-    throw new ApiClientError(
-      json.code ?? "UNKNOWN",
-      json.error ?? "Unknown error",
-      res.status,
-      json.details,
-    );
-  }
-  return json;
+    const json = await res.json();
+    if ("offline" in json && json.offline === true) {
+      throw new OfflineQueuedError();
+    }
+    if (!json.ok) {
+      throw new ApiClientError(
+        json.code ?? "UNKNOWN",
+        json.error ?? "Unknown error",
+        res.status,
+        json.details,
+      );
+    }
+    return json;
   } finally {
     if (timer) clearTimeout(timer);
   }

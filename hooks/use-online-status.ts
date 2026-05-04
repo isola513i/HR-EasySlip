@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { dequeueAll, getAllPending, removeById, type PendingRequest } from "@/lib/offline/offline-queue";
 import { toast } from "sonner";
+import { useT } from "@/lib/i18n/locale-context";
 
 export function useOnlineStatus() {
+  const t = useT();
   const [isOnline, setIsOnline] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const [pendingItems, setPendingItems] = useState<PendingRequest[]>([]);
@@ -32,10 +34,10 @@ export function useOnlineStatus() {
           synced++;
         } catch { /* will retry next time */ }
       }
-      if (synced > 0) toast.success(`${synced} queued request(s) synced`);
+      if (synced > 0) toast.success(t.clock.offlineSynced.replace("{count}", String(synced)));
       await refreshCount();
     } catch { /* IndexedDB unavailable */ }
-  }, [refreshCount]);
+  }, [refreshCount, t.clock.offlineSynced]);
 
   const cancelItem = useCallback(async (id: number) => {
     try {
@@ -46,11 +48,11 @@ export function useOnlineStatus() {
 
   const manualRetry = useCallback(async () => {
     if (!navigator.onLine) {
-      toast.error("Still offline");
+      toast.error(t.clock.offlineStillOffline);
       return;
     }
     await replayQueue();
-  }, [replayQueue]);
+  }, [replayQueue, t.clock.offlineStillOffline]);
 
   useEffect(() => {
     setIsOnline(navigator.onLine);

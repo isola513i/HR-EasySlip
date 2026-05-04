@@ -20,7 +20,7 @@ export function ClockScreen() {
   ];
   const {
     clockState, clockType, location, setLocation,
-    coords, gpsStatus, clockedTime, error, geofenceWarning, handleClock, reset,
+    coords, gpsStatus, clockedTime, error, geofenceWarning, queuedOffline, handleClock, reset,
   } = useClock();
 
   useEffect(() => { if (error) { toast.error(error); hapticError(); } }, [error]);
@@ -34,6 +34,10 @@ export function ClockScreen() {
       { duration: 7000 },
     );
   }, [geofenceWarning, t.clock.geofenceWarning]);
+
+  useEffect(() => {
+    if (queuedOffline) toast.info(t.clock.offlineQueued, { duration: 6000 });
+  }, [queuedOffline, t.clock.offlineQueued]);
 
   const lastClockState = useRef(clockState);
   useEffect(() => {
