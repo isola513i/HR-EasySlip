@@ -40,9 +40,13 @@ const DEFAULTS: ConfigEntry[] = [
   { key: 'attendance.gps.capture_enabled', value: true, description: 'เก็บ GPS ตอน clock in/out (log only)' },
 
   // ─── Geofence (soft-warning only per Phase 1 spec) ───
-  { key: 'attendance.gps.enforce_geofence', value: false, description: 'เปิดเตือนเมื่อ clock-in นอกพื้นที่ (log-only ไม่บล็อก)' },
-  { key: 'attendance.geofence.center_lat', value: 13.7563, description: 'Latitude จุดศูนย์กลางออฟฟิศ' },
-  { key: 'attendance.geofence.center_lng', value: 100.5018, description: 'Longitude จุดศูนย์กลางออฟฟิศ' },
+  // Office: บริษัท ธันเดอร์ โซลูชั่น จำกัด (จ.ขอนแก่น)
+  // Phase 1 has many WFH employees — breach panel will see frequent
+  // "outside" entries by design; HR uses it as a daily roll-up rather
+  // than an alert.
+  { key: 'attendance.gps.enforce_geofence', value: true, description: 'เปิดเตือนเมื่อ clock-in นอกพื้นที่ (log-only ไม่บล็อก)' },
+  { key: 'attendance.geofence.center_lat', value: 16.4431033, description: 'Latitude จุดศูนย์กลางออฟฟิศ (Thunder Solution)' },
+  { key: 'attendance.geofence.center_lng', value: 102.7992255, description: 'Longitude จุดศูนย์กลางออฟฟิศ (Thunder Solution)' },
   { key: 'attendance.geofence.radius_meters', value: 500, description: 'รัศมี geofence (เมตร)' },
 
   // ─── PDPA ───
