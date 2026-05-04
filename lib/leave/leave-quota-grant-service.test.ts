@@ -6,6 +6,7 @@ const mockUpsert = mock((): Promise<any> => Promise.resolve({ id: "q-1" }));
 mock.module("@/lib/prisma", () => ({
   prisma: {
     leaveQuota: { upsert: mockUpsert },
+    systemConfig: { findMany: mock(() => Promise.resolve([])) },
   },
 }));
 

@@ -1,18 +1,18 @@
 import { prisma } from "@/lib/prisma";
 import { getBangkokDayBounds } from "@/lib/attendance/clock-validation";
 import {
-  LATE_THRESHOLD_HOUR,
-  LATE_THRESHOLD_MINUTE,
   WEEKDAY_KEYS,
   type AttendanceStatus,
   type WeekdayKey,
 } from "@/lib/attendance/constants";
+import { loadAttendancePolicy, type AttendancePolicy } from "@/lib/attendance/policy";
 
 /** Pure status classifier — exported for unit testing. */
 export function computeStatus(args: {
   firstClockInAt: Date | null;
   isOnLeave: boolean;
   isHoliday: boolean;
+  lateAfter: { h: number; m: number };
 }): AttendanceStatus {
   if (args.isHoliday) return "HOLIDAY";
   if (args.isOnLeave) return "ON_LEAVE";
@@ -23,8 +23,7 @@ export function computeStatus(args: {
   const h = t.getUTCHours();
   const m = t.getUTCMinutes();
   const isLate =
-    h > LATE_THRESHOLD_HOUR ||
-    (h === LATE_THRESHOLD_HOUR && m > LATE_THRESHOLD_MINUTE);
+    h > args.lateAfter.h || (h === args.lateAfter.h && m > args.lateAfter.m);
   return isLate ? "LATE" : "ON_TIME";
 }
 
@@ -96,7 +95,11 @@ async function getDayContext(date: Date) {
 }
 
 export async function getAttendanceSummary(date: Date) {
-  const [employees, ctx] = await Promise.all([listActiveEmployees(), getDayContext(date)]);
+  const [employees, ctx, policy] = await Promise.all([
+    listActiveEmployees(),
+    getDayContext(date),
+    loadAttendancePolicy(),
+  ]);
 
   let presentToday = 0;
   let lateArrivals = 0;
@@ -109,6 +112,7 @@ export async function getAttendanceSummary(date: Date) {
       firstClockInAt: inAt,
       isOnLeave: ctx.onLeave.has(e.id),
       isHoliday: ctx.isHoliday,
+      lateAfter: policy.lateAfter,
     });
     if (status === "ON_TIME" || status === "LATE") presentToday++;
     if (status === "LATE") lateArrivals++;
@@ -133,7 +137,10 @@ export async function getAttendanceSummary(date: Date) {
 }
 
 export async function getWeeklyAttendance(weekStart: Date) {
-  const employees = await listActiveEmployees();
+  const [employees, policy] = await Promise.all([
+    listActiveEmployees(),
+    loadAttendancePolicy(),
+  ]);
 
   const days = await Promise.all(
     WEEKDAY_KEYS.map(async (key, idx) => {
@@ -148,6 +155,7 @@ export async function getWeeklyAttendance(weekStart: Date) {
           firstClockInAt: ctx.firstIn.get(e.id) ?? null,
           isOnLeave: ctx.onLeave.has(e.id),
           isHoliday: ctx.isHoliday,
+          lateAfter: policy.lateAfter,
         });
         if (status === "ON_TIME") present++;
         else if (status === "LATE") late++;
@@ -161,7 +169,11 @@ export async function getWeeklyAttendance(weekStart: Date) {
 }
 
 export async function getTodayAttendance(date: Date) {
-  const [employees, ctx] = await Promise.all([listActiveEmployees(), getDayContext(date)]);
+  const [employees, ctx, policy] = await Promise.all([
+    listActiveEmployees(),
+    getDayContext(date),
+    loadAttendancePolicy(),
+  ]);
 
   return employees.map((e) => {
     const inAt = ctx.firstIn.get(e.id) ?? null;
@@ -170,6 +182,7 @@ export async function getTodayAttendance(date: Date) {
       firstClockInAt: inAt,
       isOnLeave: ctx.onLeave.has(e.id),
       isHoliday: ctx.isHoliday,
+      lateAfter: policy.lateAfter,
     });
     const workingMinutes = inAt && outAt && outAt > inAt
       ? Math.round((outAt.getTime() - inAt.getTime()) / 60_000)

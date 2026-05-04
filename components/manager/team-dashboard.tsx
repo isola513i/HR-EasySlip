@@ -9,7 +9,13 @@ import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
 import { todayISO, formatTime } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
-import { LATE_THRESHOLD_HOUR, LATE_THRESHOLD_MINUTE } from "@/lib/attendance/constants";
+
+interface AttendancePolicyResponse {
+  shiftStart: { h: number; m: number };
+  lateAfter: { h: number; m: number };
+  lateThresholdMinutes: number;
+  gpsCaptureEnabled: boolean;
+}
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -51,12 +57,11 @@ const statusTones = {
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 
-function isLate(clockedAt: string): boolean {
+function isLate(clockedAt: string, lateAfter: { h: number; m: number }): boolean {
   const d = new Date(clockedAt);
   return (
-    d.getHours() > LATE_THRESHOLD_HOUR ||
-    (d.getHours() === LATE_THRESHOLD_HOUR &&
-      d.getMinutes() > LATE_THRESHOLD_MINUTE)
+    d.getHours() > lateAfter.h ||
+    (d.getHours() === lateAfter.h && d.getMinutes() > lateAfter.m)
   );
 }
 
@@ -77,14 +82,14 @@ function mapWorkLocation(loc: string): string {
  * Deduplicate attendance records per employee,
  * keeping only the first CLOCK_IN per person.
  */
-function deriveTeamMembers(records: AttendanceRecord[]): TeamMember[] {
+function deriveTeamMembers(records: AttendanceRecord[], lateAfter: { h: number; m: number }): TeamMember[] {
   const seen = new Map<string, TeamMember>();
 
   for (const r of records) {
     if (r.clockType !== "CLOCK_IN") continue;
     if (seen.has(r.employee.id)) continue;
 
-    const late = isLate(r.clockedAt);
+    const late = isLate(r.clockedAt, lateAfter);
     seen.set(r.employee.id, {
       name: `${r.employee.firstNameTh} ${r.employee.lastNameTh}`,
       code: r.employee.employeeCode,
@@ -97,7 +102,12 @@ function deriveTeamMembers(records: AttendanceRecord[]): TeamMember[] {
   return Array.from(seen.values());
 }
 
-function buildKpis(team: TeamMember[], pendingCount: number, t: ReturnType<typeof import("@/lib/i18n/locale-context").useT>): KpiItem[] {
+function buildKpis(
+  team: TeamMember[],
+  pendingCount: number,
+  t: ReturnType<typeof import("@/lib/i18n/locale-context").useT>,
+  lateThresholdMinutes: number,
+): KpiItem[] {
   const checkedIn = team.filter(
     (m) => m.status === "in" || m.status === "late",
   ).length;
@@ -120,7 +130,7 @@ function buildKpis(team: TeamMember[], pendingCount: number, t: ReturnType<typeo
       label: t.manager.late,
       value: String(lateCount),
       tone: lateCount > 0 ? "warn" : "success",
-      sub: lateCount > 0 ? t.manager.lateSub.replace("{min}", String(LATE_THRESHOLD_MINUTE)) : t.manager.noLate,
+      sub: lateCount > 0 ? t.manager.lateSub.replace("{min}", String(lateThresholdMinutes)) : t.manager.noLate,
     },
     {
       label: t.manager.pendingApprovals,
@@ -151,27 +161,27 @@ export function TeamDashboard() {
 
     async function load() {
       try {
-        const [records, pendingResult] = await Promise.all([
+        const [records, pendingResult, policy] = await Promise.all([
           apiFetch<AttendanceRecord[]>(
             `/api/v1/attendance/team?date=${todayISO()}`,
           ),
           apiFetchPaginated<unknown>(
             "/api/v1/leave/approvals/pending?perPage=1",
           ),
+          apiFetch<AttendancePolicyResponse>("/api/v1/attendance/policy"),
         ]);
 
         if (cancelled) return;
 
-        const members = deriveTeamMembers(records);
+        const members = deriveTeamMembers(records, policy.lateAfter);
         const pendingCount = pendingResult.pagination.total;
 
         setTeam(members);
-        setKpis(buildKpis(members, pendingCount, t));
+        setKpis(buildKpis(members, pendingCount, t, policy.lateThresholdMinutes));
       } catch {
-        // On error, show empty state
         if (!cancelled) {
           setTeam([]);
-          setKpis(buildKpis([], 0, t));
+          setKpis(buildKpis([], 0, t, 15));
         }
       } finally {
         if (!cancelled) setLoading(false);

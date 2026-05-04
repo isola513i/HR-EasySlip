@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { computeAnnualLeaveGrant } from "./annual-quota-engine";
+import { loadLeavePolicy } from "./policy";
 
 type TxClient = Omit<
   typeof prisma,
@@ -19,10 +20,11 @@ export async function grantInitialLeaveQuota(
 ): Promise<void> {
   const client = tx ?? prisma;
   const quotaYear = hireDate.getFullYear();
+  const policy = await loadLeavePolicy();
 
   const grants: { leaveType: "SICK" | "PERSONAL"; days: number }[] = [
-    { leaveType: "SICK", days: 30 },
-    { leaveType: "PERSONAL", days: 3 },
+    { leaveType: "SICK", days: policy.sickMaxPaidDays },
+    { leaveType: "PERSONAL", days: policy.personalMaxDays },
   ];
 
   for (const g of grants) {
@@ -74,12 +76,14 @@ export async function resetYearEnd(year: number) {
 
 export async function grantAnniversaryLeave() {
   const today = new Date();
-  const employees = await prisma.employee.findMany({
-    where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] } },
-    select: { id: true, hireDate: true },
-  });
+  const [employees, policy] = await Promise.all([
+    prisma.employee.findMany({
+      where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] } },
+      select: { id: true, hireDate: true },
+    }),
+    loadLeavePolicy(),
+  ]);
 
-  // Batch fetch existing ANNUAL quotas to avoid N+1
   const existingQuotas = await prisma.leaveQuota.findMany({
     where: {
       leaveType: "ANNUAL",
@@ -92,7 +96,7 @@ export async function grantAnniversaryLeave() {
   let granted = 0;
   for (const emp of employees) {
     const existing = quotaMap.get(emp.id) ?? null;
-    const result = computeAnnualLeaveGrant(emp.hireDate, today, existing);
+    const result = computeAnnualLeaveGrant(emp.hireDate, today, existing, policy.annual);
     if (result.action === "NONE") continue;
 
     await prisma.leaveQuota.upsert({

@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { prisma } from "@/lib/prisma";
-import { CONSENT_PURPOSE, CONSENT_VERSION } from "./consent-service";
+import { CONSENT_PURPOSE, getCurrentConsentVersion } from "./consent-service";
 import {
   CONSENT_CATEGORIES,
   REQUIRED_CATEGORIES,
@@ -56,9 +56,7 @@ export interface PdpaOverview {
 }
 
 export async function getPdpaOverview(): Promise<PdpaOverview> {
-  // Pull active employees (ACTIVE + PROBATION) — resigned/terminated/suspended
-  // are excluded from compliance counting. Same convention as
-  // attendance-dashboard-service and payroll-info-exporter.
+  const consentVersion = await getCurrentConsentVersion();
   const employees = await prisma.employee.findMany({
     where: {
       anonymizedAt: null,
@@ -82,7 +80,7 @@ export async function getPdpaOverview(): Promise<PdpaOverview> {
     where: {
       userId: { in: userIds },
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version: consentVersion,
     },
     orderBy: { grantedAt: "desc" },
     select: { userId: true, granted: true, grantedAt: true, withdrawnAt: true },
@@ -154,7 +152,7 @@ export async function getPdpaOverview(): Promise<PdpaOverview> {
     },
     policy: {
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version: consentVersion,
       lastUpdatedAt,
       nextReviewAt: nextReview.toISOString(),
     },

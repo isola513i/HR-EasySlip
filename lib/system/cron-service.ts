@@ -7,6 +7,7 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
 import { grantAnniversaryLeave } from "@/lib/leave/leave-quota-grant-service";
 import { alertOnExhaustedOutboxEvents } from "@/lib/system/outbox-service";
+import { getSettingValue } from "@/lib/settings/settings-service";
 
 export async function dailyQuotaTick() {
   const result = await grantAnniversaryLeave();
@@ -22,10 +23,11 @@ export async function dailyQuotaTick() {
 export async function cutoffLock() {
   const now = new Date();
   const day = now.getDate();
+  const cutoffDay = await getSettingValue<number>("payroll.cutoff.day_of_month");
 
-  // Only auto-lock on the 25th (or later if missed)
-  if (day < 25) {
-    return { locked: false, reason: "Not yet 25th" };
+  // Only auto-lock on the configured cutoff day (or later if missed)
+  if (day < cutoffDay) {
+    return { locked: false, reason: `Not yet ${cutoffDay}th` };
   }
 
   const cycle = await prisma.payrollCycle.findFirst({
@@ -55,4 +57,33 @@ export async function cutoffLock() {
   });
 
   return { locked: true, cycleId: cycle.id };
+}
+
+/**
+ * Prune AuditLog rows older than the configured retention window.
+ * Retention is read from the `pdpa.audit_log.retention_days` setting.
+ * Writes a meta audit row recording how many were pruned.
+ */
+export async function pruneOldAuditLogs() {
+  const retentionDays = await getSettingValue<number>("pdpa.audit_log.retention_days");
+  const cutoff = new Date();
+  cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
+
+  const before = await prisma.auditLog.count({ where: { createdAt: { lt: cutoff } } });
+  const result = await prisma.auditLog.deleteMany({ where: { createdAt: { lt: cutoff } } });
+
+  await writeAuditLog({
+    actorId: null,
+    action: "audit.prune",
+    entityType: "AuditLog",
+    entityId: `cutoff-${cutoff.toISOString().slice(0, 10)}`,
+    after: {
+      retentionDays,
+      cutoffDate: cutoff.toISOString(),
+      candidateCount: before,
+      deletedCount: result.count,
+    },
+  });
+
+  return { retentionDays, cutoffDate: cutoff.toISOString(), deletedCount: result.count };
 }

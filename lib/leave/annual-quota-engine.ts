@@ -23,6 +23,19 @@ export const ANNUAL_LEAVE_FULL_YEAR_DAYS = 6;
 export const ROUNDING_STEP = 0.5;
 export const DAYS_IN_YEAR_BASIS = 365;
 
+/** Configurable policy for annual leave proration. All keys backed by SystemConfig. */
+export interface AnnualLeavePolicy {
+  fullYearDays: number;
+  roundingStep: number;
+  daysInYearBasis: number;
+}
+
+export const DEFAULT_ANNUAL_LEAVE_POLICY: AnnualLeavePolicy = {
+  fullYearDays: ANNUAL_LEAVE_FULL_YEAR_DAYS,
+  roundingStep: ROUNDING_STEP,
+  daysInYearBasis: DAYS_IN_YEAR_BASIS,
+};
+
 export type ExistingAnnualQuota = {
   quotaYear: number;
 } | null;
@@ -52,10 +65,12 @@ export function computeAnnualLeaveGrant(
   hireDate: Date,
   today: Date,
   existingQuota: ExistingAnnualQuota,
+  policy: AnnualLeavePolicy = DEFAULT_ANNUAL_LEAVE_POLICY,
 ): GrantResult {
   const evaluatedDate = startOfDay(today);
   const anniversary = startOfDay(addYears(hireDate, 1));
   const currentYear = evaluatedDate.getFullYear();
+  const { fullYearDays, roundingStep, daysInYearBasis } = policy;
 
   // CASE A: ยังไม่ครบ 1 ปี → ไม่มีสิทธิ์
   if (isAfter(anniversary, evaluatedDate)) {
@@ -80,9 +95,8 @@ export function computeAnnualLeaveGrant(
     const daysRemaining =
       differenceInCalendarDays(yearEnd, anniversary) + 1;
 
-    const rawDays =
-      (ANNUAL_LEAVE_FULL_YEAR_DAYS * daysRemaining) / DAYS_IN_YEAR_BASIS;
-    const proratedDays = roundDownToStep(rawDays, ROUNDING_STEP);
+    const rawDays = (fullYearDays * daysRemaining) / daysInYearBasis;
+    const proratedDays = roundDownToStep(rawDays, roundingStep);
 
     return {
       action: 'GRANT_PRORATED',
@@ -90,17 +104,15 @@ export function computeAnnualLeaveGrant(
       eligibleFrom: anniversary,
       basis:
         `anniversary=${toIsoDate(anniversary)}; ` +
-        `daysRemaining=${daysRemaining}/${DAYS_IN_YEAR_BASIS}; ` +
-        `raw=${rawDays.toFixed(4)}; step=${ROUNDING_STEP}`,
+        `daysRemaining=${daysRemaining}/${daysInYearBasis}; ` +
+        `raw=${rawDays.toFixed(4)}; step=${roundingStep}`,
     };
   }
 
-  // CASE C: anniversary ผ่านไปในปีก่อนแล้ว + ยังไม่มี quota ปีนี้ → full grant
-  // robust: ไม่ require isSameDay Jan 1; cron ยัง grant ได้แม้เริ่มทำงานกลางปี
   if (anniversary.getFullYear() < currentYear) {
     return {
       action: 'GRANT_FULL',
-      days: new Decimal(ANNUAL_LEAVE_FULL_YEAR_DAYS.toFixed(2)),
+      days: new Decimal(fullYearDays.toFixed(2)),
       eligibleFrom: new Date(Date.UTC(currentYear, 0, 1)),
     };
   }
@@ -131,23 +143,25 @@ function toIsoDate(d: Date): string {
 // cashOutDays = entitled − usedDays (ไม่รวม pendingDays เพราะต้อง settle pending ก่อน)
 // ผลลัพธ์ใช้สร้าง AnnualLeaveCashOut(trigger = RESIGNATION/TERMINATION)
 
-export function computeResignationAnnualProrate(args: {
-  hireDate: Date;
-  terminationDate: Date;
-  usedDays: Decimal;
-}): Decimal {
+export function computeResignationAnnualProrate(
+  args: {
+    hireDate: Date;
+    terminationDate: Date;
+    usedDays: Decimal;
+  },
+  policy: AnnualLeavePolicy = DEFAULT_ANNUAL_LEAVE_POLICY,
+): Decimal {
   const { hireDate, terminationDate, usedDays } = args;
+  const { fullYearDays, roundingStep, daysInYearBasis } = policy;
 
   const year = terminationDate.getFullYear();
   const yearStart = new Date(Date.UTC(year, 0, 1));
   const anniversary = addYears(hireDate, 1);
 
-  // กรณียังไม่ครบ 1 ปี → ไม่มีสิทธิ์ annual เลย
   if (isAfter(anniversary, terminationDate)) {
     return new Decimal(0);
   }
 
-  // วันเริ่มนับของปี = max(yearStart, anniversary)
   const startOfEntitlement = isAfter(anniversary, yearStart)
     ? anniversary
     : yearStart;
@@ -155,11 +169,10 @@ export function computeResignationAnnualProrate(args: {
   const daysWorkedInYear =
     differenceInCalendarDays(terminationDate, startOfEntitlement) + 1;
 
-  const rawEntitled =
-    (ANNUAL_LEAVE_FULL_YEAR_DAYS * daysWorkedInYear) / DAYS_IN_YEAR_BASIS;
+  const rawEntitled = (fullYearDays * daysWorkedInYear) / daysInYearBasis;
   const entitled = roundDownToStep(
-    Math.max(0, Math.min(ANNUAL_LEAVE_FULL_YEAR_DAYS, rawEntitled)),
-    ROUNDING_STEP,
+    Math.max(0, Math.min(fullYearDays, rawEntitled)),
+    roundingStep,
   );
 
   const cashOut = new Decimal(entitled.toFixed(2)).minus(usedDays);

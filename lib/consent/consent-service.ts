@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
+import { getSettingValue } from "@/lib/settings/settings-service";
 
 interface RequestMeta {
   ip: string;
@@ -7,14 +8,21 @@ interface RequestMeta {
 }
 
 export const CONSENT_PURPOSE = "PDPA-EmployeeData-v1";
-export const CONSENT_VERSION = "1.0";
+/** Legacy default; runtime version comes from `pdpa.consent.current_version` setting. */
+export const CONSENT_VERSION_DEFAULT = "1.0.0";
+
+/** Resolve current consent version from SystemConfig. */
+export async function getCurrentConsentVersion(): Promise<string> {
+  return getSettingValue<string>("pdpa.consent.current_version");
+}
 
 export async function hasActiveConsent(userId: string): Promise<boolean> {
+  const version = await getCurrentConsentVersion();
   const record = await prisma.consentRecord.findFirst({
     where: {
       userId,
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version,
       granted: true,
       withdrawnAt: null,
     },
@@ -23,11 +31,12 @@ export async function hasActiveConsent(userId: string): Promise<boolean> {
 }
 
 export async function getConsentStatus(userId: string) {
+  const version = await getCurrentConsentVersion();
   const record = await prisma.consentRecord.findFirst({
     where: {
       userId,
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version,
       granted: true,
       withdrawnAt: null,
     },
@@ -38,17 +47,18 @@ export async function getConsentStatus(userId: string) {
   return {
     consented: record !== null,
     purpose: CONSENT_PURPOSE,
-    version: CONSENT_VERSION,
+    version,
     grantedAt: record?.grantedAt ?? null,
   };
 }
 
 export async function grantConsent(userId: string, meta: RequestMeta) {
+  const version = await getCurrentConsentVersion();
   const existing = await prisma.consentRecord.findFirst({
     where: {
       userId,
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version,
       granted: true,
       withdrawnAt: null,
     },
@@ -60,7 +70,7 @@ export async function grantConsent(userId: string, meta: RequestMeta) {
     data: {
       userId,
       purpose: CONSENT_PURPOSE,
-      version: CONSENT_VERSION,
+      version,
       granted: true,
       grantedAt: new Date(),
       ipAddress: meta.ip,
