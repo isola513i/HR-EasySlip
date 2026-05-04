@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
 
 export type SettingValue = string | number | boolean;
-export type SettingGroup = "leave" | "payroll" | "attendance" | "geofence" | "pdpa";
+export type SettingGroup = "leave" | "payroll" | "attendance" | "geofence" | "overtime" | "pdpa";
 export type SettingInputType =
   | "number"
   | "text"

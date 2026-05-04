@@ -31,6 +31,10 @@ const DEFAULTS: ConfigEntry[] = [
   // ─── Payroll: cut-off ───
   { key: 'payroll.cutoff.day_of_month', value: 25, description: 'วันปิดรอบ (ล็อก record)' },
 
+  // ─── Overtime caps (Thai Labor Protection Act) ───
+  { key: 'overtime.daily_cap_hours', value: 4, description: 'เพดาน OT ต่อวัน (พ.ร.บ.คุ้มครองแรงงาน)' },
+  { key: 'overtime.weekly_cap_hours', value: 36, description: 'เพดาน OT ต่อสัปดาห์ (พ.ร.บ.คุ้มครองแรงงาน)' },
+
   // ─── Attendance: policy ───
   { key: 'attendance.late_threshold_minutes', value: 15, description: 'เวลาสาย (นาที) ที่จะ flag' },
   { key: 'attendance.gps.capture_enabled', value: true, description: 'เก็บ GPS ตอน clock in/out (log only)' },

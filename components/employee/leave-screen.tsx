@@ -12,6 +12,7 @@ import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useLeaveForm } from "@/hooks/use-leave-form";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { bangkokTodayKey, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
+import { OfflineQueuedError } from "@/lib/api/client";
 import { useT } from "@/lib/i18n/locale-context";
 
 export function LeaveScreen() {
@@ -43,7 +44,7 @@ export function LeaveScreen() {
     leaveType, setLeaveType, halfDay, setHalfDay,
     startDate, setStartDate, endDate, setEndDate,
     reason, setReason, preview, isSubmitting,
-    isLoadingQuotas, quotaError, submit, getBalance,
+    isLoadingQuotas, quotaError, submit, getBalance, isTypeIneligible,
   } = useLeaveForm();
 
   const searchParams = useSearchParams();
@@ -69,6 +70,10 @@ export function LeaveScreen() {
       const result = await submit();
       if (result) toast.success(t.leave.submitSuccess);
     } catch (err) {
+      if (err instanceof OfflineQueuedError) {
+        toast.info(t.clock.offlineQueued, { duration: 6000 });
+        return;
+      }
       toast.error(err instanceof Error ? err.message : t.leave.submitFailed);
     }
   };
@@ -95,12 +100,31 @@ export function LeaveScreen() {
           <div className="grid grid-cols-2 gap-2">
             {LEAVE_TYPES.map((lt) => {
               const sel = leaveType === lt.key;
+              const ineligible = isTypeIneligible(lt.key);
               return (
-                <button key={lt.key} onClick={() => setLeaveType(lt.key)} className={cn("rounded-[10px] p-3 text-left transition-colors", sel ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)]" : "border border-[var(--es-neutral-300)] bg-card")}>
+                <button
+                  key={lt.key}
+                  onClick={() => { if (!ineligible) setLeaveType(lt.key); }}
+                  disabled={ineligible}
+                  aria-disabled={ineligible}
+                  className={cn(
+                    "rounded-[10px] p-3 text-left transition-colors",
+                    sel
+                      ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)]"
+                      : "border border-[var(--es-neutral-300)] bg-card",
+                    ineligible && "cursor-not-allowed opacity-60",
+                  )}
+                >
                   <div className="text-sm font-semibold">{lt.label}</div>
                   <div className="text-[11px] text-muted-foreground">{lt.sub}</div>
                   <div className={cn("tabular-nums mt-1 text-[11px] font-semibold", sel ? "text-[var(--es-accent-700)]" : "text-muted-foreground")}>
-                    {isLoadingQuotas ? t.common.loading : quotaError ? t.common.error : `${t.leave.balance}: ${getBalance(lt.key)}`}
+                    {isLoadingQuotas
+                      ? t.common.loading
+                      : quotaError
+                        ? t.common.error
+                        : ineligible
+                          ? t.leave.ineligibleProbation
+                          : `${t.leave.balance}: ${getBalance(lt.key)}`}
                   </div>
                 </button>
               );

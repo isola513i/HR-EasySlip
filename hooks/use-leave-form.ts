@@ -95,10 +95,23 @@ export function useLeaveForm() {
     [quotas],
   );
 
+  /** True when the leave type is restricted (e.g. ANNUAL during probation). */
+  const isTypeIneligible = useCallback(
+    (type: LeaveType) => {
+      if (type === "LEAVE_WITHOUT_PAY") return false;
+      const q = quotas.find((qq) => qq.leaveType === type);
+      // ANNUAL is the canonical "probation" gate: backend grants 0 days for
+      // employees with <1 year service. Other types may legitimately be 0.
+      if (type === "ANNUAL") return q !== undefined && q.allocatedDays === 0;
+      return false;
+    },
+    [quotas],
+  );
+
   return {
     leaveType, setLeaveType, halfDay, setHalfDay,
     startDate, setStartDate, endDate, setEndDate,
     reason, setReason, quotas, preview, isSubmitting,
-    isLoadingQuotas, quotaError, submit, getBalance,
+    isLoadingQuotas, quotaError, submit, getBalance, isTypeIneligible,
   };
 }

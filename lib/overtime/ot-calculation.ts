@@ -65,36 +65,37 @@ export function getOTRate(type: "WEEKDAY" | "HOLIDAY" | "HOLIDAY_WORK"): Decimal
   }
 }
 
-// Thai Labor Protection Act limits
-const MAX_DAILY_OT_HOURS = 4;
-const MAX_WEEKLY_OT_HOURS = 36;
-
 export interface OTWarning { code: "DAILY_CAP" | "WEEKLY_CAP"; message: string; current: number; limit: number }
 
-/** Check if adding OT hours would exceed daily/weekly Thai labor law limits */
+/** Check if adding OT hours would exceed daily/weekly Thai labor law limits.
+ * Caps are sourced from SystemConfig (`overtime.daily_cap_hours`,
+ * `overtime.weekly_cap_hours`) so HR can tighten policy without redeploys. */
 export async function checkOTLimits(
   employeeId: string,
   date: Date,
   newHours: number,
 ): Promise<OTWarning[]> {
+  const { getSettingValues } = await import("@/lib/settings/settings-service");
+  const caps = await getSettingValues(["overtime.daily_cap_hours", "overtime.weekly_cap_hours"]);
+  const dailyLimit = Number(caps["overtime.daily_cap_hours"] ?? 4);
+  const weeklyLimit = Number(caps["overtime.weekly_cap_hours"] ?? 36);
+
   const warnings: OTWarning[] = [];
 
-  // Daily check: sum approved OT for the same date
   const dailyAgg = await prisma.overtimeRequest.aggregate({
     where: { employeeId, date, status: { in: ["PENDING", "APPROVED"] } },
     _sum: { hoursApproved: true },
   });
   const dailyTotal = Number(dailyAgg._sum.hoursApproved ?? 0) + newHours;
-  if (dailyTotal > MAX_DAILY_OT_HOURS) {
+  if (dailyTotal > dailyLimit) {
     warnings.push({
       code: "DAILY_CAP",
-      message: `OT วันนี้รวม ${dailyTotal} ชม. เกินกำหนด ${MAX_DAILY_OT_HOURS} ชม./วัน`,
+      message: `OT วันนี้รวม ${dailyTotal} ชม. เกินกำหนด ${dailyLimit} ชม./วัน`,
       current: dailyTotal,
-      limit: MAX_DAILY_OT_HOURS,
+      limit: dailyLimit,
     });
   }
 
-  // Weekly check: Mon-Sun of the given date
   const dayOfWeek = date.getUTCDay();
   const monday = new Date(date);
   monday.setUTCDate(date.getUTCDate() - ((dayOfWeek + 6) % 7));
@@ -111,12 +112,12 @@ export async function checkOTLimits(
     _sum: { hoursApproved: true },
   });
   const weeklyTotal = Number(weeklyAgg._sum.hoursApproved ?? 0) + newHours;
-  if (weeklyTotal > MAX_WEEKLY_OT_HOURS) {
+  if (weeklyTotal > weeklyLimit) {
     warnings.push({
       code: "WEEKLY_CAP",
-      message: `OT สัปดาห์นี้รวม ${weeklyTotal} ชม. เกินกำหนด ${MAX_WEEKLY_OT_HOURS} ชม./สัปดาห์`,
+      message: `OT สัปดาห์นี้รวม ${weeklyTotal} ชม. เกินกำหนด ${weeklyLimit} ชม./สัปดาห์`,
       current: weeklyTotal,
-      limit: MAX_WEEKLY_OT_HOURS,
+      limit: weeklyLimit,
     });
   }
 

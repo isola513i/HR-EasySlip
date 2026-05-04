@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { CheckCircle2, Circle, ExternalLink } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOnboarding } from "@/hooks/use-onboarding";
@@ -16,7 +19,20 @@ const categoryLinks: Record<string, string> = {
 
 export function OnboardingChecklist() {
   const t = useT();
+  const router = useRouter();
   const { checklist, isLoading, toggleItem } = useOnboarding();
+
+  // Auto-redirect on completion. The flag prevents the redirect from re-firing
+  // if the user comes back and toggles items off/on after completing once.
+  const redirectedRef = useRef(false);
+  useEffect(() => {
+    if (redirectedRef.current) return;
+    if (!checklist || checklist.progress.total === 0) return;
+    if (checklist.progress.done < checklist.progress.total) return;
+    redirectedRef.current = true;
+    toast.success(t.onboarding.completedToast);
+    setTimeout(() => router.push("/employee/today"), 1500);
+  }, [checklist, router, t.onboarding.completedToast]);
 
   if (isLoading) {
     return (

@@ -18,7 +18,7 @@ import {
 } from "./settings-state-boundary";
 import { ApiClientError } from "@/lib/api/client";
 
-const GROUP_ORDER: SettingGroup[] = ["leave", "payroll", "attendance", "geofence", "pdpa"];
+const GROUP_ORDER: SettingGroup[] = ["leave", "payroll", "attendance", "geofence", "overtime", "pdpa"];
 
 function matchesSearch(s: SystemSetting, label: string, query: string) {
   if (!query) return true;
@@ -28,7 +28,7 @@ function matchesSearch(s: SystemSetting, label: string, query: string) {
 
 function groupSettings(settings: SystemSetting[]): Record<SettingGroup, SystemSetting[]> {
   const groups: Record<SettingGroup, SystemSetting[]> = {
-    leave: [], payroll: [], attendance: [], geofence: [], pdpa: [],
+    leave: [], payroll: [], attendance: [], geofence: [], overtime: [], pdpa: [],
   };
   for (const s of settings) {
     if (s.group in groups) groups[s.group].push(s);

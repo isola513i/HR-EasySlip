@@ -7,7 +7,7 @@
 
 import { z } from "zod";
 
-export type SettingGroup = "leave" | "payroll" | "attendance" | "geofence" | "pdpa";
+export type SettingGroup = "leave" | "payroll" | "attendance" | "geofence" | "overtime" | "pdpa";
 export type SettingInputType = "number" | "text" | "boolean" | "time" | "decimal" | "string-version";
 
 export interface SettingDefinition {
@@ -154,6 +154,32 @@ export const SETTINGS_REGISTRY: Record<string, SettingDefinition> = {
     order: 10,
     min: 1,
     max: 28,
+    step: 1,
+  },
+
+  // ─── Overtime caps (Thai Labor Protection Act limits) ───
+  "overtime.daily_cap_hours": {
+    key: "overtime.daily_cap_hours",
+    group: "overtime",
+    inputType: "number",
+    validator: z.number().int().min(1).max(12),
+    defaultValue: 4,
+    unitKey: "hours",
+    order: 10,
+    min: 1,
+    max: 12,
+    step: 1,
+  },
+  "overtime.weekly_cap_hours": {
+    key: "overtime.weekly_cap_hours",
+    group: "overtime",
+    inputType: "number",
+    validator: z.number().int().min(1).max(60),
+    defaultValue: 36,
+    unitKey: "hours",
+    order: 20,
+    min: 1,
+    max: 60,
     step: 1,
   },
 
