@@ -33,8 +33,20 @@ function LocationIcon({ loc }: { loc: TimesheetEntry["workLocation"] }) {
   return <Building2 className="size-3.5" aria-hidden />;
 }
 
-function downloadCsv(entries: TimesheetEntry[], filename: string) {
-  const headers = ["Date", "First In", "Last Out", "Worked Minutes", "Late Minutes", "Location", "Backfilled"];
+function downloadCsv(
+  entries: TimesheetEntry[],
+  filename: string,
+  headers: { date: string; firstIn: string; lastOut: string; workedMinutes: string; lateMinutes: string; location: string; backfilled: string },
+) {
+  const headerRow = [
+    headers.date,
+    headers.firstIn,
+    headers.lastOut,
+    headers.workedMinutes,
+    headers.lateMinutes,
+    headers.location,
+    headers.backfilled,
+  ];
   const rows = entries.map((e) => [
     e.date,
     e.firstIn ?? "",
@@ -44,7 +56,9 @@ function downloadCsv(entries: TimesheetEntry[], filename: string) {
     e.workLocation ?? "",
     e.hasBackfill ? "yes" : "no",
   ]);
-  const csv = [headers, ...rows].map((row) => row.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
+  // UTF-8 BOM so Excel detects Thai characters correctly when opening the
+  // file directly without an import wizard.
+  const csv = "﻿" + [headerRow, ...rows].map((row) => row.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -116,7 +130,7 @@ export function TimesheetScreen() {
             size="sm"
             variant="outline"
             disabled={loading || entries.length === 0}
-            onClick={() => downloadCsv(entries, `timesheet_${dates.from}_${dates.to}.csv`)}
+            onClick={() => downloadCsv(entries, `timesheet_${dates.from}_${dates.to}.csv`, tsT.csv)}
           >
             <Download className="mr-1.5 size-3.5" />
             {tsT.exportCsv}

@@ -26,7 +26,10 @@ export function BottomNav() {
   ] as const;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/85 backdrop-blur-[14px] safe-area-pb">
+    <nav
+      aria-label={nav.ariaLabel}
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/85 backdrop-blur-[14px] safe-area-pb"
+    >
       <div className="flex h-16 items-stretch px-1">
         {items.map((item) => {
           const active = pathname.startsWith(item.href);
@@ -36,6 +39,7 @@ export function BottomNav() {
               href={item.href}
               onClick={() => { if (!active) hapticSelection(); }}
               aria-current={active ? "page" : undefined}
+              aria-label={item.label}
               className={cn(
                 "group/nav relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors active:scale-[0.92] active:transition-transform active:duration-100",
                 active

@@ -120,7 +120,7 @@ export function OTRequestForm() {
           disabled={isSubmitting || !canSubmit}
           onClick={handleSubmit}
         >
-          {isSubmitting ? t.leave.submitting : t.leave.submit}
+          {isSubmitting ? t.ot.submitting : t.ot.submit}
         </Button>
       </div>
     </>
