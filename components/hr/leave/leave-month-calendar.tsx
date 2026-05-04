@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useLeaveCalendar } from "@/hooks/use-leave-calendar";
 import { useT } from "@/lib/i18n/locale-context";
 
-const MONTH_NAMES_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function buildGrid(year: number, month: number): (number | null)[] {
   const first = new Date(year, month - 1, 1);
@@ -56,12 +55,12 @@ export function LeaveMonthCalendar() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
       <div className="mb-4 flex items-center justify-between">
-        <div className="text-base font-semibold">{MONTH_NAMES_EN[month - 1]} {year}</div>
+        <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
         <div className="flex gap-1">
-          <button onClick={prev} aria-label="Previous month" className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <button onClick={prev} aria-label={t.common.prevMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <ChevronLeft className="size-4" />
           </button>
-          <button onClick={next} aria-label="Next month" className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+          <button onClick={next} aria-label={t.common.nextMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <ChevronRight className="size-4" />
           </button>
         </div>

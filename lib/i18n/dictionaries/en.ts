@@ -49,6 +49,13 @@ const en = {
     language: "Language",
     switchLanguageThai: "Switch to Thai",
     switchLanguageEnglish: "Switch to English",
+    monthsLong: [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December",
+    ],
+    prevMonth: "Previous month",
+    nextMonth: "Next month",
+    info: "Info",
   },
   metadata: {
     description: "EasySlip HR — Attendance, Leave & Approval Management System",
@@ -582,6 +589,8 @@ const en = {
       tableLocation: "Location",
       viewMap: "View on map",
       todayBadge: "{count} today",
+      clockTypeIN: "Clock-in",
+      clockTypeOUT: "Clock-out",
     },
     settings: {
       title: "System Settings",

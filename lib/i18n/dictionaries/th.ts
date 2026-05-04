@@ -51,6 +51,13 @@ const th = {
     language: "ภาษา",
     switchLanguageThai: "เปลี่ยนเป็นภาษาไทย",
     switchLanguageEnglish: "เปลี่ยนเป็นภาษาอังกฤษ",
+    monthsLong: [
+      "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
+    ],
+    prevMonth: "เดือนก่อน",
+    nextMonth: "เดือนถัดไป",
+    info: "ข้อมูล",
   },
   metadata: {
     description: "ระบบบริหารทรัพยากรบุคคล EasySlip — ลงเวลา ลางาน อนุมัติ",
@@ -584,6 +591,8 @@ const th = {
       tableLocation: "ตำแหน่ง",
       viewMap: "ดูแผนที่",
       todayBadge: "วันนี้ {count} รายการ",
+      clockTypeIN: "ลงเวลาเข้า",
+      clockTypeOUT: "ลงเวลาออก",
     },
     settings: {
       title: "ตั้งค่าระบบ",

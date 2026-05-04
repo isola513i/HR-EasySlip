@@ -107,7 +107,7 @@ export function SettingRow({ setting, draft, isDirty, onChange, onReset, onShowH
             <Tooltip>
               <TooltipTrigger
                 render={
-                  <button type="button" className="text-muted-foreground hover:text-foreground" aria-label="Info">
+                  <button type="button" className="text-muted-foreground hover:text-foreground" aria-label={t.common.info}>
                     <Info className="size-3.5" />
                   </button>
                 }

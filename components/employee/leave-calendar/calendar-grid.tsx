@@ -6,11 +6,33 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
 import type { MyLeaveRequest, PublicHoliday } from "@/hooks/use-my-leave-calendar";
 
-const MONTH_NAMES_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-
 interface DayState {
   status: "PENDING" | "APPROVED" | "REJECTED" | null;
   isHoliday: boolean;
+}
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, "0");
+}
+
+/** Returns the Bangkok-local YYYY-MM-DD bounds for a given month. */
+function monthBounds(year: number, month: number) {
+  const lastDay = new Date(year, month, 0).getDate();
+  return {
+    startKey: `${year}-${pad2(month)}-01`,
+    endKey: `${year}-${pad2(month)}-${pad2(lastDay)}`,
+  };
+}
+
+/** Extract YYYY-MM-DD from an ISO string or `Date` field returned by Prisma `@db.Date`. */
+function isoDateKey(value: string | Date): string {
+  return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+}
+
+function nextDayKey(key: string): string {
+  const d = new Date(`${key}T00:00:00.000Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 }
 
 interface Props {
@@ -43,14 +65,17 @@ function statusPriority(s: MyLeaveRequest["status"]): "APPROVED" | "PENDING" | "
 }
 
 function buildDayMap(year: number, month: number, requests: MyLeaveRequest[], holidays: PublicHoliday[]) {
+  // Compare by YYYY-MM-DD keys instead of Date instants. Date arithmetic
+  // would shift end-of-month entries out of range when Prisma `@db.Date`
+  // values arrive as UTC midnight ISO strings while monthEnd is local
+  // midnight on a UTC+7 browser.
   const map = new Map<number, DayState>();
-  const monthStart = new Date(year, month - 1, 1);
-  const monthEnd = new Date(year, month, 0);
+  const { startKey, endKey } = monthBounds(year, month);
 
   for (const h of holidays) {
-    const d = new Date(h.date);
-    if (d >= monthStart && d <= monthEnd) {
-      const day = d.getDate();
+    const key = isoDateKey(h.date);
+    if (key >= startKey && key <= endKey) {
+      const day = parseInt(key.slice(8, 10), 10);
       const cur = map.get(day) ?? { status: null, isHoliday: false };
       cur.isHoliday = true;
       map.set(day, cur);
@@ -66,20 +91,22 @@ function buildDayMap(year: number, month: number, requests: MyLeaveRequest[], ho
   for (const r of ordered) {
     const status = statusPriority(r.status);
     if (!status) continue;
-    const start = new Date(r.startDate);
-    const end = new Date(r.endDate);
-    const from = start > monthStart ? start : monthStart;
-    const to = end < monthEnd ? end : monthEnd;
-    const cur = new Date(from);
-    while (cur <= to) {
-      const day = cur.getDate();
+    const startKeyR = isoDateKey(r.startDate);
+    const endKeyR = isoDateKey(r.endDate);
+    let cur = startKeyR > startKey ? startKeyR : startKey;
+    const stop = endKeyR < endKey ? endKeyR : endKey;
+    while (cur <= stop) {
+      const day = parseInt(cur.slice(8, 10), 10);
       const existing = map.get(day) ?? { status: null, isHoliday: false };
-      // approved wins, then pending, then rejected
-      if (existing.status === null || existing.status === "REJECTED" || (existing.status === "PENDING" && status === "APPROVED")) {
+      if (
+        existing.status === null
+        || existing.status === "REJECTED"
+        || (existing.status === "PENDING" && status === "APPROVED")
+      ) {
         existing.status = status;
       }
       map.set(day, existing);
-      cur.setDate(cur.getDate() + 1);
+      cur = nextDayKey(cur);
     }
   }
   return map;
@@ -112,12 +139,12 @@ export function CalendarGrid({ month, year, isLoading, requests, holidays, selec
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
       <div className="mb-4 flex items-center justify-between">
-        <div className="text-base font-semibold">{MONTH_NAMES_EN[month - 1]} {year}</div>
+        <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
         <div className="flex gap-1">
-          <button onClick={onPrev} aria-label="Previous month" className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button onClick={onPrev} aria-label={t.common.prevMonth} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
             <ChevronLeft className="size-4" />
           </button>
-          <button onClick={onNext} aria-label="Next month" className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button onClick={onNext} aria-label={t.common.nextMonth} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
             <ChevronRight className="size-4" />
           </button>
         </div>

@@ -1,18 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Save, Undo2, AlertTriangle, Download } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useSettings, type SystemSetting, type SettingGroup, type SettingValue } from "@/hooks/use-settings";
 import { useT } from "@/lib/i18n/locale-context";
-import { SearchInput } from "@/components/shared/search-input";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { SettingsGroupCard } from "./settings-group-card";
 import { SettingHistoryDialog } from "./setting-history-dialog";
 import { GeofenceLocationHelper } from "./geofence-location-helper";
+import { SettingsHeader } from "./settings-header";
+import { SettingsSaveBar } from "./settings-save-bar";
+import { downloadSettingsJson } from "./settings-export";
+import {
+  SettingsLoadingState,
+  SettingsErrorState,
+  SettingsEmptyState,
+} from "./settings-state-boundary";
 import { ApiClientError } from "@/lib/api/client";
 
 const GROUP_ORDER: SettingGroup[] = ["leave", "payroll", "attendance", "geofence", "pdpa"];
@@ -32,6 +35,17 @@ function groupSettings(settings: SystemSetting[]): Record<SettingGroup, SystemSe
   }
   for (const g of GROUP_ORDER) groups[g].sort((a, b) => a.order - b.order);
   return groups;
+}
+
+function geofenceCoord(
+  drafts: Record<string, SettingValue>,
+  settings: SystemSetting[],
+  key: string,
+): number {
+  const draft = drafts[key];
+  if (draft !== undefined) return Number(draft);
+  const row = settings.find((s) => s.key === key)?.value;
+  return Number(row ?? 0);
 }
 
 export function SettingsPanel() {
@@ -63,10 +77,6 @@ export function SettingsPanel() {
 
   function handleChange(key: string, value: SettingValue) {
     setDrafts((d) => ({ ...d, [key]: value }));
-  }
-
-  function handleDiscard() {
-    setDrafts({});
   }
 
   function formatSaveError(err: unknown): string {
@@ -110,100 +120,26 @@ export function SettingsPanel() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-6">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader><Skeleton className="h-5 w-28" /></CardHeader>
-            <CardContent className="space-y-3">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardContent className="flex h-[300px] flex-col items-center justify-center gap-2 text-sm">
-          <AlertTriangle className="size-5 text-destructive" />
-          <p className="text-destructive">{error}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (settings.length === 0) {
-    return <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">{settingsT.empty}</div>;
-  }
-
-  const dirtyCount = dirtyKeys.size;
-
-  function handleExportJson() {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      version: 1,
-      settings: settings.map((s) => ({
-        key: s.key,
-        value: s.value,
-        defaultValue: s.defaultValue,
-        group: s.group,
-        updatedBy: s.updatedBy,
-        updatedAt: s.updatedAt,
-      })),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `easyslip-settings-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+  function handleExport() {
+    downloadSettingsJson(settings);
     toast.success(settingsT.exportSuccess);
   }
 
+  if (isLoading) return <SettingsLoadingState />;
+  if (error) return <SettingsErrorState message={error} />;
+  if (settings.length === 0) return <SettingsEmptyState message={settingsT.empty} />;
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold">{settingsT.title}</h1>
-          <p className="text-[12px] text-muted-foreground">{settingsT.subtitle}</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <SearchInput
-            placeholder={settingsT.searchPlaceholder}
-            value={search}
-            onChange={setSearch}
-            className="sm:max-w-xs"
-          />
-          <Button type="button" variant="outline" size="sm" onClick={handleExportJson}>
-            <Download className="mr-1.5 size-3.5" />
-            {settingsT.exportJson}
-          </Button>
-        </div>
-      </div>
+      <SettingsHeader search={search} onSearchChange={setSearch} onExport={handleExport} />
 
       {GROUP_ORDER.map((g) => (
         <div key={g} className="flex flex-col gap-2">
           {g === "geofence" && (grouped[g]?.length ?? 0) > 0 && (
             <GeofenceLocationHelper
-              currentLat={Number(
-                drafts["attendance.geofence.center_lat"]
-                ?? settings.find((s) => s.key === "attendance.geofence.center_lat")?.value
-                ?? 0,
-              )}
-              currentLng={Number(
-                drafts["attendance.geofence.center_lng"]
-                ?? settings.find((s) => s.key === "attendance.geofence.center_lng")?.value
-                ?? 0,
-              )}
-              onPick={(picks) => {
-                for (const p of picks) handleChange(p.key, p.value);
-              }}
+              currentLat={geofenceCoord(drafts, settings, "attendance.geofence.center_lat")}
+              currentLng={geofenceCoord(drafts, settings, "attendance.geofence.center_lng")}
+              onPick={(picks) => { for (const p of picks) handleChange(p.key, p.value); }}
             />
           )}
           <SettingsGroupCard
@@ -224,27 +160,12 @@ export function SettingsPanel() {
         </div>
       )}
 
-      {dirtyCount > 0 && (
-        <div
-          className="sticky bottom-4 z-10 mx-auto flex w-full max-w-2xl items-center justify-between gap-2 rounded-full border border-border bg-card/95 px-4 py-2 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-card/80"
-          role="status"
-          aria-live="polite"
-        >
-          <span className="text-xs font-medium text-foreground">
-            {settingsT.saveAllCount.replace("{count}", String(dirtyCount))}
-          </span>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleDiscard} disabled={saving}>
-              <Undo2 className="mr-1.5 size-3.5" />
-              {settingsT.discardAll}
-            </Button>
-            <Button size="sm" onClick={handleSaveAll} disabled={saving}>
-              <Save className="mr-1.5 size-3.5" />
-              {saving ? t.common.saving : settingsT.saveAll}
-            </Button>
-          </div>
-        </div>
-      )}
+      <SettingsSaveBar
+        dirtyCount={dirtyKeys.size}
+        saving={saving}
+        onDiscard={() => setDrafts({})}
+        onSave={handleSaveAll}
+      />
 
       <ConfirmDialog
         open={!!resetTarget}
@@ -256,10 +177,7 @@ export function SettingsPanel() {
         variant="destructive"
       />
 
-      <SettingHistoryDialog
-        settingKey={historyKey}
-        onClose={() => setHistoryKey(null)}
-      />
+      <SettingHistoryDialog settingKey={historyKey} onClose={() => setHistoryKey(null)} />
     </div>
   );
 }

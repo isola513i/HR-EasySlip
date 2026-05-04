@@ -102,7 +102,7 @@ export function GeofenceBreachPanel({ from, to }: Props) {
                     <td className="px-3 py-2 tabular-nums">{fmt.formatDateTime(b.clockedAt)}</td>
                     <td className="px-3 py-2">
                       <Badge variant="outline" className="text-[10px]">
-                        Clock-{b.clockType.toLowerCase()}
+                        {b.clockType === "IN" ? dict.clockTypeIN : dict.clockTypeOUT}
                       </Badge>
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
