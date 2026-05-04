@@ -240,6 +240,13 @@ const th = {
     requestOTDesc: "ส่งคำขอล่วงเวลา",
     timesheet: "ตารางเวลา",
     timesheetDesc: "ดูบันทึกการลงเวลา",
+    bottomNav: {
+      home: "หน้าแรก",
+      clock: "ลงเวลา",
+      leave: "ลางาน",
+      inbox: "กล่องข้อความ",
+      me: "ฉัน",
+    },
     leaveQuota: "โควต้าวันลา",
     noLeaveQuota: "ไม่มีโควต้าวันลา",
     recent: "ล่าสุด",

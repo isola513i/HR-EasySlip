@@ -42,7 +42,7 @@ export function ClockScreen() {
   }, [clockState]);
 
   const locationLabel =
-    location === "OFFICE" ? "the office" : location === "WFH" ? "home" : "on-site";
+    location === "OFFICE" ? t.clock.office : location === "WFH" ? t.clock.wfh : t.clock.onSite;
 
   return (
     <>

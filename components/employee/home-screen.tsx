@@ -17,6 +17,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { apiFetch } from "@/lib/api/client";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
+import { useLocale } from "@/hooks/use-locale";
 import { formatDate } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -105,9 +106,6 @@ function RecentActivitySkeleton({ label }: { label: string }) {
   );
 }
 
-function formatActionLabel(action: string) {
-  return getActionLabel(action, "en");
-}
 
 export function EmployeeHome({ user, dict }: Props) {
   const [leaveQuota, setLeaveQuota] = useState<LeaveQuotaItem[] | null>(null);
@@ -115,6 +113,7 @@ export function EmployeeHome({ user, dict }: Props) {
   const [quotaLoading, setQuotaLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
   const { policy } = useAttendancePolicy();
+  const { locale } = useLocale();
   const shiftStartLabel = dict.employee.shiftStarts.replace(
     "{time}",
     policy.halfday.morningStart,
@@ -270,7 +269,7 @@ export function EmployeeHome({ user, dict }: Props) {
                 recentActivity.map((r, i) => (
                   <div key={`${r.createdAt}-${i}`} className={`flex items-center justify-between px-4 py-3 ${i < recentActivity.length - 1 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
                     <div>
-                      <div className="text-[13px] font-medium">{formatActionLabel(r.action)}</div>
+                      <div className="text-[13px] font-medium">{getActionLabel(r.action, locale)}</div>
                       <div className="text-xs text-muted-foreground">{formatDate(r.createdAt)}</div>
                     </div>
                     <StatusPill tone="neutral">{r.entityType}</StatusPill>

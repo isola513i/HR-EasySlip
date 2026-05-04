@@ -238,6 +238,13 @@ const en = {
     requestOTDesc: "Submit an overtime request",
     timesheet: "Timesheet",
     timesheetDesc: "View attendance log",
+    bottomNav: {
+      home: "Home",
+      clock: "Clock",
+      leave: "Leave",
+      inbox: "Inbox",
+      me: "Me",
+    },
     leaveQuota: "Leave quota",
     noLeaveQuota: "No leave quota found",
     recent: "Recent",

@@ -11,17 +11,19 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
-
-const items = [
-  { href: "/employee/today", icon: Home, label: "Home" },
-  { href: "/employee/clock", icon: Clock, label: "Clock" },
-  { href: "/employee/leave", icon: CalendarDays, label: "Leave" },
-  { href: "/employee/inbox", icon: Inbox, label: "Inbox" },
-  { href: "/employee/me", icon: User, label: "Me" },
-] as const;
+import { useT } from "@/lib/i18n/locale-context";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const t = useT();
+  const nav = t.employee.bottomNav;
+  const items = [
+    { href: "/employee/today", icon: Home, label: nav.home },
+    { href: "/employee/clock", icon: Clock, label: nav.clock },
+    { href: "/employee/leave", icon: CalendarDays, label: nav.leave },
+    { href: "/employee/inbox", icon: Inbox, label: nav.inbox },
+    { href: "/employee/me", icon: User, label: nav.me },
+  ] as const;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/85 backdrop-blur-[14px] safe-area-pb">

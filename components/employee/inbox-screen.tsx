@@ -14,8 +14,9 @@ import { apiFetchPaginated } from "@/lib/api/client";
 import { ApiClientError } from "@/lib/api/client";
 import { formatLeaveType } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/format";
-import { ACTION_LABELS_TH } from "@/lib/audit/action-labels";
+import { getActionLabel } from "@/lib/audit/action-labels";
 import { useT } from "@/lib/i18n/locale-context";
+import { useLocale } from "@/hooks/use-locale";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -54,9 +55,9 @@ const ACTION_TONE_ICON: Record<
   "consent.grant": { tone: "neutral", icon: ShieldCheck },
 };
 
-function mapAuditToNotification(entry: AuditLogEntry): Notification {
+function mapAuditToNotification(entry: AuditLogEntry, locale: "th" | "en"): Notification {
   const mapping = ACTION_TONE_ICON[entry.action];
-  const title = ACTION_LABELS_TH[entry.action] ?? entry.action;
+  const title = getActionLabel(entry.action, locale);
   const tone = mapping?.tone ?? "neutral";
   const icon = mapping?.icon ?? Bell;
 
@@ -91,6 +92,7 @@ const toneColors = {
 
 export function InboxScreen() {
   const t = useT();
+  const { locale } = useLocale();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -103,7 +105,7 @@ export function InboxScreen() {
           "/api/v1/employee/me/activity?perPage=10",
         );
         if (!cancelled) {
-          setNotifications(data.map(mapAuditToNotification));
+          setNotifications(data.map((e) => mapAuditToNotification(e, locale)));
         }
       } catch (err) {
         // 403 = employee has no audit access → show empty state
@@ -117,7 +119,7 @@ export function InboxScreen() {
 
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [locale]);
 
   return (
     <>
