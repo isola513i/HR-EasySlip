@@ -14,6 +14,7 @@ export const GET = withApiHandler(async () => {
     lateAfter: policy.lateAfter,
     lateThresholdMinutes: policy.lateThresholdMinutes,
     gpsCaptureEnabled: policy.gpsCaptureEnabled,
+    enforceGeofence: policy.enforceGeofence,
     halfday: policy.halfday,
   });
 });

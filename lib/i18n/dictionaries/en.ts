@@ -355,6 +355,7 @@ const en = {
     recording: "Recording...",
     tapToClock: "Tap to clock {type}",
     gpsDisclaimer: "GPS location is recorded for attendance verification only. No geofencing is enforced.",
+    gpsDisclaimerEnforced: "GPS location is recorded. Clock-ins outside the configured office radius are flagged for HR review (not blocked).",
     geofenceWarning: "Clock-in recorded outside the office radius (~{distance}m / max {radius}m). HR has been notified.",
     clockInLabel: "in",
     clockOutLabel: "out",

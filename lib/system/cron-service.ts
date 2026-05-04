@@ -12,12 +12,57 @@ import { getSettingValue } from "@/lib/settings/settings-service";
 export async function dailyQuotaTick() {
   const result = await grantAnniversaryLeave();
 
+  // Ensure the current + next cycles exist so leave / clock submissions
+  // never bounce with NO_CYCLE on the first business day of a new month.
+  const cycles = await ensureUpcomingCycles().catch((err) => {
+    logger.error("Failed to ensure cycles", { error: err?.message });
+    return null;
+  });
+
   // Fire-and-forget outbox alert
   alertOnExhaustedOutboxEvents().catch((err) =>
     logger.error("Failed to send outbox alert", { error: err?.message }),
   );
 
-  return result;
+  return { ...result, cyclesEnsured: cycles?.created ?? 0 };
+}
+
+/** Build (year, month) for current month and next month based on Bangkok wall-clock. */
+function thisAndNextMonth(now = new Date()): Array<{ year: number; month: number }> {
+  const bkk = new Date(now.getTime() + 7 * 3600_000);
+  const y = bkk.getUTCFullYear();
+  const m = bkk.getUTCMonth() + 1; // 1-12
+  const next = m === 12 ? { year: y + 1, month: 1 } : { year: y, month: m + 1 };
+  return [{ year: y, month: m }, next];
+}
+
+/** Cycle bounds: cycleStart = previous month's (cutoffDay+1); cycleEnd = current month's cutoffDay. */
+function cycleBounds(year: number, month: number, cutoffDay: number) {
+  const cycleStart = new Date(Date.UTC(month === 1 ? year - 1 : year, month === 1 ? 11 : month - 2, cutoffDay + 1));
+  const cycleEnd = new Date(Date.UTC(year, month - 1, cutoffDay));
+  // 23:59:59 Bangkok = 16:59:59 UTC of cycleEnd
+  const cutOffAt = new Date(Date.UTC(year, month - 1, cutoffDay, 16, 59, 59));
+  return { cycleStart, cycleEnd, cutOffAt };
+}
+
+/** Idempotently create OPEN cycles for the current and next calendar months. */
+export async function ensureUpcomingCycles() {
+  const cutoffDay = await getSettingValue<number>("payroll.cutoff.day_of_month");
+  const months = thisAndNextMonth();
+  let created = 0;
+  for (const { year, month } of months) {
+    const existing = await prisma.payrollCycle.findUnique({
+      where: { year_month: { year, month } },
+      select: { id: true },
+    });
+    if (existing) continue;
+    const { cycleStart, cycleEnd, cutOffAt } = cycleBounds(year, month, cutoffDay);
+    await prisma.payrollCycle.create({
+      data: { year, month, cycleStart, cycleEnd, cutOffAt, status: "OPEN" },
+    });
+    created++;
+  }
+  return { created, months };
 }
 
 export async function cutoffLock() {

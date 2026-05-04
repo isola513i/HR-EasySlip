@@ -357,6 +357,7 @@ const th = {
     recording: "กำลังบันทึก...",
     tapToClock: "กดเพื่อลงเวลา{type}",
     gpsDisclaimer: "ตำแหน่ง GPS บันทึกเพื่อยืนยันการลงเวลาเท่านั้น ไม่มีการบังคับ geofencing",
+    gpsDisclaimerEnforced: "ตำแหน่ง GPS บันทึกการลงเวลา หากอยู่นอกรัศมีออฟฟิศที่กำหนด ระบบจะส่งให้ HR ตรวจสอบ (ไม่บล็อก)",
     geofenceWarning: "บันทึกการลงเวลาแล้ว แต่อยู่นอกพื้นที่ออฟฟิศ (~{distance}ม. / สูงสุด {radius}ม.) HR จะได้รับการแจ้งเตือน",
     clockInLabel: "เข้า",
     clockOutLabel: "ออก",

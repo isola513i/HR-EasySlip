@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { cn } from "@/lib/utils";
 import { useClock, type LocationType } from "@/hooks/use-clock";
+import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { useT } from "@/lib/i18n/locale-context";
 import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
 
@@ -22,6 +23,8 @@ export function ClockScreen() {
     clockState, clockType, location, setLocation,
     coords, gpsStatus, clockedTime, error, geofenceWarning, queuedOffline, handleClock, reset,
   } = useClock();
+  const { policy } = useAttendancePolicy();
+  const disclaimer = policy.enforceGeofence ? t.clock.gpsDisclaimerEnforced : t.clock.gpsDisclaimer;
 
   useEffect(() => { if (error) { toast.error(error); hapticError(); } }, [error]);
 
@@ -157,7 +160,7 @@ export function ClockScreen() {
         )}
 
         <p className="px-1 text-[11px] leading-relaxed text-muted-foreground">
-          {t.clock.gpsDisclaimer}
+          {disclaimer}
         </p>
       </div>
     </>

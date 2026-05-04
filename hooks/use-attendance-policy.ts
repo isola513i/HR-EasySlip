@@ -8,6 +8,7 @@ export interface AttendancePolicyResponse {
   lateAfter: { h: number; m: number };
   lateThresholdMinutes: number;
   gpsCaptureEnabled: boolean;
+  enforceGeofence: boolean;
   halfday: {
     morningStart: string;
     morningEnd: string;
@@ -21,6 +22,7 @@ const FALLBACK: AttendancePolicyResponse = {
   lateAfter: { h: 9, m: 15 },
   lateThresholdMinutes: 15,
   gpsCaptureEnabled: true,
+  enforceGeofence: false,
   halfday: {
     morningStart: "09:00",
     morningEnd: "13:00",

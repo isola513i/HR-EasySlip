@@ -12,6 +12,7 @@ export interface AttendancePolicy {
   shiftStart: { h: number; m: number };
   lateThresholdMinutes: number;
   gpsCaptureEnabled: boolean;
+  enforceGeofence: boolean;
   halfday: HalfDayWindows;
 }
 
@@ -22,6 +23,7 @@ const KEYS = [
   "leave.halfday.afternoon_end",
   "attendance.late_threshold_minutes",
   "attendance.gps.capture_enabled",
+  "attendance.gps.enforce_geofence",
 ];
 
 function parseHHmm(value: unknown, fallback: { h: number; m: number }) {
@@ -49,6 +51,7 @@ export async function loadAttendancePolicy(): Promise<AttendancePolicy> {
     lateThresholdMinutes: threshold,
     lateAfter: addMinutes(shiftStart, threshold),
     gpsCaptureEnabled: Boolean(values["attendance.gps.capture_enabled"] ?? true),
+    enforceGeofence: Boolean(values["attendance.gps.enforce_geofence"] ?? false),
     halfday: {
       morningStart: asHHmm(values["leave.halfday.morning_start"], "09:00"),
       morningEnd: asHHmm(values["leave.halfday.morning_end"], "13:00"),
