@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useT } from "@/lib/i18n/locale-context";
 import { useMyLeaveCalendar } from "@/hooks/use-my-leave-calendar";
+import { bangkokYear, bangkokMonth, bangkokDay } from "@/lib/datetime/bangkok";
 import { CalendarGrid } from "./calendar-grid";
 import { DayDetail } from "./day-detail";
 
@@ -12,11 +15,10 @@ function pad(n: number) { return n.toString().padStart(2, "0"); }
 export function LeaveCalendarScreen() {
   const t = useT();
   const dict = t.myLeaveCalendar;
-  const { month, year, setMonth, setYear, requests, holidays, isLoading } = useMyLeaveCalendar();
+  const { month, year, setMonth, setYear, requests, holidays, isLoading, error, refetch } = useMyLeaveCalendar();
 
-  const today = new Date();
   const [selectedDay, setSelectedDay] = useState<number | null>(
-    today.getMonth() + 1 === month && today.getFullYear() === year ? today.getDate() : null,
+    bangkokMonth() === month && bangkokYear() === year ? bangkokDay() : null,
   );
 
   const prev = () => {
@@ -40,21 +42,29 @@ export function LeaveCalendarScreen() {
       <div className="flex flex-col gap-4 p-4">
         <p className="text-[12px] text-muted-foreground">{dict.subtitle}</p>
 
-        <CalendarGrid
-          month={month}
-          year={year}
-          isLoading={isLoading}
-          requests={requests}
-          holidays={holidays}
-          selectedDay={selectedDay}
-          onSelectDay={setSelectedDay}
-          onPrev={prev}
-          onNext={next}
-        />
+        {error && !isLoading ? (
+          <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
+            <AlertTriangle className="size-5 text-destructive" />
+            <p className="text-sm text-destructive">{dict.loadError}</p>
+            <Button size="sm" variant="outline" onClick={refetch}>{dict.retry}</Button>
+          </div>
+        ) : (
+          <CalendarGrid
+            month={month}
+            year={year}
+            isLoading={isLoading}
+            requests={requests}
+            holidays={holidays}
+            selectedDay={selectedDay}
+            onSelectDay={setSelectedDay}
+            onPrev={prev}
+            onNext={next}
+          />
+        )}
 
         <Legend dict={dict} />
 
-        {selectedIso && <DayDetail date={selectedIso} requests={requests} holidays={holidays} />}
+        {selectedIso && !error && <DayDetail date={selectedIso} requests={requests} holidays={holidays} />}
       </div>
     </>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { bangkokMonth, bangkokYear } from "@/lib/datetime/bangkok";
 
 export interface MyLeaveRequest {
   id: string;
@@ -22,9 +23,8 @@ export interface PublicHoliday {
 }
 
 export function useMyLeaveCalendar() {
-  const today = new Date();
-  const [month, setMonth] = useState<number>(today.getMonth() + 1);
-  const [year, setYear] = useState<number>(today.getFullYear());
+  const [month, setMonth] = useState<number>(bangkokMonth());
+  const [year, setYear] = useState<number>(bangkokYear());
   const [requests, setRequests] = useState<MyLeaveRequest[]>([]);
   const [holidays, setHolidays] = useState<PublicHoliday[]>([]);
   const [isLoading, setIsLoading] = useState(true);

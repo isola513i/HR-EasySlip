@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { bangkokTodayKey } from "@/lib/datetime/bangkok";
 
 type ClockState = "loading" | "idle" | "clocking" | "done" | "error";
 export type LocationType = "OFFICE" | "WFH" | "ON_SITE";
@@ -53,7 +54,7 @@ export function useClock() {
       { enableHighAccuracy: true, timeout: 10000 },
     );
 
-    const today = new Date().toLocaleDateString("sv-SE");
+    const today = bangkokTodayKey();
     apiFetch<AttendanceRecord[]>(`/api/v1/attendance/me?from=${today}&to=${today}`, { signal: ctrl.signal })
       .then((records) => {
         if (ignore) return;

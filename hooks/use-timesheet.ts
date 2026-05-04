@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
+import { bangkokTodayKey } from "@/lib/datetime/bangkok";
 
 export interface TimesheetEntry {
   date: string;
@@ -23,17 +24,7 @@ export interface TimesheetSummary {
 
 export type TimesheetRange = "7d" | "30d" | "thisMonth" | "lastMonth" | "custom";
 
-// Asia/Bangkok is UTC+7 with no DST. Computing the day key from the
-// browser's `getTimezoneOffset()` would shift dates for users running
-// the PWA outside Thailand (travel, remote staff).
-const TZ_OFFSET_MS = 7 * 3600_000;
-
-function bangkokTodayKey(now = new Date()): string {
-  return new Date(now.getTime() + TZ_OFFSET_MS).toISOString().slice(0, 10);
-}
-
 function bangkokDateUtc(yyyymmdd: string): Date {
-  // Re-anchor a Bangkok-local YYYY-MM-DD to a stable UTC instant for arithmetic.
   return new Date(`${yyyymmdd}T00:00:00.000Z`);
 }
 

@@ -18,6 +18,7 @@ import { InstallPrompt } from "@/components/shared/install-prompt";
 import { apiFetch } from "@/lib/api/client";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { useLocale } from "@/hooks/use-locale";
+import { bangkokYear } from "@/lib/datetime/bangkok";
 import { formatDate } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -227,7 +228,7 @@ export function EmployeeHome({ user, dict }: Props) {
             <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
               <div>
                 <div className="text-sm font-semibold">{dict.employee.leaveQuota}</div>
-                <div className="text-[11px] text-muted-foreground">FY {new Date().getFullYear()}</div>
+                <div className="text-[11px] text-muted-foreground">FY {bangkokYear()}</div>
               </div>
               <ChevronRight className="size-[18px] text-muted-foreground" />
             </div>
