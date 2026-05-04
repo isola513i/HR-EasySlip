@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
+import type { LeaveType as PrismaLeaveType, LeaveStatus } from "@prisma/client";
 
 type LeaveType = "SICK" | "PERSONAL" | "ANNUAL" | "LEAVE_WITHOUT_PAY";
 type HalfDay = "FULL" | "MORNING" | "AFTERNOON";
@@ -18,8 +19,8 @@ export interface OverlapInfo {
   id: string;
   startDate: string;
   endDate: string;
-  status: "PENDING" | "APPROVED";
-  leaveType: string;
+  status: Extract<LeaveStatus, "PENDING" | "APPROVED">;
+  leaveType: PrismaLeaveType;
 }
 
 interface PreviewResult {

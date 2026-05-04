@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiFetch } from "@/lib/api/client";
+import { downloadBlob } from "@/lib/download";
 import { useT } from "@/lib/i18n/locale-context";
 import { ReportPreview } from "@/components/hr/report-preview";
 
@@ -74,15 +75,9 @@ export function ReportBuilder() {
       }
 
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
       const disposition = res.headers.get("Content-Disposition") ?? "";
       const filename = disposition.match(/filename="(.+)"/)?.[1] ?? `report.${format === "EXCEL" ? "xlsx" : "csv"}`;
-
-      const a = document.createElement("a");
-      a.href = url; a.download = filename;
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
+      downloadBlob(blob, filename);
       toast.success(t.hr.downloadSuccess);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t.hr.downloadFailed);

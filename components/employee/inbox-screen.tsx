@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   Bell,
   Check,
@@ -17,6 +17,7 @@ import { formatRelativeTime } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
 import { useT } from "@/lib/i18n/locale-context";
 import { useLocale } from "@/hooks/use-locale";
+import type { Locale } from "@/lib/i18n/config";
 
 /* ── Types ───────────────────────────────────────────────────── */
 
@@ -55,7 +56,7 @@ const ACTION_TONE_ICON: Record<
   "consent.grant": { tone: "neutral", icon: ShieldCheck },
 };
 
-function mapAuditToNotification(entry: AuditLogEntry, locale: "th" | "en"): Notification {
+function mapAuditToNotification(entry: AuditLogEntry, locale: Locale): Notification {
   const mapping = ACTION_TONE_ICON[entry.action];
   const title = getActionLabel(entry.action, locale);
   const tone = mapping?.tone ?? "neutral";
@@ -93,7 +94,7 @@ const toneColors = {
 export function InboxScreen() {
   const t = useT();
   const { locale } = useLocale();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [entries, setEntries] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -104,13 +105,11 @@ export function InboxScreen() {
         const { data } = await apiFetchPaginated<AuditLogEntry>(
           "/api/v1/employee/me/activity?perPage=10",
         );
-        if (!cancelled) {
-          setNotifications(data.map((e) => mapAuditToNotification(e, locale)));
-        }
+        if (!cancelled) setEntries(data);
       } catch (err) {
         // 403 = employee has no audit access → show empty state
         if (err instanceof ApiClientError && err.status === 403) {
-          if (!cancelled) setNotifications([]);
+          if (!cancelled) setEntries([]);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -119,7 +118,12 @@ export function InboxScreen() {
 
     load();
     return () => { cancelled = true; };
-  }, [locale]);
+  }, []);
+
+  const notifications = useMemo(
+    () => entries.map((e) => mapAuditToNotification(e, locale)),
+    [entries, locale],
+  );
 
   return (
     <>

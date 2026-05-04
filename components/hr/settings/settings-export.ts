@@ -1,4 +1,5 @@
 import type { SystemSetting } from "@/hooks/use-settings";
+import { downloadJson } from "@/lib/download";
 
 export function downloadSettingsJson(settings: SystemSetting[]) {
   const payload = {
@@ -13,11 +14,5 @@ export function downloadSettingsJson(settings: SystemSetting[]) {
       updatedAt: s.updatedAt,
     })),
   };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `easyslip-settings-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadJson(payload, `easyslip-settings-${new Date().toISOString().slice(0, 10)}.json`);
 }

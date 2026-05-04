@@ -10,6 +10,10 @@ import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { useTimesheet, type TimesheetRange } from "@/hooks/use-timesheet";
 import type { TimesheetEntry } from "@/hooks/use-timesheet";
+import { downloadCsv } from "@/lib/download";
+import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+type CsvHeaders = Dictionary["timesheet"]["csv"];
 
 const RANGE_OPTIONS: { value: TimesheetRange; key: "last7days" | "last30days" | "thisMonth" | "lastMonth" }[] = [
   { value: "7d", key: "last7days" },
@@ -33,19 +37,10 @@ function LocationIcon({ loc }: { loc: TimesheetEntry["workLocation"] }) {
   return <Building2 className="size-3.5" aria-hidden />;
 }
 
-function downloadCsv(
-  entries: TimesheetEntry[],
-  filename: string,
-  headers: { date: string; firstIn: string; lastOut: string; workedMinutes: string; lateMinutes: string; location: string; backfilled: string },
-) {
+function buildTimesheetCsv(entries: TimesheetEntry[], headers: CsvHeaders): string[][] {
   const headerRow = [
-    headers.date,
-    headers.firstIn,
-    headers.lastOut,
-    headers.workedMinutes,
-    headers.lateMinutes,
-    headers.location,
-    headers.backfilled,
+    headers.date, headers.firstIn, headers.lastOut,
+    headers.workedMinutes, headers.lateMinutes, headers.location, headers.backfilled,
   ];
   const rows = entries.map((e) => [
     e.date,
@@ -56,16 +51,7 @@ function downloadCsv(
     e.workLocation ?? "",
     e.hasBackfill ? "yes" : "no",
   ]);
-  // UTF-8 BOM so Excel detects Thai characters correctly when opening the
-  // file directly without an import wizard.
-  const csv = "﻿" + [headerRow, ...rows].map((row) => row.map((c) => `"${c.replace(/"/g, '""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
+  return [headerRow, ...rows];
 }
 
 export function TimesheetScreen() {
@@ -130,7 +116,7 @@ export function TimesheetScreen() {
             size="sm"
             variant="outline"
             disabled={loading || entries.length === 0}
-            onClick={() => downloadCsv(entries, `timesheet_${dates.from}_${dates.to}.csv`, tsT.csv)}
+            onClick={() => downloadCsv(buildTimesheetCsv(entries, tsT.csv), `timesheet_${dates.from}_${dates.to}.csv`)}
           >
             <Download className="mr-1.5 size-3.5" />
             {tsT.exportCsv}

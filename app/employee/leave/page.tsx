@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
 import { LeaveScreen } from "@/components/employee/leave-screen";
-import { getLocale } from "@/lib/i18n/get-locale";
-import { getDictionary } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/i18n/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getDictionary(await getLocale());
-  return { title: t.metadata.pageTitles.leave };
-}
+export const generateMetadata = () => pageMetadata("leave");
 
 export default function LeavePage() {
   return <LeaveScreen />;

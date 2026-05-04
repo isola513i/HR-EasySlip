@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api/client";
-import { bangkokTodayKey } from "@/lib/datetime/bangkok";
+import { bangkokTodayKey, shiftIsoDays, bangkokDateUtc } from "@/lib/datetime/bangkok";
 
 export interface TimesheetEntry {
   date: string;
@@ -23,16 +23,6 @@ export interface TimesheetSummary {
 }
 
 export type TimesheetRange = "7d" | "30d" | "thisMonth" | "lastMonth" | "custom";
-
-function bangkokDateUtc(yyyymmdd: string): Date {
-  return new Date(`${yyyymmdd}T00:00:00.000Z`);
-}
-
-function shiftIsoDays(yyyymmdd: string, deltaDays: number): string {
-  const d = bangkokDateUtc(yyyymmdd);
-  d.setUTCDate(d.getUTCDate() + deltaDays);
-  return d.toISOString().slice(0, 10);
-}
 
 function rangeToDates(range: TimesheetRange, custom?: { from: string; to: string }) {
   const todayKey = bangkokTodayKey();

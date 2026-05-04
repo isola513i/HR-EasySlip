@@ -4,35 +4,12 @@ import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
+import { isoDateKey, monthBounds, shiftIsoDays } from "@/lib/datetime/bangkok";
 import type { MyLeaveRequest, PublicHoliday } from "@/hooks/use-my-leave-calendar";
 
 interface DayState {
   status: "PENDING" | "APPROVED" | "REJECTED" | null;
   isHoliday: boolean;
-}
-
-function pad2(n: number): string {
-  return n.toString().padStart(2, "0");
-}
-
-/** Returns the Bangkok-local YYYY-MM-DD bounds for a given month. */
-function monthBounds(year: number, month: number) {
-  const lastDay = new Date(year, month, 0).getDate();
-  return {
-    startKey: `${year}-${pad2(month)}-01`,
-    endKey: `${year}-${pad2(month)}-${pad2(lastDay)}`,
-  };
-}
-
-/** Extract YYYY-MM-DD from an ISO string or `Date` field returned by Prisma `@db.Date`. */
-function isoDateKey(value: string | Date): string {
-  return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
-}
-
-function nextDayKey(key: string): string {
-  const d = new Date(`${key}T00:00:00.000Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
-  return d.toISOString().slice(0, 10);
 }
 
 interface Props {
@@ -106,7 +83,7 @@ function buildDayMap(year: number, month: number, requests: MyLeaveRequest[], ho
         existing.status = status;
       }
       map.set(day, existing);
-      cur = nextDayKey(cur);
+      cur = shiftIsoDays(cur, 1);
     }
   }
   return map;

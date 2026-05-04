@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
 import { TimesheetScreen } from "@/components/employee/timesheet-screen";
-import { getLocale } from "@/lib/i18n/get-locale";
-import { getDictionary } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/i18n/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getDictionary(await getLocale());
-  return { title: t.metadata.pageTitles.timesheet };
-}
+export const generateMetadata = () => pageMetadata("timesheet");
 
 export default function TimesheetPage() {
   return <TimesheetScreen />;

@@ -49,6 +49,7 @@ const en = {
     language: "Language",
     switchLanguageThai: "Switch to Thai",
     switchLanguageEnglish: "Switch to English",
+    retry: "Retry",
     monthsLong: [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December",
@@ -288,7 +289,6 @@ const en = {
     requestForDay: "Request leave for this date",
     pastDayHint: "Past dates can't accept new requests",
     loadError: "Couldn't load your calendar. Check your connection and retry.",
-    retry: "Retry",
   },
   timesheet: {
     title: "My Timesheet",

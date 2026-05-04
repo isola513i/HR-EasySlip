@@ -9,6 +9,7 @@ import { KpiCards } from "@/components/hr/attendance/kpi-cards";
 import { WeeklyOverviewChart } from "@/components/hr/attendance/weekly-overview-chart";
 import { TodayAttendanceTable } from "@/components/hr/attendance/today-attendance-table";
 import { GeofenceBreachPanel } from "@/components/hr/attendance/geofence-breach-panel";
+import { downloadBlob } from "@/lib/download";
 import { useT } from "@/lib/i18n/locale-context";
 import { todayISO } from "@/lib/format";
 
@@ -40,15 +41,7 @@ export function AttendanceScreen() {
         }),
       });
       if (!res.ok) throw new Error("Export failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `attendance-${date}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadBlob(await res.blob(), `attendance-${date}.xlsx`);
       toast.success(t.hr.downloadSuccess);
     } catch {
       toast.error(t.hr.downloadFailed);

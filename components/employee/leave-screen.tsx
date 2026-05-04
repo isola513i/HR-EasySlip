@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { useLeaveForm } from "@/hooks/use-leave-form";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
-import { bangkokTodayKey } from "@/lib/datetime/bangkok";
+import { bangkokTodayKey, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
 import { useT } from "@/lib/i18n/locale-context";
 
 export function LeaveScreen() {
@@ -23,16 +23,8 @@ export function LeaveScreen() {
   // Allow up to 1 year ahead. Backdating is restricted to 7 days for SICK
   // leave use-cases; the backend enforces the final policy.
   const todayKey = bangkokTodayKey();
-  const minStart = (() => {
-    const d = new Date(`${todayKey}T00:00:00.000Z`);
-    d.setUTCDate(d.getUTCDate() - 7);
-    return d.toISOString().slice(0, 10);
-  })();
-  const maxEnd = (() => {
-    const d = new Date(`${todayKey}T00:00:00.000Z`);
-    d.setUTCFullYear(d.getUTCFullYear() + 1);
-    return d.toISOString().slice(0, 10);
-  })();
+  const minStart = shiftIsoDays(todayKey, -7);
+  const maxEnd = shiftIsoYears(todayKey, 1);
 
   const LEAVE_TYPES = [
     { key: "SICK" as const, label: t.leave.sick, sub: t.leave.sickDesc },
@@ -67,7 +59,10 @@ export function LeaveScreen() {
 
   useEffect(() => {
     if (quotaError) toast.error(t.leave.quotaLoadFailed);
-  }, [quotaError, t.leave.quotaLoadFailed]);
+    // Toast once per quotaError flip — t.leave.quotaLoadFailed identity
+    // changes on locale switch; excluding it prevents duplicate toasts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quotaError]);
 
   const handleSubmit = async () => {
     try {
@@ -187,10 +182,10 @@ export function LeaveScreen() {
         {preview?.overlap && (
           <div className="rounded-[10px] border border-[var(--es-error-200)] bg-[var(--es-error-50)] p-3 text-[12px] text-[var(--es-error-700)]">
             {t.leave.overlapWarning
-              .replace("{leaveType}", preview.overlap.leaveType)
+              .replace("{leaveType}", (t.leave as Record<string, string>)[preview.overlap.leaveType.toLowerCase()] ?? preview.overlap.leaveType)
               .replace("{startDate}", preview.overlap.startDate)
               .replace("{endDate}", preview.overlap.endDate)
-              .replace("{status}", preview.overlap.status)}
+              .replace("{status}", (t.myLeaveCalendar.statusLabel as Record<string, string>)[preview.overlap.status] ?? preview.overlap.status)}
           </div>
         )}
 

@@ -1,12 +1,7 @@
-import type { Metadata } from "next";
 import { OTRequestForm } from "@/components/employee/ot-request-form";
-import { getLocale } from "@/lib/i18n/get-locale";
-import { getDictionary } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/i18n/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const t = getDictionary(await getLocale());
-  return { title: t.metadata.pageTitles.ot };
-}
+export const generateMetadata = () => pageMetadata("ot");
 
 export default function OTPage() {
   return <OTRequestForm />;

@@ -46,7 +46,7 @@ export function LeaveCalendarScreen() {
           <div className="flex flex-col items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-6 text-center">
             <AlertTriangle className="size-5 text-destructive" />
             <p className="text-sm text-destructive">{dict.loadError}</p>
-            <Button size="sm" variant="outline" onClick={refetch}>{dict.retry}</Button>
+            <Button size="sm" variant="outline" onClick={refetch}>{t.common.retry}</Button>
           </div>
         ) : (
           <CalendarGrid
