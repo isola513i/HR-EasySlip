@@ -59,6 +59,15 @@ const en = {
   },
   metadata: {
     description: "EasySlip HR — Attendance, Leave & Approval Management System",
+    pageTitles: {
+      clock: "Clock in/out",
+      leave: "Leave request",
+      leaveCalendar: "My leave calendar",
+      ot: "OT request",
+      me: "Profile",
+      timesheet: "My timesheet",
+      onboarding: "Onboarding",
+    },
   },
   errorPage: {
     title: "Something went wrong",
@@ -277,6 +286,8 @@ const en = {
     today: "Today",
     requestForDay: "Request leave for this date",
     pastDayHint: "Past dates can't accept new requests",
+    loadError: "Couldn't load your calendar. Check your connection and retry.",
+    retry: "Retry",
   },
   timesheet: {
     title: "My Timesheet",
@@ -366,6 +377,8 @@ const en = {
     submit: "Submit request",
     submitSuccess: "Request submitted. Awaiting manager approval.",
     submitFailed: "Failed to submit request",
+    overlapWarning: "Overlaps with existing leave: {leaveType} {startDate} → {endDate} ({status}). Submission will be rejected.",
+    quotaLoadFailed: "Failed to load leave quota. Pull to retry.",
     leaveHistory: "Leave history",
     leaveHistoryDesc: "Past requests",
   },
@@ -395,6 +408,13 @@ const en = {
     department: "Department",
     position: "Position",
     status: "Status",
+    employmentStatus: {
+      PROBATION: "Probation",
+      ACTIVE: "Active",
+      SUSPENDED: "Suspended",
+      RESIGNED: "Resigned",
+      TERMINATED: "Terminated",
+    },
     firstNameEn: "First name (EN)",
     firstNameEnPlaceholder: "English first name",
     lastNameEn: "Last name (EN)",

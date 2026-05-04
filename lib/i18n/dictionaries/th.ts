@@ -61,6 +61,15 @@ const th = {
   },
   metadata: {
     description: "ระบบบริหารทรัพยากรบุคคล EasySlip — ลงเวลา ลางาน อนุมัติ",
+    pageTitles: {
+      clock: "ลงเวลาเข้า-ออก",
+      leave: "คำขอลา",
+      leaveCalendar: "ปฏิทินวันลา",
+      ot: "คำขอ OT",
+      me: "โปรไฟล์",
+      timesheet: "ตารางเวลาของฉัน",
+      onboarding: "ปฐมนิเทศ",
+    },
   },
   errorPage: {
     title: "เกิดข้อผิดพลาด",
@@ -279,6 +288,8 @@ const th = {
     today: "วันนี้",
     requestForDay: "ส่งคำขอลาวันนี้",
     pastDayHint: "ไม่สามารถส่งคำขอย้อนหลังได้",
+    loadError: "โหลดปฏิทินไม่สำเร็จ ตรวจสอบสัญญาณและลองใหม่",
+    retry: "ลองใหม่",
   },
   timesheet: {
     title: "ตารางเวลาของฉัน",
@@ -368,6 +379,8 @@ const th = {
     submit: "ส่งคำขอ",
     submitSuccess: "ส่งคำขอเรียบร้อย รอหัวหน้าอนุมัติ",
     submitFailed: "ส่งคำขอไม่สำเร็จ",
+    overlapWarning: "ทับกับการลาที่มีอยู่: {leaveType} {startDate} → {endDate} ({status}) — ระบบจะปฏิเสธคำขอ",
+    quotaLoadFailed: "โหลดโควต้าไม่สำเร็จ ลองดึงเพื่อรีเฟรช",
     leaveHistory: "ประวัติการลา",
     leaveHistoryDesc: "คำขอที่ผ่านมา",
   },
@@ -397,6 +410,13 @@ const th = {
     department: "แผนก",
     position: "ตำแหน่ง",
     status: "สถานะ",
+    employmentStatus: {
+      PROBATION: "ทดลองงาน",
+      ACTIVE: "ทำงาน",
+      SUSPENDED: "พักงาน",
+      RESIGNED: "ลาออก",
+      TERMINATED: "พ้นสภาพ",
+    },
     firstNameEn: "ชื่อ (EN)",
     firstNameEnPlaceholder: "English first name",
     lastNameEn: "นามสกุล (EN)",

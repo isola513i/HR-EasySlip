@@ -102,7 +102,7 @@ export function ProfileEditCard() {
         <div className="flex items-center gap-2">
           <Label className="text-muted-foreground">{t.profile.status}</Label>
           <Badge variant={statusVariant[profile.employmentStatus] ?? "outline"}>
-            {profile.employmentStatus}
+            {(t.profile.employmentStatus as Record<string, string>)[profile.employmentStatus] ?? profile.employmentStatus}
           </Badge>
         </div>
 
