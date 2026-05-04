@@ -16,6 +16,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InstallPrompt } from "@/components/shared/install-prompt";
 import { apiFetch } from "@/lib/api/client";
+import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { formatDate } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -113,6 +114,11 @@ export function EmployeeHome({ user, dict }: Props) {
   const [recentActivity, setRecentActivity] = useState<AuditEntry[] | null>(null);
   const [quotaLoading, setQuotaLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
+  const { policy } = useAttendancePolicy();
+  const shiftStartLabel = dict.employee.shiftStarts.replace(
+    "{time}",
+    policy.halfday.morningStart,
+  );
 
   useEffect(() => {
     let ignore = false;
@@ -181,7 +187,7 @@ export function EmployeeHome({ user, dict }: Props) {
             <ArrowRight className="size-5" />
           </Link>
           <div className="flex justify-between text-xs text-[#aab3c0]">
-            <span>{dict.employee.shiftStarts}</span>
+            <span>{shiftStartLabel}</span>
             <span>{dict.employee.notClockedIn}</span>
           </div>
         </div>
@@ -204,11 +210,14 @@ export function EmployeeHome({ user, dict }: Props) {
             <div className="mt-2 text-sm font-semibold">{dict.employee.requestOT}</div>
             <div className="text-[11px] text-muted-foreground">{dict.employee.requestOTDesc}</div>
           </Link>
-          <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+          <Link
+            href="/employee/timesheet"
+            className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted"
+          >
             <FileText className="size-[22px] text-[var(--es-accent-600)]" strokeWidth={1.75} />
             <div className="mt-2 text-sm font-semibold">{dict.employee.timesheet}</div>
             <div className="text-[11px] text-muted-foreground">{dict.employee.timesheetDesc}</div>
-          </div>
+          </Link>
         </div>
 
         {/* Leave quota */}
