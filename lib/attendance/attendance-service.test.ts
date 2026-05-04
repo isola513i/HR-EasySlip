@@ -21,6 +21,7 @@ const mockTransaction = mock(async (fn: (tx: any) => Promise<any>) => {
 mock.module("@/lib/prisma", () => ({
   prisma: {
     attendanceRecord: { findMany: mockFindMany, count: mockCount, create: mockCreate },
+    systemConfig: { findMany: mock(() => Promise.resolve([])) },
     $transaction: mockTransaction,
   },
 }));
@@ -63,7 +64,7 @@ beforeEach(() => {
 describe("clockInOut", () => {
   test("clock IN success — creates record in transaction", async () => {
     const result = await clockInOut(caller, { clockType: "IN", workLocation: "OFFICE" }, meta);
-    expect(result.id).toBe("rec-1");
+    expect(result.record.id).toBe("rec-1");
     expect(mockTransaction).toHaveBeenCalledTimes(1);
     expect(mockCreate).toHaveBeenCalledTimes(1);
   });
@@ -83,7 +84,7 @@ describe("clockInOut", () => {
     });
 
     const result = await clockInOut(caller, { clockType: "OUT", workLocation: "OFFICE" }, meta);
-    expect(result.id).toBe("rec-2");
+    expect(result.record.id).toBe("rec-2");
   });
 
   test("clock OUT with no prior clock IN — throws DUPLICATE_CLOCK", async () => {
@@ -101,7 +102,7 @@ describe("clockInOut", () => {
     });
 
     const result = await clockInOut(caller, { clockType: "OUT", workLocation: "OFFICE" }, meta);
-    expect(result.id).toBe("rec-3");
+    expect(result.record.id).toBe("rec-3");
   });
 
   test("frozen payroll cycle — throws CYCLE_LOCKED", async () => {

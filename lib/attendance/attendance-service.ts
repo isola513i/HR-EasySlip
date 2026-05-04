@@ -10,9 +10,18 @@ import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ClockInput, AttendanceFilters, BackfillInput } from "./schemas";
 import { getBangkokDayBounds, validateClockAction } from "./clock-validation";
 import { isSensitiveDataRole } from "@/lib/security/role-helpers";
+import { evaluateGeofence, type GeofenceEvaluation } from "./geofence";
+import { loadAttendancePolicy } from "./policy";
 
 interface ClockMeta extends RequestMeta {
   deviceId?: string;
+}
+
+const GEOFENCE_TAG = "[OUT_OF_GEOFENCE]";
+
+function annotateNote(original: string | undefined, distance: number, radius: number): string {
+  const tag = `${GEOFENCE_TAG} ~${distance}m / max ${radius}m`;
+  return original ? `${tag} ${original}` : tag;
 }
 
 export async function clockInOut(
@@ -25,7 +34,21 @@ export async function clockInOut(
 
   const { todayStart, todayEnd } = getBangkokDayBounds(clockedAt);
 
-  // Wrap validate + create in Serializable transaction to prevent race condition
+  // Drop GPS coords entirely when capture is disabled by org policy.
+  const policy = await loadAttendancePolicy();
+  const lat = policy.gpsCaptureEnabled ? input.latitude : undefined;
+  const lng = policy.gpsCaptureEnabled ? input.longitude : undefined;
+  const acc = policy.gpsCaptureEnabled ? input.gpsAccuracyM : undefined;
+
+  // Geofence is a soft warning (log-only, never blocks). When GPS is disabled,
+  // evaluation short-circuits to inside=true.
+  const geofence = await evaluateGeofence(lat, lng);
+  const isOutOfFence =
+    geofence.enforced && geofence.distanceMeters !== null && !geofence.inside;
+  const finalNote = isOutOfFence
+    ? annotateNote(input.note, geofence.distanceMeters!, geofence.config.radiusMeters)
+    : input.note;
+
   const record = await prisma.$transaction(async (tx) => {
     await validateClockAction(tx, caller.employeeId, input.clockType, todayStart, todayEnd);
 
@@ -35,19 +58,21 @@ export async function clockInOut(
         clockType: input.clockType,
         clockedAt,
         workLocation: input.workLocation,
-        latitude: input.latitude,
-        longitude: input.longitude,
-        gpsAccuracyM: input.gpsAccuracyM,
+        latitude: lat,
+        longitude: lng,
+        gpsAccuracyM: acc,
         deviceId: meta.deviceId,
         ipAddress: meta.ip,
-        note: input.note,
+        note: finalNote,
       },
     });
   }, { isolationLevel: "Serializable" });
 
   await writeAuditLog({
     actorId: caller.userId,
-    action: `attendance.clock_${input.clockType.toLowerCase()}`,
+    action: isOutOfFence
+      ? `attendance.clock_${input.clockType.toLowerCase()}.out_of_geofence`
+      : `attendance.clock_${input.clockType.toLowerCase()}`,
     entityType: "AttendanceRecord",
     entityId: record.id,
     after: record,
@@ -55,8 +80,10 @@ export async function clockInOut(
     userAgent: meta.userAgent,
   });
 
-  return record;
+  return { record, geofence } as const;
 }
+
+export type ClockResult = { record: Awaited<ReturnType<typeof prisma.attendanceRecord.create>>; geofence: GeofenceEvaluation };
 
 export async function getMyRecords(
   employeeId: string,

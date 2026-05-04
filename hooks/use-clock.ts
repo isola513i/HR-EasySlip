@@ -19,6 +19,15 @@ interface AttendanceRecord {
   clockedAt: string;
 }
 
+interface ClockResponse extends AttendanceRecord {
+  geofence?: {
+    enforced: boolean;
+    outOfGeofence: boolean;
+    distanceMeters: number | null;
+    radiusMeters: number;
+  };
+}
+
 export function useClock() {
   const [clockState, setClockState] = useState<ClockState>("loading");
   const [clockType, setClockType] = useState<ClockType>("IN");
@@ -27,6 +36,7 @@ export function useClock() {
   const [gpsStatus, setGpsStatus] = useState<"loading" | "ready" | "denied">("loading");
   const [clockedTime, setClockedTime] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [geofenceWarning, setGeofenceWarning] = useState<{ distanceMeters: number; radiusMeters: number } | null>(null);
 
   // Fetch GPS + today's records on mount
   useEffect(() => {
@@ -62,7 +72,7 @@ export function useClock() {
     setError(null);
 
     try {
-      const record = await apiFetch<AttendanceRecord>(
+      const record = await apiFetch<ClockResponse>(
         "/api/v1/attendance/clock",
         {
           method: "POST",
@@ -82,6 +92,14 @@ export function useClock() {
       setClockedTime(
         `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`,
       );
+      if (record.geofence?.outOfGeofence && record.geofence.distanceMeters !== null) {
+        setGeofenceWarning({
+          distanceMeters: record.geofence.distanceMeters,
+          radiusMeters: record.geofence.radiusMeters,
+        });
+      } else {
+        setGeofenceWarning(null);
+      }
       setClockState("done");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Clock failed");
@@ -93,11 +111,12 @@ export function useClock() {
     setClockType((prev) => (prev === "IN" ? "OUT" : "IN"));
     setClockedTime(null);
     setError(null);
+    setGeofenceWarning(null);
     setClockState("idle");
   }, []);
 
   return {
     clockState, clockType, location, setLocation,
-    coords, gpsStatus, clockedTime, error, handleClock, reset,
+    coords, gpsStatus, clockedTime, error, geofenceWarning, handleClock, reset,
   };
 }

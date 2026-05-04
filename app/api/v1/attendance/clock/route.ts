@@ -12,11 +12,20 @@ export const POST = withApiHandler(async (req, ctx) => {
   if (caller instanceof NextResponse) return caller;
 
   const input = await parseBody(req, ClockInputSchema);
-  const record = await clockInOut(
+  const { record, geofence } = await clockInOut(
     { userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles },
     input,
     { ip: ctx.ip, userAgent: ctx.userAgent },
   );
 
-  return apiCreated(record);
+  const outOfGeofence = geofence.enforced && geofence.distanceMeters !== null && !geofence.inside;
+  return apiCreated({
+    ...record,
+    geofence: {
+      enforced: geofence.enforced,
+      outOfGeofence,
+      distanceMeters: geofence.distanceMeters,
+      radiusMeters: geofence.config.radiusMeters,
+    },
+  });
 }, { rateLimit: clockLimiter, rateLimitKey: "userId", idempotent: true });

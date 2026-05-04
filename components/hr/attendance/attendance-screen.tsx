@@ -8,6 +8,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { KpiCards } from "@/components/hr/attendance/kpi-cards";
 import { WeeklyOverviewChart } from "@/components/hr/attendance/weekly-overview-chart";
 import { TodayAttendanceTable } from "@/components/hr/attendance/today-attendance-table";
+import { GeofenceBreachPanel } from "@/components/hr/attendance/geofence-breach-panel";
 import { useT } from "@/lib/i18n/locale-context";
 import { todayISO } from "@/lib/format";
 
@@ -75,6 +76,7 @@ export function AttendanceScreen() {
       <KpiCards date={date} />
       <WeeklyOverviewChart weekStart={getMondayOfWeek(date)} />
       <TodayAttendanceTable date={date} />
+      <GeofenceBreachPanel from={date} to={date} />
     </div>
   );
 }

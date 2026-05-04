@@ -20,10 +20,20 @@ export function ClockScreen() {
   ];
   const {
     clockState, clockType, location, setLocation,
-    coords, gpsStatus, clockedTime, error, handleClock, reset,
+    coords, gpsStatus, clockedTime, error, geofenceWarning, handleClock, reset,
   } = useClock();
 
   useEffect(() => { if (error) { toast.error(error); hapticError(); } }, [error]);
+
+  useEffect(() => {
+    if (!geofenceWarning) return;
+    toast.warning(
+      t.clock.geofenceWarning
+        .replace("{distance}", String(geofenceWarning.distanceMeters))
+        .replace("{radius}", String(geofenceWarning.radiusMeters)),
+      { duration: 7000 },
+    );
+  }, [geofenceWarning, t.clock.geofenceWarning]);
 
   const lastClockState = useRef(clockState);
   useEffect(() => {
