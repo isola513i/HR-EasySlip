@@ -98,6 +98,19 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+  lastUsed  DateTime @default(now())
+
+  @@index([userId])
+}
+
 model Employee {
   id               String           @id @default(cuid())
   userId           String           @unique

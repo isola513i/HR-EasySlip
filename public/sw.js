@@ -56,6 +56,35 @@ self.addEventListener("message", (event) => {
   }
 });
 
+// ── Push: show notification ──
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+  let payload;
+  try { payload = event.data.json(); } catch { payload = { title: "EasySlip HR", body: event.data.text() }; }
+  const title = payload.title || "EasySlip HR";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body || "",
+      icon: "/favicons/apple-touch-icon.png",
+      badge: "/favicons/favicon-32x32.png",
+      tag: payload.tag || "easyslip-default",
+      data: { url: payload.url || "/employee/today" },
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || "/employee/today";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((all) => {
+      const open = all.find((c) => c.url.includes(targetUrl));
+      if (open) return open.focus();
+      return self.clients.openWindow(targetUrl);
+    })
+  );
+});
+
 // ── Fetch: network-first for navigations, cache-first for assets ──
 self.addEventListener("fetch", (event) => {
   const { request } = event;

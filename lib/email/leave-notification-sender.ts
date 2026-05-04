@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendNotificationEmail } from "./notification-service";
 import { leaveSubmittedHtml, leaveSubmittedText } from "./leave-submitted-template";
 import { leaveDecisionHtml, leaveDecisionText } from "./leave-decision-template";
+import { sendPushToUser } from "@/lib/push/push-service";
 
 import { formatLeaveType } from "@/lib/utils";
 
@@ -55,13 +56,21 @@ export async function notifyLeaveDecision(
       where: { id: requestId },
       include: {
         employee: {
-          select: { firstNameTh: true, lastNameTh: true, notifyApproval: true, user: { select: { email: true } } },
+          select: { firstNameTh: true, lastNameTh: true, notifyApproval: true, userId: true, user: { select: { email: true } } },
         },
       },
     });
     if (!req?.employee?.user?.email) return;
     if (req.employee.notifyApproval === false) return;
     const employeeEmail = req.employee.user.email;
+
+    // Fire-and-forget push (best-effort; falls through if VAPID not set).
+    sendPushToUser(req.employee.userId, {
+      title: decision === "APPROVED" ? "Leave approved" : "Leave rejected",
+      body: `${formatLeaveType(req.leaveType)} · ${fmtDate(req.startDate)} → ${fmtDate(req.endDate)}`,
+      url: "/employee/inbox",
+      tag: `leave-${requestId}`,
+    }).catch(() => {});
 
     const params = {
       employeeName: `${req.employee.firstNameTh} ${req.employee.lastNameTh}`,
