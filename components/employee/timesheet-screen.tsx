@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { Download, MapPin, Home, Building2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Download, MapPin, Home, Building2, Pencil } from "lucide-react";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { useTimesheet, type TimesheetRange } from "@/hooks/use-timesheet";
 import type { TimesheetEntry } from "@/hooks/use-timesheet";
 import { downloadCsv } from "@/lib/download";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+import { TimeCorrectionDialog } from "@/components/employee/time-correction-dialog";
 
 type CsvHeaders = Dictionary["timesheet"]["csv"];
 
@@ -58,7 +59,8 @@ export function TimesheetScreen() {
   const t = useT();
   const fmt = useFormat();
   const tsT = t.timesheet;
-  const { range, setRange, data, loading, error, dates } = useTimesheet();
+  const { range, setRange, data, loading, error, dates, refetch } = useTimesheet();
+  const [correctionDate, setCorrectionDate] = useState<string | null>(null);
 
   const entries = data?.entries ?? [];
   const summary = data?.summary;
@@ -147,11 +149,18 @@ export function TimesheetScreen() {
                 isFirst={idx === 0}
                 fmt={fmt}
                 t={tsT}
+                onRequestCorrection={() => setCorrectionDate(entry.date)}
               />
             ))}
           </div>
         )}
       </div>
+
+      <TimeCorrectionDialog
+        open={correctionDate !== null}
+        onClose={() => { setCorrectionDate(null); refetch(); }}
+        date={correctionDate ?? ""}
+      />
     </>
   );
 }
@@ -176,11 +185,13 @@ function TimesheetRow({
   isFirst,
   fmt,
   t,
+  onRequestCorrection,
 }: {
   entry: TimesheetEntry;
   isFirst: boolean;
   fmt: ReturnType<typeof useFormat>;
   t: ReturnType<typeof useT>["timesheet"];
+  onRequestCorrection: () => void;
 }) {
   return (
     <div className={"flex items-center gap-3 px-3 py-3 " + (isFirst ? "" : "border-t border-border")}>
@@ -200,15 +211,28 @@ function TimesheetRow({
           <span>{t.lastOut}: {entry.lastOut ? fmt.formatTime(entry.lastOut) : "—"}</span>
         </div>
       </div>
-      <div className="text-right">
-        <div className="text-[13px] font-semibold tabular-nums">
-          {formatHM(entry.workedMinutes, t.hoursAbbr, t.minutesAbbr)}
-        </div>
-        {entry.lateMinutes > 0 && (
-          <div className="text-[10px] font-medium text-amber-600 tabular-nums">
-            {t.late} {formatHM(entry.lateMinutes, t.hoursAbbr, t.minutesAbbr)}
+      <div className="flex items-center gap-2">
+        <div className="text-right">
+          <div className="text-[13px] font-semibold tabular-nums">
+            {formatHM(entry.workedMinutes, t.hoursAbbr, t.minutesAbbr)}
           </div>
-        )}
+          {entry.lateMinutes > 0 && (
+            <div className="text-[10px] font-medium text-amber-600 tabular-nums">
+              {t.late} {formatHM(entry.lateMinutes, t.hoursAbbr, t.minutesAbbr)}
+            </div>
+          )}
+        </div>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="size-7"
+          onClick={onRequestCorrection}
+          aria-label={t.requestCorrection}
+          title={t.requestCorrection}
+        >
+          <Pencil className="size-3.5" />
+        </Button>
       </div>
     </div>
   );
