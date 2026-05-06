@@ -24,6 +24,8 @@ export const GET = withApiHandler(async (req, ctx) => {
     caller: { userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles },
     ownerEmployeeId: employeeId,
     category: categoryParam as DocumentCategory | undefined,
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
   });
   return apiOk(docs);
 });

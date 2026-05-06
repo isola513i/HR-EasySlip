@@ -58,6 +58,8 @@ interface ListInput {
   caller: Caller;
   ownerEmployeeId: string;
   category?: DocumentCategory;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 export async function uploadDocument(input: UploadInput): Promise<PublicDocument> {
@@ -240,11 +242,23 @@ export async function listDocumentsByEntity(input: ListByEntityInput): Promise<P
 }
 
 export async function listDocuments(input: ListInput): Promise<PublicDocument[]> {
-  const { caller, ownerEmployeeId, category } = input;
+  const { caller, ownerEmployeeId, category, ipAddress, userAgent } = input;
   const owner = isOwner(caller, ownerEmployeeId);
   const hr = isHr(caller);
   const mgr = !owner && !hr ? await isManagerOfOwner(caller, ownerEmployeeId) : false;
   if (!owner && !hr && !mgr) throw new DomainError("FORBIDDEN", {}, 403);
+
+  if (!owner) {
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "document.list_viewed",
+      entityType: "Employee",
+      entityId: ownerEmployeeId,
+      ipAddress,
+      userAgent,
+      reason: hr ? "hr_access" : "manager_access",
+    });
+  }
 
   const docs = await prisma.document.findMany({
     where: {

@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const PALETTE = [
@@ -27,11 +30,15 @@ const SIZE = { sm: "size-7 text-[11px]", md: "size-9 text-xs", lg: "size-11 text
 
 export function EmployeeAvatar({ seed, initials, size = "md", pictureSrc, className }: Props) {
   const tone = PALETTE[hashToIndex(seed, PALETTE.length)];
-  if (pictureSrc) {
+  // Track <img> 404s (proxy unauthorized, blob deleted out of band, etc.)
+  // so we don't render the browser's broken-image glyph in HR lists.
+  const [errored, setErrored] = useState(false);
+  if (pictureSrc && !errored) {
     return (
       <img
         src={pictureSrc}
         alt=""
+        onError={() => setErrored(true)}
         className={cn(
           "shrink-0 rounded-full object-cover",
           SIZE[size].split(" ")[0], // size-X only
