@@ -151,11 +151,14 @@ model Employee {
   militaryStatus   String?          // สถานะเกณฑ์ทหาร
   bloodType        String?          // กรุ๊ปเลือด
 
-  // ── การเงิน ──
-  bankAccount      String?          // เลขบัญชีธนาคาร
-  bankName         String?          // ชื่อธนาคาร
+  // ── ข้อมูลรัฐ/ประกัน ──
   socialSecurityNo String?          // เลขประกันสังคม
   hospitalCode     String?          // รหัสโรงพยาบาล
+
+  // ── รูปโปรไฟล์ (Vercel Blob path) ──
+  profilePicturePath        String?   @db.Text
+  profilePictureMime        String?
+  profilePictureUploadedAt  DateTime?
 
   // ── ที่อยู่ตามทะเบียนบ้าน ──
   addressRegistered String?         @db.Text
@@ -199,6 +202,7 @@ model Employee {
   overtimeRequests   OvertimeRequest[]    @relation("OTRequester")
   overtimeApprovals  OvertimeRequest[]    @relation("OTApprover")
   onboardingChecklist OnboardingChecklist?
+  documents          Document[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -652,4 +656,28 @@ model OnboardingChecklistItem {
   checklist OnboardingChecklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
 
   @@index([checklistId, sortOrder])
+}
+
+// ────────────────────────────────────────────────────────────────
+// DOCUMENTS — generic file attachment for employee uploads
+// (contracts, certificates, leave/time-correction proofs, etc.)
+// ────────────────────────────────────────────────────────────────
+
+model Document {
+  id              String   @id @default(cuid())
+  ownerEmployeeId String
+  category        String   // "contract" | "certificate" | "general" | "leave_attachment" | "time_correction_proof"
+  entityType      String   // "Employee" | "LeaveRequest" | "TimeAdjustmentRequest"
+  entityId        String
+  blobPath        String   @db.Text
+  filename        String   @db.Text
+  mime            String
+  size            Int
+  uploadedById    String
+  uploadedAt      DateTime @default(now())
+
+  owner           Employee @relation(fields: [ownerEmployeeId], references: [id], onDelete: Cascade)
+
+  @@index([ownerEmployeeId, category])
+  @@index([entityType, entityId])
 }

@@ -7,12 +7,15 @@ import { ChangePasswordDialog } from "@/components/employee/change-password-dial
 import { NotificationPrefs } from "@/components/employee/notification-prefs";
 import { LocaleToggle } from "@/components/shared/locale-toggle";
 import { PersonalInfoSection } from "@/components/employee/me/personal-info-section";
+import { AddressSection } from "@/components/employee/me/address-section";
 import { JobInfoSection } from "@/components/employee/me/job-info-section";
 import { EmergencyContactSection } from "@/components/employee/me/emergency-contact-section";
 import { MeLinkItem } from "@/components/employee/me/me-link-item";
 import { SignOutButton } from "@/components/employee/me/sign-out-button";
 import { ChangePasswordButton } from "@/components/employee/me/change-password-button";
+import { ProfilePictureUploader } from "@/components/employee/me/profile-picture-uploader";
 import { useProfile } from "@/hooks/use-profile";
+import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
@@ -21,8 +24,18 @@ interface Props {
 
 export function MeScreen({ user }: Props) {
   const t = useT();
-  const { profile, updateProfile } = useProfile();
+  const { profile, updateProfile, refetch } = useProfile();
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [pictureTick, setPictureTick] = useState(0);
+
+  const handlePictureChanged = () => {
+    setPictureTick((v) => v + 1);
+    void refetch();
+  };
+
+  const pictureSrc = profile?.hasProfilePicture
+    ? profilePictureSrc(profile.id, profile.profilePictureUploadedAt, pictureTick)
+    : null;
 
   return (
     <>
@@ -31,12 +44,28 @@ export function MeScreen({ user }: Props) {
       </header>
 
       <div className="flex flex-col gap-3 p-4">
-        <ProfileHeader name={user.name} meta={`${user.role} · ${user.code}`} />
+        <ProfileHeader
+          name={user.name}
+          meta={`${user.role} · ${user.code}`}
+          pictureSrc={pictureSrc}
+          avatarOverlay={
+            <ProfilePictureUploader
+              hasPicture={!!profile?.hasProfilePicture}
+              onChanged={handlePictureChanged}
+            />
+          }
+        />
 
         <Accordion>
           {profile && (
             <AccordionItem title={t.profile.personalInfo}>
               <PersonalInfoSection profile={profile} onUpdate={updateProfile} />
+            </AccordionItem>
+          )}
+
+          {profile && (
+            <AccordionItem title={t.profile.address}>
+              <AddressSection profile={profile} onUpdate={updateProfile} />
             </AccordionItem>
           )}
 

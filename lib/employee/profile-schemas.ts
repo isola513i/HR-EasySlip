@@ -15,9 +15,6 @@ export const ProfileUpdateSchema = z.object({
   religion: z.string().max(50).optional(),
   maritalStatus: z.string().max(30).optional(),
   bloodType: z.string().max(5).optional(),
-  // Financial
-  bankName: z.string().max(100).optional(),
-  bankAccount: z.string().max(30).optional(),
   // Address
   addressCurrent: z.string().max(500).optional(),
   provinceCurrent: z.string().max(100).optional(),

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withApiHandler } from "@/lib/api/with-api-handler";
-import { apiOk } from "@/lib/api/response";
+import { apiOk, apiError } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { ProfileUpdateSchema } from "@/lib/employee/profile-schemas";
@@ -12,13 +12,18 @@ const PROFILE_SELECT = {
   firstNameEn: true, lastNameEn: true, phone: true, employmentStatus: true,
   nicknameTh: true, nicknameEn: true, dateOfBirth: true,
   nationality: true, religion: true, maritalStatus: true, bloodType: true,
-  bankName: true, bankAccount: true,
   addressCurrent: true, provinceCurrent: true, districtCurrent: true, zipCodeCurrent: true,
   emergencyName: true, emergencyLastName: true, emergencyRelation: true, emergencyPhone: true,
+  profilePicturePath: true, profilePictureUploadedAt: true,
   department: { select: { name: true, code: true } },
   position: { select: { name: true } },
   user: { select: { email: true } },
 } as const;
+
+function shapeProfile(row: { profilePicturePath: string | null } & Record<string, unknown>) {
+  const { profilePicturePath, ...rest } = row;
+  return { ...rest, hasProfilePicture: profilePicturePath !== null };
+}
 
 export const GET = withApiHandler(async () => {
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
@@ -28,8 +33,9 @@ export const GET = withApiHandler(async () => {
     where: { id: caller.employeeId },
     select: PROFILE_SELECT,
   });
+  if (!profile) return apiError("EMPLOYEE_NOT_FOUND", "profile missing", 404);
 
-  return apiOk(profile);
+  return apiOk(shapeProfile(profile));
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
@@ -44,7 +50,6 @@ export const PUT = withApiHandler(async (req, ctx) => {
       phone: true, firstNameEn: true, lastNameEn: true,
       nicknameTh: true, nicknameEn: true, dateOfBirth: true,
       nationality: true, religion: true, maritalStatus: true, bloodType: true,
-      bankName: true, bankAccount: true,
       addressCurrent: true, provinceCurrent: true, districtCurrent: true, zipCodeCurrent: true,
       emergencyName: true, emergencyLastName: true, emergencyRelation: true, emergencyPhone: true,
     },
@@ -58,7 +63,6 @@ export const PUT = withApiHandler(async (req, ctx) => {
       dateOfBirth: input.dateOfBirth ? new Date(input.dateOfBirth) : undefined,
       nationality: input.nationality, religion: input.religion,
       maritalStatus: input.maritalStatus, bloodType: input.bloodType,
-      bankName: input.bankName, bankAccount: input.bankAccount,
       addressCurrent: input.addressCurrent, provinceCurrent: input.provinceCurrent,
       districtCurrent: input.districtCurrent, zipCodeCurrent: input.zipCodeCurrent,
       emergencyName: input.emergencyName, emergencyLastName: input.emergencyLastName,
@@ -78,5 +82,5 @@ export const PUT = withApiHandler(async (req, ctx) => {
     userAgent: ctx.userAgent,
   });
 
-  return apiOk(updated);
+  return apiOk(shapeProfile(updated));
 });

@@ -19,8 +19,6 @@ export interface Profile {
   religion?: string;
   maritalStatus?: string;
   bloodType?: string;
-  bankName?: string;
-  bankAccount?: string;
   addressCurrent?: string;
   provinceCurrent?: string;
   districtCurrent?: string;
@@ -29,6 +27,8 @@ export interface Profile {
   emergencyLastName?: string;
   emergencyRelation?: string;
   emergencyPhone?: string;
+  profilePictureUploadedAt?: string;
+  hasProfilePicture?: boolean;
   department?: { name: string; code: string };
   position?: { name: string };
   user?: { email: string };
@@ -39,15 +39,23 @@ export function useProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiFetch<Profile>("/api/v1/employee/me/profile")
-      .then(setProfile)
-      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load profile"))
-      .finally(() => setIsLoading(false));
+  const refetch = useCallback(async () => {
+    try {
+      const data = await apiFetch<Profile>("/api/v1/employee/me/profile");
+      setProfile(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load profile");
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    void refetch();
+  }, [refetch]);
+
   const updateProfile = useCallback(
-    async (input: Partial<Omit<Profile, "id" | "employeeCode" | "employmentStatus" | "department" | "position" | "user">>) => {
+    async (input: Partial<Omit<Profile, "id" | "employeeCode" | "employmentStatus" | "department" | "position" | "user" | "hasProfilePicture" | "profilePictureUploadedAt">>) => {
       const updated = await apiFetch<Profile>("/api/v1/employee/me/profile", {
         method: "PUT",
         body: JSON.stringify(input),
@@ -58,5 +66,5 @@ export function useProfile() {
     [],
   );
 
-  return { profile, isLoading, error, updateProfile };
+  return { profile, isLoading, error, updateProfile, refetch };
 }

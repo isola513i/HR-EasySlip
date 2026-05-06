@@ -6,6 +6,7 @@ import { apiFetch } from "@/lib/api/client";
 import { useLocale } from "@/hooks/use-locale";
 import { formatDate } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
+import { getEntityLabel } from "@/lib/audit/entity-labels";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface AuditEntry {
@@ -65,7 +66,7 @@ export function RecentActivityCard({ dict }: RecentActivityCardProps) {
                 <div className="truncate text-[13px] font-medium">{getActionLabel(r.action, locale)}</div>
                 <div className="text-[11px] text-muted-foreground">{formatDate(r.createdAt)}</div>
               </div>
-              <span className="ml-2 shrink-0 text-[11px] text-muted-foreground">{r.entityType}</span>
+              <span className="ml-2 shrink-0 text-[11px] text-muted-foreground">{getEntityLabel(r.entityType, locale)}</span>
             </div>
           ))
         ) : (
