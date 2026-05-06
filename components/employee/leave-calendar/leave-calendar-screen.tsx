@@ -37,7 +37,7 @@ export function LeaveCalendarScreen() {
 
   return (
     <>
-      <MobileTopbar title={dict.title} backHref="/employee/leave" />
+      <MobileTopbar title={dict.title} />
 
       <div className="flex flex-col gap-4 p-4">
         <p className="text-[12px] text-muted-foreground">{dict.subtitle}</p>

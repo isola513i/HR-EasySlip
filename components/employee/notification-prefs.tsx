@@ -79,7 +79,7 @@ export function NotificationPrefs() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+      <div className="space-y-3">
         <Skeleton className="h-5 w-48" />
         <Skeleton className="h-5 w-56" />
       </div>
@@ -89,8 +89,7 @@ export function NotificationPrefs() {
   if (!settings) return null;
 
   return (
-    <div className="space-y-4 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
-      <p className="text-sm font-semibold">{t.notifications.title}</p>
+    <div className="space-y-4">
       <div className="flex items-center gap-2.5">
         <Checkbox
           id="notifyLeave"

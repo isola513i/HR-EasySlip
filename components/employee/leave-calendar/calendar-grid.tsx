@@ -90,7 +90,7 @@ function buildDayMap(year: number, month: number, requests: MyLeaveRequest[], ho
 }
 
 function dayClassName(state: DayState | undefined, isToday: boolean, isSelected: boolean) {
-  const base = "grid h-10 cursor-pointer place-items-center rounded-md text-[13px] tabular-nums transition-colors";
+  const base = "grid h-11 cursor-pointer place-items-center rounded-md text-[13px] tabular-nums transition-colors";
   let color = "text-foreground hover:bg-muted";
   if (state?.status === "APPROVED") color = "bg-emerald-100 font-semibold text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/40 dark:text-emerald-300";
   else if (state?.status === "PENDING") color = "bg-amber-100 font-semibold text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-300";
@@ -118,10 +118,10 @@ export function CalendarGrid({ month, year, isLoading, requests, holidays, selec
       <div className="mb-4 flex items-center justify-between">
         <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
         <div className="flex gap-1">
-          <button onClick={onPrev} aria-label={t.common.prevMonth} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button onClick={onPrev} aria-label={t.common.prevMonth} className="grid size-11 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground">
             <ChevronLeft className="size-4" />
           </button>
-          <button onClick={onNext} aria-label={t.common.nextMonth} className="grid size-8 place-items-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button onClick={onNext} aria-label={t.common.nextMonth} className="grid size-11 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground">
             <ChevronRight className="size-4" />
           </button>
         </div>
@@ -132,9 +132,9 @@ export function CalendarGrid({ month, year, isLoading, requests, holidays, selec
           <div key={i} className="py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
         ))}
         {isLoading
-          ? Array.from({ length: 35 }).map((_, i) => <Skeleton key={i} className="h-10 w-full rounded-md" />)
+          ? Array.from({ length: 35 }).map((_, i) => <Skeleton key={i} className="h-11 w-full rounded-md" />)
           : cells.map((d, i) => {
-              if (d === null) return <div key={i} className="h-10" />;
+              if (d === null) return <div key={i} className="h-11" />;
               const isToday = d === todayD && month === todayM && year === todayY;
               const isSelected = selectedDay === d;
               const state = dayMap.get(d);

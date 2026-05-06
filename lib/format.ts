@@ -94,6 +94,16 @@ export function todayISO(): string {
   return `${y}-${m}-${day}`;
 }
 
+/** Format minute count as "{h}{hAbbr} {m}{mAbbr}" — collapses zero parts and falls back to "—" for non-positive. */
+export function formatHM(minutes: number, hAbbr: string, mAbbr: string): string {
+  if (minutes <= 0) return "—";
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}${mAbbr}`;
+  if (m === 0) return `${h}${hAbbr}`;
+  return `${h}${hAbbr} ${m}${mAbbr}`;
+}
+
 /** Calculate duration between two ISO timestamps, return "HH:mm" */
 export function calcDuration(startIso: string, endIso: string): string {
   const diff = new Date(endIso).getTime() - new Date(startIso).getTime();

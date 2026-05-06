@@ -78,7 +78,7 @@ export function TimeCorrectionDialog({ open, onClose, date, initialClockType = "
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="mt-1 tabular-nums"
+              className="mt-1 h-11 tabular-nums"
             />
             <p className="mt-1 text-[11px] text-muted-foreground">{date}</p>
           </div>
@@ -98,7 +98,8 @@ export function TimeCorrectionDialog({ open, onClose, date, initialClockType = "
 
           <Button
             type="button"
-            className="w-full"
+            className="w-full rounded-full"
+            size="lg"
             disabled={submitting || !reason.trim()}
             onClick={handleSubmit}
           >

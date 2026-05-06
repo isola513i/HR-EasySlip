@@ -82,6 +82,7 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               disabled={isLoading}
+              className="h-11"
             />
           </div>
           <div className="space-y-2">
@@ -96,6 +97,7 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={isLoading}
               placeholder={t.password.minLength}
+              className="h-11"
             />
           </div>
           <div className="space-y-2">
@@ -108,10 +110,11 @@ export function ChangePasswordDialog({ open, onClose }: Props) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isLoading}
+              className="h-11"
             />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full rounded-full" size="lg" disabled={isLoading}>
             {isLoading ? t.password.changing : t.password.changeButton}
           </Button>
         </form>

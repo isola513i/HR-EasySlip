@@ -16,6 +16,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { getDict } from "@/lib/i18n/get-dict";
 import { TocSidebar } from "./_components/toc-sidebar";
+import { BackButton } from "./_components/back-button";
 import {
   ControllerSection,
   ListSection,
@@ -58,13 +59,16 @@ export default async function PrivacyPage() {
               "radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.12), transparent 60%)",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-6 py-14 text-white">
+        <div className="relative mx-auto max-w-6xl px-6 py-10 text-white sm:py-14">
+          <div className="mb-5">
+            <BackButton label={t.common.back} />
+          </div>
           <div className="flex items-start gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
               <ShieldCheck className="size-6" />
             </span>
             <div>
-              <h1 className="text-4xl font-bold tracking-tight">{p.heading}</h1>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{p.heading}</h1>
               <p className="mt-1 text-white/80">{p.subheading}</p>
               <span className="mt-3 inline-block rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium ring-1 ring-white/20">
                 {p.effectiveDate}

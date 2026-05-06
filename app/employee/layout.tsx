@@ -26,7 +26,7 @@ export default async function EmployeeLayout({
     <div className="mx-auto min-h-dvh max-w-md overscroll-contain bg-background">
       <OfflineBanner />
       {onboardingRemaining > 0 && <OnboardingBanner remaining={onboardingRemaining} />}
-      <div className="pb-20">{children}</div>
+      <div className="pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]">{children}</div>
       <BottomNav />
     </div>
   );

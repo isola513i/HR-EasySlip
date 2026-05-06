@@ -5,6 +5,8 @@ import { Clock, MapPin, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
+import { SectionLabel } from "@/components/shared/section-label";
+import { PillToggleGroup } from "@/components/shared/pill-toggle-group";
 import { cn } from "@/lib/utils";
 import { useClock, type LocationType } from "@/hooks/use-clock";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
@@ -14,10 +16,10 @@ import { hapticError, hapticSuccess, hapticTap } from "@/lib/haptics";
 export function ClockScreen() {
   const t = useT();
 
-  const locations: { key: LocationType; label: string }[] = [
-    { key: "OFFICE", label: t.clock.office },
-    { key: "WFH", label: t.clock.wfh },
-    { key: "ON_SITE", label: t.clock.onSite },
+  const locations = [
+    { key: "OFFICE" as LocationType, label: t.clock.office },
+    { key: "WFH" as LocationType, label: t.clock.wfh },
+    { key: "ON_SITE" as LocationType, label: t.clock.onSite },
   ];
   const {
     clockState, clockType, location, setLocation,
@@ -36,11 +38,14 @@ export function ClockScreen() {
         .replace("{radius}", String(geofenceWarning.radiusMeters)),
       { duration: 7000 },
     );
-  }, [geofenceWarning, t.clock.geofenceWarning]);
+    // Toast once per warning flip — locale-switch would otherwise re-toast.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geofenceWarning]);
 
   useEffect(() => {
     if (queuedOffline) toast.info(t.clock.offlineQueued, { duration: 6000 });
-  }, [queuedOffline, t.clock.offlineQueued]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queuedOffline]);
 
   const lastClockState = useRef(clockState);
   useEffect(() => {
@@ -53,11 +58,10 @@ export function ClockScreen() {
 
   return (
     <>
-      <MobileTopbar title={t.clock.title} backHref="/employee/today" />
+      <MobileTopbar title={t.clock.title} />
 
       <div className="flex flex-col gap-4 p-4">
-        {/* GPS preview card */}
-        <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+<div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
           <div className="relative grid h-[140px] place-items-center border-b border-border bg-gradient-to-br from-[var(--es-neutral-50)] to-[var(--es-neutral-200)]">
             <svg className="absolute inset-0 opacity-50" width="100%" height="100%" viewBox="0 0 340 140">
               {Array.from({ length: 10 }).map((_, i) => (
@@ -83,9 +87,7 @@ export function ClockScreen() {
             ) : coords ? (
               <div>
                 <div className="text-[13px] font-medium">{t.clock.currentLocation}</div>
-                <div className="font-mono text-[11px] text-muted-foreground">
-                  {coords.latitude.toFixed(4)}°N, {coords.longitude.toFixed(4)}°E
-                </div>
+                <div className="text-[11px] text-muted-foreground">{locationLabel}</div>
               </div>
             ) : null}
             {coords && (
@@ -94,35 +96,19 @@ export function ClockScreen() {
           </div>
         </div>
 
-        {/* Location picker */}
-        <div>
-          <div className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.clock.workLocation}
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {locations.map((loc) => {
-              const sel = location === loc.key;
-              return (
-                <button
-                  key={loc.key}
-                  onClick={() => setLocation(loc.key)}
-                  className={cn(
-                    "rounded-[10px] px-2 py-3 text-left text-[13px] font-medium transition-colors",
-                    sel
-                      ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)] text-[var(--es-accent-700)]"
-                      : "border border-[var(--es-neutral-300)] bg-card text-foreground hover:bg-muted",
-                  )}
-                >
-                  <div className="text-[10px] uppercase tracking-widest opacity-70">{loc.key}</div>
-                  {loc.label}
-                </button>
-              );
-            })}
-          </div>
+<div>
+          <SectionLabel>{t.clock.workLocation}</SectionLabel>
+          <PillToggleGroup
+            options={locations}
+            value={location}
+            onChange={setLocation}
+            variant="filled"
+            scroll
+            ariaLabel={t.clock.workLocation}
+          />
         </div>
 
-        {/* Clock action */}
-        {clockState === "done" ? (
+{clockState === "done" ? (
           <div className="animate-in fade-in zoom-in-95 duration-300 rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
             <div className="animate-in zoom-in-50 duration-300 delay-100 fill-mode-backwards mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
               <Check className="size-[26px] text-white" />

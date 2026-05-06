@@ -47,9 +47,14 @@ export function OnboardingChecklist() {
 
   if (!checklist) {
     return (
-      <div className="rounded-xl border bg-card p-6 text-center text-sm text-muted-foreground">
+      <button
+        type="button"
+        disabled
+        aria-disabled
+        className="w-full rounded-xl bg-[var(--es-accent-600)] px-6 py-4 text-base font-semibold text-white opacity-90 shadow-[var(--es-shadow-md)] disabled:cursor-not-allowed"
+      >
         {t.onboarding.noChecklist}
-      </div>
+      </button>
     );
   }
 
@@ -57,8 +62,7 @@ export function OnboardingChecklist() {
 
   return (
     <div className="space-y-4">
-      {/* Progress bar */}
-      <div className="rounded-xl border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+<div className="rounded-xl border bg-card p-4 shadow-[var(--es-shadow-sm)]">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold">{t.onboarding.progress}</span>
           <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -73,8 +77,7 @@ export function OnboardingChecklist() {
         </div>
       </div>
 
-      {/* Checklist items */}
-      <div className="space-y-2">
+<div className="space-y-2">
         {items.map((item) => {
           const link = item.category ? categoryLinks[item.category] : undefined;
           return (

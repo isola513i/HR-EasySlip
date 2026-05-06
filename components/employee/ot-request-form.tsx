@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DatePicker } from "@/components/ui/date-picker";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
+import { SectionLabel } from "@/components/shared/section-label";
+import { InfoBanner } from "@/components/shared/info-banner";
 import { useOTRequests } from "@/hooks/use-ot-requests";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -49,78 +51,68 @@ export function OTRequestForm() {
 
   return (
     <>
-      <MobileTopbar title={t.ot.title} backHref="/employee/today" />
+      <MobileTopbar title={t.ot.title} />
 
-      <div className="flex flex-col gap-4 p-4">
-        {/* OT type tabs */}
-        <Tabs value={otType} onValueChange={(v) => setOTType(v as OTType)}>
-          <TabsList className="w-full">
-            <TabsTrigger value="WEEKDAY" className="flex-1">{t.ot.weekday}</TabsTrigger>
-            <TabsTrigger value="HOLIDAY" className="flex-1">{t.ot.holiday}</TabsTrigger>
+      <div className="flex flex-col gap-5 p-4">
+<Tabs value={otType} onValueChange={(v) => setOTType(v as OTType)}>
+          <TabsList className="h-11 w-full rounded-full p-1">
+            <TabsTrigger value="WEEKDAY" className="flex-1 rounded-full">
+              {t.ot.weekday}
+            </TabsTrigger>
+            <TabsTrigger value="HOLIDAY" className="flex-1 rounded-full">
+              {t.ot.holiday}
+            </TabsTrigger>
           </TabsList>
         </Tabs>
 
-        {/* Date */}
-        <div className="space-y-1.5">
-          <label htmlFor="ot-date" className="block text-[13px] font-medium">{t.ot.date}</label>
-          <DatePicker value={date} onChange={setDate} className="w-full" />
+<div>
+          <SectionLabel htmlFor="ot-date">{t.ot.date}</SectionLabel>
+          <DatePicker value={date} onChange={setDate} className="h-11 w-full rounded-xl" />
         </div>
 
-        {/* Weekday info / Holiday fields */}
-        {otType === "WEEKDAY" ? (
-          <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-            {t.ot.weekdayInfo}
-          </div>
+{otType === "WEEKDAY" ? (
+          <InfoBanner tone="accent">{t.ot.weekdayInfo}</InfoBanner>
         ) : (
           <>
-            <div className="space-y-1.5">
-              <label htmlFor="ot-start" className="block text-[13px] font-medium">
-                {t.ot.assignedStart}
-              </label>
+            <div>
+              <SectionLabel htmlFor="ot-start">{t.ot.assignedStart}</SectionLabel>
               <input
                 id="ot-start"
                 type="datetime-local"
                 value={assignedStart}
                 onChange={(e) => setAssignedStart(e.target.value)}
-                className="h-10 w-full rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+                className="h-11 w-full rounded-xl border border-[var(--es-neutral-300)] bg-card px-3 text-sm outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
-            <div className="space-y-1.5">
-              <label htmlFor="ot-end" className="block text-[13px] font-medium">
-                {t.ot.assignedEnd}
-              </label>
+            <div>
+              <SectionLabel htmlFor="ot-end">{t.ot.assignedEnd}</SectionLabel>
               <input
                 id="ot-end"
                 type="datetime-local"
                 value={assignedEnd}
                 min={assignedStart}
                 onChange={(e) => setAssignedEnd(e.target.value)}
-                className="h-10 w-full rounded-lg border border-[var(--es-neutral-300)] bg-card px-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+                className="h-11 w-full rounded-xl border border-[var(--es-neutral-300)] bg-card px-3 text-sm outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
-            <div className="rounded-[10px] border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] p-3 text-[12px] text-[var(--es-accent-800)]">
-              {t.ot.holidayInfo}
-            </div>
+            <InfoBanner tone="accent">{t.ot.holidayInfo}</InfoBanner>
           </>
         )}
 
-        {/* Reason */}
-        <div className="space-y-1.5">
-          <label htmlFor="ot-reason" className="block text-[13px] font-medium">
-            {t.ot.reason}
-          </label>
+<div>
+          <SectionLabel htmlFor="ot-reason">{t.ot.reason}</SectionLabel>
           <Textarea
             id="ot-reason"
             placeholder={t.ot.reasonPlaceholder}
-            rows={3}
+            rows={4}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
+            className="bg-[var(--es-neutral-50)]"
           />
         </div>
 
-        {/* Submit */}
-        <Button
-          className="w-full"
+<Button
+          className="w-full rounded-full"
           size="lg"
           disabled={isSubmitting || !canSubmit}
           onClick={handleSubmit}
