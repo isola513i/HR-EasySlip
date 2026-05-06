@@ -412,6 +412,10 @@ const en = {
     ineligibleProbation: "Eligible after 1 year of service",
     leaveHistory: "Leave history",
     leaveHistoryDesc: "Past requests",
+    attachmentPanelTitle: "Attach medical certificate",
+    attachmentPanelDesc: "Optional — required for sick leave over 3 days",
+    attachmentDone: "Done",
+    submitAnother: "Submit another request",
   },
   ot: {
     title: "OT Request",

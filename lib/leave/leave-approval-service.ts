@@ -14,7 +14,7 @@ export async function getPendingForApprover(
 ) {
   const where = { approverId: caller.employeeId, status: "PENDING" as const };
 
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     prisma.leaveRequest.findMany({
       where,
       include: {
@@ -33,6 +33,18 @@ export async function getPendingForApprover(
     prisma.leaveRequest.count({ where }),
   ]);
 
+  // Resolve hasAttachment in one shot — cheaper than per-row N+1.
+  const ids = rows.map((r) => r.id);
+  const attached = ids.length
+    ? await prisma.document.groupBy({
+        by: ["entityId"],
+        where: { entityType: "LeaveRequest", entityId: { in: ids }, category: "leave_attachment" },
+        _count: { _all: true },
+      })
+    : [];
+  const hasAttachmentSet = new Set(attached.map((a) => a.entityId));
+
+  const items = rows.map((r) => ({ ...r, hasAttachment: hasAttachmentSet.has(r.id) }));
   return { items, total, page, perPage };
 }
 

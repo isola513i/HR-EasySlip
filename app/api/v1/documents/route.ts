@@ -52,8 +52,16 @@ export const POST = withApiHandler(async (req, ctx) => {
     });
     return apiCreated(doc);
   } catch (err) {
-    if (err instanceof DomainError && err.code === "FORBIDDEN") {
-      return apiError("FORBIDDEN", "not authorized to upload", 403);
+    if (err instanceof DomainError) {
+      if (err.code === "FORBIDDEN" || err.code === "ENTITY_OWNER_MISMATCH") {
+        return apiError(err.code, "not authorized to upload to this entity", 403);
+      }
+      if (err.code === "INVALID_CATEGORY_ENTITY") {
+        return apiError(err.code, "category does not match entity type", 400);
+      }
+      if (err.code === "ENTITY_NOT_FOUND") {
+        return apiError(err.code, "target entity not found", 404);
+      }
     }
     if (err instanceof StorageError) {
       return apiError("STORAGE_ERROR", err.message, 502);

@@ -179,7 +179,7 @@ export function ApprovalInbox() {
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="font-medium">{formatLeaveType(r.leaveType)}</span>
-                {r.attachmentUrl && <StatusPill tone="info" dot={false}>PDF</StatusPill>}
+                {r.hasAttachment && <StatusPill tone="info" dot={false}>PDF</StatusPill>}
                 <span className="text-muted-foreground">·</span>
                 <span className="tabular-nums font-semibold">{r.daysRequested}</span>
                 <span className="text-muted-foreground">{t.manager.daysCol}</span>
@@ -222,7 +222,7 @@ export function ApprovalInbox() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span>{formatLeaveType(r.leaveType)}</span>
-                    {r.attachmentUrl && <StatusPill tone="info" dot={false}>PDF</StatusPill>}
+                    {r.hasAttachment && <StatusPill tone="info" dot={false}>PDF</StatusPill>}
                   </div>
                   <div>
                     <div>{fmt.formatShortDate(r.startDate)} – {fmt.formatShortDate(r.endDate)}</div>

@@ -85,3 +85,36 @@ export function useDocuments(opts?: UseDocumentsOptions) {
 export function documentFileHref(documentId: string): string {
   return `/api/v1/documents/${documentId}/file`;
 }
+
+interface UseEntityDocsInput {
+  entityType: string;
+  entityId: string | null | undefined;
+}
+
+/**
+ * List documents attached to a specific entity (LeaveRequest, etc.).
+ * Returns empty + isLoading=false when entityId is null so callers can
+ * mount the hook before submit completes.
+ */
+export function useEntityDocuments({ entityType, entityId }: UseEntityDocsInput) {
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(!!entityId);
+
+  const fetchData = useCallback(async () => {
+    if (!entityId) { setDocuments([]); setIsLoading(false); return; }
+    setIsLoading(true);
+    try {
+      const qs = new URLSearchParams({ entityType, entityId });
+      const data = await apiFetch<DocumentRecord[]>(`/api/v1/documents/by-entity?${qs}`);
+      setDocuments(data);
+    } catch {
+      setDocuments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [entityType, entityId]);
+
+  useEffect(() => { void fetchData(); }, [fetchData]);
+
+  return { documents, isLoading, refetch: fetchData };
+}

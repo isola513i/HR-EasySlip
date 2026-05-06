@@ -20,7 +20,6 @@ export async function submitRequest(
       clockType: input.clockType,
       requestedAt: new Date(input.requestedAt),
       reason: input.reason,
-      attachmentUrl: input.attachmentUrl,
     },
   });
 
@@ -141,7 +140,7 @@ export async function getPendingForApprover(
   const employeeIds = subordinates.map((s) => s.id);
 
   const where = { employeeId: { in: employeeIds }, status: "PENDING" as const };
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     prisma.timeAdjustmentRequest.findMany({
       where,
       include: {
@@ -155,6 +154,21 @@ export async function getPendingForApprover(
     }),
     prisma.timeAdjustmentRequest.count({ where }),
   ]);
+
+  const ids = rows.map((r) => r.id);
+  const attached = ids.length
+    ? await prisma.document.groupBy({
+        by: ["entityId"],
+        where: {
+          entityType: "TimeAdjustmentRequest",
+          entityId: { in: ids },
+          category: "time_correction_proof",
+        },
+        _count: { _all: true },
+      })
+    : [];
+  const hasAttachmentSet = new Set(attached.map((a) => a.entityId));
+  const items = rows.map((r) => ({ ...r, hasAttachment: hasAttachmentSet.has(r.id) }));
 
   return { items, total, page: filters.page, perPage: filters.perPage };
 }

@@ -80,10 +80,10 @@ export function TimeAdjustmentInbox() {
                   {r.clockType === "IN" ? t.manager.timeAdjustment.clockIn : t.manager.timeAdjustment.clockOut}
                 </div>
                 <div className="mt-1 line-clamp-2 text-xs">{r.reason}</div>
-                {r.attachmentUrl && (
-                  <a href={r.attachmentUrl} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-[var(--es-accent-600)] hover:underline">
+                {r.hasAttachment && (
+                  <span className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-[var(--es-accent-600)]">
                     <Paperclip className="size-3" /> {t.manager.timeAdjustment.attachment}
-                  </a>
+                  </span>
                 )}
               </div>
               <div className="flex shrink-0 gap-0.5">

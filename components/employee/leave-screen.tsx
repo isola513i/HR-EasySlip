@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -10,9 +10,9 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { SectionLabel } from "@/components/shared/section-label";
 import { PillToggleGroup } from "@/components/shared/pill-toggle-group";
-import { FileAttachField } from "@/components/shared/file-attach-field";
 import { LeaveTypeGrid } from "@/components/employee/leave/leave-type-grid";
 import { LeavePreviewSummary } from "@/components/employee/leave/leave-preview-summary";
+import { LeaveAttachmentPanel } from "@/components/employee/leave/leave-attachment-panel";
 import { useLeaveForm } from "@/hooks/use-leave-form";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { bangkokTodayKey, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
@@ -56,6 +56,10 @@ export function LeaveScreen() {
     isLoadingQuotas, quotaError, submit, getBalance, isTypeIneligible,
   } = useLeaveForm();
 
+  // Holds the last successfully created leave id so we can show the
+  // attachment panel without forcing a navigation away from this screen.
+  const [submittedLeaveId, setSubmittedLeaveId] = useState<string | null>(null);
+
   const searchParams = useSearchParams();
   useEffect(() => {
     const qStart = searchParams.get("startDate");
@@ -77,7 +81,10 @@ export function LeaveScreen() {
   const handleSubmit = async () => {
     try {
       const result = await submit();
-      if (result) toast.success(t.leave.submitSuccess);
+      if (result) {
+        toast.success(t.leave.submitSuccess);
+        setSubmittedLeaveId(result.request.id);
+      }
     } catch (err) {
       if (err instanceof OfflineQueuedError) {
         toast.info(t.clock.offlineQueued, { duration: 6000 });
@@ -85,6 +92,13 @@ export function LeaveScreen() {
       }
       toast.error(err instanceof Error ? err.message : t.leave.submitFailed);
     }
+  };
+
+  const resetForm = () => {
+    setSubmittedLeaveId(null);
+    setStartDate("");
+    setEndDate("");
+    setReason("");
   };
 
   const balanceFor = (key: (typeof LEAVE_TYPES)[number]["key"]) => {
@@ -171,29 +185,40 @@ export function LeaveScreen() {
           />
         </div>
 
-        {/* upload backend not yet implemented — field is disabled placeholder */}
-        <FileAttachField
-          label={t.leave.attachMedCert}
-          actionLabel={t.common.selectFile}
-          disabled
-        />
-
-        <LeavePreviewSummary preview={preview} startDate={startDate} endDate={endDate} />
-
-        <Button
-          className="w-full rounded-full"
-          size="lg"
-          disabled={
-            isSubmitting
-            || !startDate
-            || !endDate
-            || !reason.trim()
-            || (preview !== null && (!preview.sufficient || !!preview.overlap))
-          }
-          onClick={handleSubmit}
-        >
-          {isSubmitting ? t.leave.submitting : t.leave.submit}
-        </Button>
+        {submittedLeaveId ? (
+          <>
+            <LeaveAttachmentPanel
+              leaveId={submittedLeaveId}
+              onDone={resetForm}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-full"
+              onClick={resetForm}
+            >
+              {t.leave.submitAnother}
+            </Button>
+          </>
+        ) : (
+          <>
+            <LeavePreviewSummary preview={preview} startDate={startDate} endDate={endDate} />
+            <Button
+              className="w-full rounded-full"
+              size="lg"
+              disabled={
+                isSubmitting
+                || !startDate
+                || !endDate
+                || !reason.trim()
+                || (preview !== null && (!preview.sufficient || !!preview.overlap))
+              }
+              onClick={handleSubmit}
+            >
+              {isSubmitting ? t.leave.submitting : t.leave.submit}
+            </Button>
+          </>
+        )}
       </div>
     </>
   );

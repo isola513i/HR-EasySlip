@@ -4,6 +4,9 @@
 // machinery serves contracts, leave attachments, time-correction proofs.
 // All mutations write an audit log; reads are audited only when the
 // caller is not the owner (high-volume self-reads kept clean).
+// `blobPath` (Vercel Blob URL — public-by-knowledge) is NEVER returned
+// to API callers. The /file proxy route is the only authorized read
+// path so every byte fetch goes through RBAC + audit.
 // ════════════════════════════════════════════════════════════════
 
 import type { Document, Prisma } from "@prisma/client";
@@ -18,6 +21,7 @@ import {
   type DocumentEntityType,
 } from "./types";
 import { canRead, canWrite, isHr, isManagerOfOwner, isOwner } from "./rbac";
+import { assertEntityBelongsToOwner, resolveEntityOwner } from "./entity-validation";
 
 export {
   DOCUMENT_CATEGORIES,
@@ -26,6 +30,11 @@ export {
   type DocumentCategory,
   type DocumentEntityType,
 } from "./types";
+
+// Public projection — strips blobPath so the Vercel Blob URL never leaks
+// outside the service. API callers must use the /file proxy to read bytes.
+export type PublicDocument = Omit<Document, "blobPath">;
+const publicView = ({ blobPath: _blobPath, ...rest }: Document): PublicDocument => rest;
 
 interface UploadInput {
   caller: Caller;
@@ -51,7 +60,7 @@ interface ListInput {
   category?: DocumentCategory;
 }
 
-export async function uploadDocument(input: UploadInput): Promise<Document> {
+export async function uploadDocument(input: UploadInput): Promise<PublicDocument> {
   const { caller, ownerEmployeeId, category, entityType, entityId, file, ipAddress, userAgent } = input;
 
   if (!DOC_ALLOWED_MIME.includes(file.contentType as DocMime)) {
@@ -67,6 +76,8 @@ export async function uploadDocument(input: UploadInput): Promise<Document> {
   });
   if (!owner) throw new DomainError("EMPLOYEE_NOT_FOUND", {}, 404);
   if (owner.isAnonymized) throw new DomainError("EMPLOYEE_ANONYMIZED", {}, 410);
+
+  await assertEntityBelongsToOwner(category, entityType, entityId, ownerEmployeeId);
 
   const stored = await putBlob({
     pathPrefix: `documents/${ownerEmployeeId}/${category}`,
@@ -102,7 +113,7 @@ export async function uploadDocument(input: UploadInput): Promise<Document> {
         },
         tx,
       );
-      return doc;
+      return publicView(doc);
     });
   } catch (err) {
     await deleteBlob(stored.url).catch(() => {});
@@ -164,21 +175,60 @@ export async function streamDocument(input: MutateInput) {
   };
 }
 
-export async function getDocument(input: { caller: Caller; documentId: string }): Promise<Document> {
-  const doc = await prisma.document.findUnique({ where: { id: input.documentId } });
+export async function getDocument(input: MutateInput): Promise<PublicDocument> {
+  const { caller, documentId, ipAddress, userAgent } = input;
+  const doc = await prisma.document.findUnique({ where: { id: documentId } });
   if (!doc) throw new DomainError("DOCUMENT_NOT_FOUND", {}, 404);
-  if (!(await canRead(input.caller, doc))) throw new DomainError("FORBIDDEN", {}, 403);
-  return doc;
+  if (!(await canRead(caller, doc))) throw new DomainError("FORBIDDEN", {}, 403);
+
+  if (!isOwner(caller, doc.ownerEmployeeId)) {
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "document.metadata_viewed",
+      entityType: "Document",
+      entityId: documentId,
+      ipAddress,
+      userAgent,
+      reason: isHr(caller) ? "hr_access" : "manager_access",
+    });
+  }
+
+  return publicView(doc);
 }
 
-export async function listDocuments(input: ListInput): Promise<Document[]> {
+interface ListByEntityInput {
+  caller: Caller;
+  entityType: DocumentEntityType;
+  entityId: string;
+}
+
+/**
+ * List documents attached to a specific entity (e.g. all attachments on a
+ * single LeaveRequest). Used by manager DetailSheet + employee history view.
+ */
+export async function listDocumentsByEntity(input: ListByEntityInput): Promise<PublicDocument[]> {
+  const { caller, entityType, entityId } = input;
+  const ownerEmployeeId = await resolveEntityOwner(entityType, entityId);
+  const owner = isOwner(caller, ownerEmployeeId);
+  const hr = isHr(caller);
+  const mgr = !owner && !hr ? await isManagerOfOwner(caller, ownerEmployeeId) : false;
+  if (!owner && !hr && !mgr) throw new DomainError("FORBIDDEN", {}, 403);
+
+  const docs = await prisma.document.findMany({
+    where: { entityType, entityId },
+    orderBy: { uploadedAt: "desc" },
+  });
+  return docs.map(publicView);
+}
+
+export async function listDocuments(input: ListInput): Promise<PublicDocument[]> {
   const { caller, ownerEmployeeId, category } = input;
   const owner = isOwner(caller, ownerEmployeeId);
   const hr = isHr(caller);
   const mgr = !owner && !hr ? await isManagerOfOwner(caller, ownerEmployeeId) : false;
   if (!owner && !hr && !mgr) throw new DomainError("FORBIDDEN", {}, 403);
 
-  return prisma.document.findMany({
+  const docs = await prisma.document.findMany({
     where: {
       ownerEmployeeId,
       ...(category ? { category } : {}),
@@ -187,4 +237,5 @@ export async function listDocuments(input: ListInput): Promise<Document[]> {
     },
     orderBy: { uploadedAt: "desc" },
   });
+  return docs.map(publicView);
 }

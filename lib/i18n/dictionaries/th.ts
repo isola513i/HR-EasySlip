@@ -414,6 +414,10 @@ const th = {
     ineligibleProbation: "มีสิทธิ์หลังทำงานครบ 1 ปี",
     leaveHistory: "ประวัติการลา",
     leaveHistoryDesc: "คำขอที่ผ่านมา",
+    attachmentPanelTitle: "แนบใบรับรองแพทย์",
+    attachmentPanelDesc: "ไม่บังคับ — ลาป่วยเกิน 3 วันต้องแนบ",
+    attachmentDone: "เสร็จสิ้น",
+    submitAnother: "ส่งคำขอเพิ่มอีก",
   },
   ot: {
     title: "ขอ OT",

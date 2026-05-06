@@ -8,7 +8,6 @@ export const TimeAdjSubmitSchema = z.object({
   clockType: z.enum(["IN", "OUT"]),
   requestedAt: z.string().datetime(),
   reason: z.string().min(1).max(500),
-  attachmentUrl: z.string().url().optional(),
 });
 
 export const TimeAdjRejectSchema = z.object({

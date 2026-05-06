@@ -10,7 +10,6 @@ interface OverflowInput {
   endDate: Date;
   halfDay: LeaveHalfDay;
   reason: string;
-  attachmentUrl?: string;
 }
 
 interface OverflowResult {
@@ -48,7 +47,6 @@ export async function submitSickWithOverflow(
     endDate: input.endDate,
     halfDay: input.halfDay,
     reason: input.reason,
-    attachmentUrl: input.attachmentUrl,
     status: "PENDING" as const,
     approverId,
   };

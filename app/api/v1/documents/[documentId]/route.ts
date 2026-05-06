@@ -15,6 +15,8 @@ export const GET = withApiHandler(async (_req, ctx) => {
     const doc = await getDocument({
       caller: { userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles },
       documentId,
+      ipAddress: ctx.ip,
+      userAgent: ctx.userAgent,
     });
     return apiOk(doc);
   } catch (err) {

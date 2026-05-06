@@ -286,7 +286,6 @@ model TimeAdjustmentRequest {
   clockType      ClockType // IN หรือ OUT — ขาไหนที่ขอเพิ่ม
   requestedAt    DateTime // เวลาที่พนักงานอ้างว่าเข้า/ออก
   reason         String               @db.Text
-  attachmentUrl  String? // รูปถ่ายหลักฐาน
   status         TimeAdjustmentStatus @default(PENDING)
   approverId     String?
   approvedAt     DateTime?
@@ -346,7 +345,6 @@ model LeaveRequest {
   halfDay        LeaveHalfDay @default(FULL)
   daysRequested  Decimal      @db.Decimal(4, 2)
   reason         String       @db.Text
-  attachmentUrl  String?
   status         LeaveStatus  @default(PENDING)
   approverId     String?
   approvedAt     DateTime?

@@ -8,6 +8,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { DocumentListItem } from "@/components/shared/document-list-item";
+import { useEntityDocuments } from "@/hooks/use-documents";
 import { formatLeaveType } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
@@ -23,6 +25,12 @@ interface Props {
 export function DetailSheet({ row, onClose, onApprove, onReject }: Props) {
   const t = useT();
   const fmt = useFormat();
+  // Hooks must run unconditionally — pass entityId regardless of `row` and
+  // bail out below. The hook short-circuits to empty when entityId is null.
+  const { documents } = useEntityDocuments({
+    entityType: "LeaveRequest",
+    entityId: row?.id ?? null,
+  });
 
   if (!row) return null;
 
@@ -76,6 +84,19 @@ export function DetailSheet({ row, onClose, onApprove, onReject }: Props) {
               </div>
             </div>
           </div>
+
+          {documents.length > 0 && (
+            <div className="mb-4 space-y-2">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {t.documents.category.leave_attachment}
+              </div>
+              <div className="space-y-2">
+                {documents.map((doc) => (
+                  <DocumentListItem key={doc.id} document={doc} canDelete={false} />
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex gap-2">
             <button

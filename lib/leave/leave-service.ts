@@ -37,7 +37,7 @@ export async function submitLeaveRequest(
         data: {
           employeeId: caller.employeeId, leaveType: "LEAVE_WITHOUT_PAY",
           startDate, endDate, halfDay: input.halfDay, daysRequested: daysDecimal,
-          reason: input.reason, attachmentUrl: input.attachmentUrl,
+          reason: input.reason,
           status: "PENDING", approverId: employee?.managerId,
         },
       });
@@ -55,7 +55,7 @@ export async function submitLeaveRequest(
 
     // SICK overflow: auto-split to LWP when exceeding quota
     if (input.leaveType === "SICK") {
-      return submitSickWithOverflow(tx, caller, { startDate, endDate, halfDay: input.halfDay, reason: input.reason, attachmentUrl: input.attachmentUrl }, daysDecimal, quota, meta);
+      return submitSickWithOverflow(tx, caller, { startDate, endDate, halfDay: input.halfDay, reason: input.reason }, daysDecimal, quota, meta);
     }
 
     // All other leave types: strict quota check
@@ -71,7 +71,7 @@ export async function submitLeaveRequest(
       data: {
         employeeId: caller.employeeId, leaveType: input.leaveType,
         startDate, endDate, halfDay: input.halfDay, daysRequested: daysDecimal,
-        reason: input.reason, attachmentUrl: input.attachmentUrl,
+        reason: input.reason,
         status: "PENDING", approverId: employee?.managerId, quotaLockedId: quota.id,
       },
     });

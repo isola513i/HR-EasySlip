@@ -53,7 +53,7 @@ export interface PendingLeaveRow {
   endDate: string;
   daysRequested: string;
   reason: string;
-  attachmentUrl: string | null;
+  hasAttachment: boolean;
   createdAt: string;
   employee: {
     id: string;
@@ -75,6 +75,17 @@ export async function getAllPendingLeaves(): Promise<PendingLeaveRow[]> {
     orderBy: { createdAt: "asc" },
   });
 
+  // Single grouped query so we don't N+1 on every list render.
+  const ids = rows.map((r) => r.id);
+  const attached = ids.length
+    ? await prisma.document.groupBy({
+        by: ["entityId"],
+        where: { entityType: "LeaveRequest", entityId: { in: ids }, category: "leave_attachment" },
+        _count: { _all: true },
+      })
+    : [];
+  const hasAttachmentSet = new Set(attached.map((a) => a.entityId));
+
   return rows.map((r) => ({
     id: r.id,
     leaveType: r.leaveType,
@@ -82,7 +93,7 @@ export async function getAllPendingLeaves(): Promise<PendingLeaveRow[]> {
     endDate: r.endDate.toISOString(),
     daysRequested: r.daysRequested.toString(),
     reason: r.reason,
-    attachmentUrl: r.attachmentUrl,
+    hasAttachment: hasAttachmentSet.has(r.id),
     createdAt: r.createdAt.toISOString(),
     employee: r.employee,
   }));

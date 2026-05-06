@@ -9,7 +9,7 @@ export interface TimeAdjustmentRow {
   clockType: "IN" | "OUT";
   requestedAt: string;
   reason: string;
-  attachmentUrl: string | null;
+  hasAttachment: boolean;
   status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
   employee: ManagerEmployee;

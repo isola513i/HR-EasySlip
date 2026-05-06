@@ -7,7 +7,7 @@ export interface ApprovalRow {
   daysRequested: string; // Decimal serialized as string
   reason: string;
   status: string;
-  attachmentUrl: string | null;
+  hasAttachment: boolean;
   createdAt: string;
   employee: {
     firstNameTh: string;

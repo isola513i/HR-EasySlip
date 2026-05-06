@@ -24,7 +24,6 @@ export const LeaveRequestSchema = z.object({
   endDate: z.string().date(),
   halfDay: z.enum(["FULL", "MORNING", "AFTERNOON"]).default("FULL"),
   reason: z.string().min(1).max(1000),
-  attachmentUrl: z.string().url().optional(),
 });
 
 export const LeavePreviewSchema = z.object({
