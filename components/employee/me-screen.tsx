@@ -14,6 +14,7 @@ import { MeLinkItem } from "@/components/employee/me/me-link-item";
 import { SignOutButton } from "@/components/employee/me/sign-out-button";
 import { ChangePasswordButton } from "@/components/employee/me/change-password-button";
 import { ProfilePictureUploader } from "@/components/employee/me/profile-picture-uploader";
+import { DocumentsSection } from "@/components/employee/me/documents-section";
 import { useProfile } from "@/hooks/use-profile";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { useT } from "@/lib/i18n/locale-context";
@@ -78,6 +79,12 @@ export function MeScreen({ user }: Props) {
           {profile && (
             <AccordionItem title={t.profile.emergency}>
               <EmergencyContactSection profile={profile} onUpdate={updateProfile} />
+            </AccordionItem>
+          )}
+
+          {profile && (
+            <AccordionItem title={t.documents.title}>
+              <DocumentsSection employeeId={profile.id} />
             </AccordionItem>
           )}
 
