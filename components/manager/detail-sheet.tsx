@@ -26,10 +26,12 @@ export function DetailSheet({ row, onClose, onApprove, onReject }: Props) {
   const t = useT();
   const fmt = useFormat();
   // Hooks must run unconditionally — pass entityId regardless of `row` and
-  // bail out below. The hook short-circuits to empty when entityId is null.
+  // bail out below. Only fetch when row.hasAttachment is true so we don't
+  // burn a `document.list_viewed` audit row on every leave the manager
+  // peeks at; the hook short-circuits to empty when entityId is null.
   const { documents } = useEntityDocuments({
     entityType: "LeaveRequest",
-    entityId: row?.id ?? null,
+    entityId: row?.hasAttachment ? row.id : null,
   });
 
   if (!row) return null;

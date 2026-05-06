@@ -69,7 +69,7 @@ export function DocumentListItem({ document, canDelete, onDelete }: Props) {
           href={documentFileHref(document.id)}
           target="_blank"
           rel="noopener noreferrer"
-          className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-accent-600)]"
+          className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-accent-600)]"
           aria-label={t.documents.view}
         >
           <ExternalLink className="size-4" />
@@ -79,7 +79,7 @@ export function DocumentListItem({ document, canDelete, onDelete }: Props) {
             type="button"
             onClick={() => setConfirmOpen(true)}
             disabled={deleting}
-            className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-error-600)] disabled:opacity-50"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-error-600)] disabled:opacity-50"
             aria-label={t.documents.delete}
           >
             <Trash2 className="size-4" />

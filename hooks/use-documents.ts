@@ -27,21 +27,31 @@ export function useDocuments(opts?: UseDocumentsOptions) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     setIsLoading(true);
     setError(null);
     try {
       const qs = opts?.category ? `?category=${encodeURIComponent(opts.category)}` : "";
-      const data = await apiFetch<DocumentRecord[]>(`/api/v1/employee/me/documents${qs}`);
+      const data = await apiFetch<DocumentRecord[]>(
+        `/api/v1/employee/me/documents${qs}`,
+        { signal },
+      );
       setDocuments(data);
     } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Failed to load documents");
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) setIsLoading(false);
     }
   }, [opts?.category]);
 
-  useEffect(() => { void fetchData(); }, [fetchData]);
+  // Cancel prior request when category changes — a slow earlier response
+  // could otherwise overwrite a faster later one.
+  useEffect(() => {
+    const ctrl = new AbortController();
+    void fetchData(ctrl.signal);
+    return () => ctrl.abort();
+  }, [fetchData]);
 
   const upload = useCallback(async (input: {
     file: File;
@@ -79,7 +89,7 @@ export function useDocuments(opts?: UseDocumentsOptions) {
     await fetchData();
   }, [fetchData]);
 
-  return { documents, isLoading, error, upload, remove, refetch: fetchData };
+  return { documents, isLoading, error, upload, remove, refetch: () => fetchData() };
 }
 
 export function documentFileHref(documentId: string): string {

@@ -12,12 +12,6 @@ interface Props {
   entityId: string;
   ownerEmployeeId?: string;
   onUploaded?: (doc: DocumentRecord) => void;
-  /**
-   * When true, also forces a list refetch on the shared `useDocuments` hook by
-   * calling its upload(). Pass false if the parent owns the list and just wants
-   * the uploader to invoke `onUploaded`.
-   */
-  reuseListHook?: boolean;
   className?: string;
 }
 
