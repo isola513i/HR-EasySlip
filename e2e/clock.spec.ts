@@ -10,11 +10,13 @@ test.describe("Clock In/Out", () => {
     await page.goto("/employee/clock");
     await page.waitForLoadState("networkidle");
 
-    // Should show clock button (in or out)
-    const clockBtn = page.locator("button:has-text('Clock')").first();
+    // Clock CTA is the giant button at the bottom of the screen.
+    const clockBtn = page.getByRole("button", { name: /tap to clock|clock (in|out) now/i });
     await expect(clockBtn).toBeVisible({ timeout: 10_000 });
 
-    // GPS should be displayed
-    await expect(page.getByText(/13\.75/)).toBeVisible({ timeout: 10_000 });
+    // The page renders "Current location" + an accuracy pill once the
+    // geolocation resolves. The raw lat/lng numbers are NOT shown — the
+    // UI shows the WFH/Office label + an `Accuracy ±N m` pill instead.
+    await expect(page.getByText(/current location|accuracy/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

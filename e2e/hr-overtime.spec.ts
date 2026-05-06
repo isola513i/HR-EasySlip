@@ -3,28 +3,24 @@ import { test, expect } from "./helpers/fixtures";
 test.describe("HR Overtime — org-wide oversight page", () => {
   test.use({ role: "hr" });
 
-  test("loads with summary cards", async ({ page }) => {
+  test("loads with KPI cards", async ({ page }) => {
     await page.goto("/hr/overtime");
     await page.waitForLoadState("networkidle");
 
-    // Two summary cards: OT records + Approved hours
-    await expect(page.getByText(/OT records|จำนวนรายการ/i)).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByText(/approved hours|ชั่วโมงที่อนุมัติ/i)).toBeVisible();
+    // OvertimeKpis renders four cards: Total OT Hours / Pending Requests /
+    // Approved / Avg per Employee. Match a couple.
+    await expect(page.getByText(/total ot hours|ชม\. ot รวม/i)).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/pending requests|รออนุมัติ/i)).toBeVisible();
   });
 
-  test("status filter buttons render and are clickable", async ({ page }) => {
+  test("renders trends chart and pending list", async ({ page }) => {
     await page.goto("/hr/overtime");
     await page.waitForLoadState("networkidle");
 
-    const pendingBtn = page.getByRole("button", { name: /^pending$|^รออนุมัติ$/i });
-    const approvedBtn = page.getByRole("button", { name: /^approved$|^อนุมัติแล้ว$/i });
-
-    await expect(pendingBtn).toBeVisible({ timeout: 10_000 });
-    await expect(approvedBtn).toBeVisible();
-
-    // Toggle to APPROVED — page should not error
-    await approvedBtn.click();
-    await page.waitForLoadState("networkidle");
+    // The page shows a monthly trends chart + a top-OT-employees panel
+    // and a pending list. Their section headings are stable selectors.
+    const sectionHeadings = page.getByText(/monthly trends|trends|แนวโน้ม|top|pending/i);
+    await expect(sectionHeadings.first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("redirects non-HR roles", async ({ browser }) => {

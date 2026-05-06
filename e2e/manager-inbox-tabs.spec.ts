@@ -28,10 +28,12 @@ test.describe("Manager Inbox — 3-tab approval surface", () => {
     await page.goto("/manager/inbox");
     await page.waitForLoadState("networkidle");
 
-    await page.getByRole("tab", { name: /^overtime$|^OT$/i }).click();
+    const overtimeTab = page.getByRole("tab", { name: /^overtime$|^OT$/i });
+    await overtimeTab.click();
 
-    const empty = page.getByText(/no pending|ไม่มีคำขอ/i);
-    // Tab panel should at minimum render (loaded), with either empty state or content
-    await expect(empty.or(page.locator("[role='tabpanel']"))).toBeVisible({ timeout: 10_000 });
+    // Verify the click actually selected the tab (Radix sets aria-selected
+    // on the active tab). This is a stable assertion regardless of whether
+    // the panel has pending content or empty state.
+    await expect(overtimeTab).toHaveAttribute("aria-selected", "true", { timeout: 10_000 });
   });
 });

@@ -27,8 +27,15 @@ test.describe("HR onboarding management", () => {
 
   test("HR can see progress and templates tabs", async ({ page }) => {
     await page.goto("/hr/onboarding");
-    const progressTab = page.locator("text=Progress").or(page.locator("text=ความคืบหน้า"));
-    const templatesTab = page.locator("text=Templates");
+    await page.waitForLoadState("networkidle");
+    // The HR onboarding page exposes a 2-button toggle (Progress /
+    // Templates). Loose selectors match unrelated copy ("In Progress"
+    // status pill, "Onboarding Progress" heading), so use exact name +
+    // role to disambiguate.
+    const progressTab = page.getByRole("button", { name: "Progress", exact: true })
+      .or(page.getByRole("button", { name: "ความคืบหน้า", exact: true }));
+    const templatesTab = page.getByRole("button", { name: "Templates", exact: true })
+      .or(page.getByRole("button", { name: "เทมเพลต", exact: true }));
     await expect(progressTab).toBeVisible();
     await expect(templatesTab).toBeVisible();
   });
