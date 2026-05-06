@@ -100,21 +100,29 @@ export function useEntityDocuments({ entityType, entityId }: UseEntityDocsInput)
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(!!entityId);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     if (!entityId) { setDocuments([]); setIsLoading(false); return; }
     setIsLoading(true);
     try {
       const qs = new URLSearchParams({ entityType, entityId });
-      const data = await apiFetch<DocumentRecord[]>(`/api/v1/documents/by-entity?${qs}`);
+      const data = await apiFetch<DocumentRecord[]>(`/api/v1/documents/by-entity?${qs}`, { signal });
       setDocuments(data);
-    } catch {
+    } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
       setDocuments([]);
     } finally {
-      setIsLoading(false);
+      if (!signal?.aborted) setIsLoading(false);
     }
   }, [entityType, entityId]);
 
-  useEffect(() => { void fetchData(); }, [fetchData]);
+  // Abort prior request when entityId/entityType changes — without this,
+  // a slow earlier response can land after a faster later one and overwrite
+  // the list with stale data (e.g. manager flipping between leave rows).
+  useEffect(() => {
+    const ctrl = new AbortController();
+    void fetchData(ctrl.signal);
+    return () => ctrl.abort();
+  }, [fetchData]);
 
-  return { documents, isLoading, refetch: fetchData };
+  return { documents, isLoading, refetch: () => fetchData() };
 }

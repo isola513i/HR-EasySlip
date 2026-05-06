@@ -2,7 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { DomainError } from "@/lib/api/errors";
 import type { DocumentCategory, DocumentEntityType } from "./types";
 
-/** Resolve the owning employee for any supported entity. */
+/**
+ * Resolve the owning employee for any supported entity. Branches are
+ * exhaustive on `DocumentEntityType` — adding a new variant fails the
+ * exhaustiveness check at the trailing `never` so callers don't silently
+ * fall through to the wrong table.
+ */
 export async function resolveEntityOwner(
   entityType: DocumentEntityType,
   entityId: string,
@@ -16,12 +21,16 @@ export async function resolveEntityOwner(
     if (!lr) throw new DomainError("ENTITY_NOT_FOUND", { entityType }, 404);
     return lr.employeeId;
   }
-  const tr = await prisma.timeAdjustmentRequest.findUnique({
-    where: { id: entityId },
-    select: { employeeId: true },
-  });
-  if (!tr) throw new DomainError("ENTITY_NOT_FOUND", { entityType }, 404);
-  return tr.employeeId;
+  if (entityType === "TimeAdjustmentRequest") {
+    const tr = await prisma.timeAdjustmentRequest.findUnique({
+      where: { id: entityId },
+      select: { employeeId: true },
+    });
+    if (!tr) throw new DomainError("ENTITY_NOT_FOUND", { entityType }, 404);
+    return tr.employeeId;
+  }
+  const _exhaustive: never = entityType;
+  throw new DomainError("INVALID_ENTITY_TYPE", { entityType: _exhaustive }, 400);
 }
 
 // Each category attaches to exactly one entity type. Mismatched pairs
@@ -50,31 +59,11 @@ export async function assertEntityBelongsToOwner(
   if (CATEGORY_ENTITY[category] !== entityType) {
     throw new DomainError("INVALID_CATEGORY_ENTITY", { category, entityType }, 400);
   }
-  if (entityType === "Employee") {
-    if (entityId !== ownerEmployeeId) {
-      throw new DomainError("ENTITY_OWNER_MISMATCH", {}, 403);
-    }
-    return;
-  }
-  if (entityType === "LeaveRequest") {
-    const lr = await prisma.leaveRequest.findUnique({
-      where: { id: entityId },
-      select: { employeeId: true },
-    });
-    if (!lr) throw new DomainError("ENTITY_NOT_FOUND", { entityType }, 404);
-    if (lr.employeeId !== ownerEmployeeId) {
-      throw new DomainError("ENTITY_OWNER_MISMATCH", {}, 403);
-    }
-    return;
-  }
-  if (entityType === "TimeAdjustmentRequest") {
-    const tr = await prisma.timeAdjustmentRequest.findUnique({
-      where: { id: entityId },
-      select: { employeeId: true },
-    });
-    if (!tr) throw new DomainError("ENTITY_NOT_FOUND", { entityType }, 404);
-    if (tr.employeeId !== ownerEmployeeId) {
-      throw new DomainError("ENTITY_OWNER_MISMATCH", {}, 403);
-    }
+  // Compare against the resolved owner so unknown entity types are caught
+  // by the exhaustive switch in `resolveEntityOwner` rather than by a
+  // matching if-else chain that could silently grow stale.
+  const actualOwner = await resolveEntityOwner(entityType, entityId);
+  if (actualOwner !== ownerEmployeeId) {
+    throw new DomainError("ENTITY_OWNER_MISMATCH", {}, 403);
   }
 }

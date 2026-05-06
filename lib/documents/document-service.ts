@@ -200,19 +200,37 @@ interface ListByEntityInput {
   caller: Caller;
   entityType: DocumentEntityType;
   entityId: string;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 /**
  * List documents attached to a specific entity (e.g. all attachments on a
  * single LeaveRequest). Used by manager DetailSheet + employee history view.
+ *
+ * Audited on non-owner reads — one entry per access event (not per doc), to
+ * match streamDocument/getDocument PDPA semantics without bursting logs when
+ * a manager opens an entity with multiple attachments.
  */
 export async function listDocumentsByEntity(input: ListByEntityInput): Promise<PublicDocument[]> {
-  const { caller, entityType, entityId } = input;
+  const { caller, entityType, entityId, ipAddress, userAgent } = input;
   const ownerEmployeeId = await resolveEntityOwner(entityType, entityId);
   const owner = isOwner(caller, ownerEmployeeId);
   const hr = isHr(caller);
   const mgr = !owner && !hr ? await isManagerOfOwner(caller, ownerEmployeeId) : false;
   if (!owner && !hr && !mgr) throw new DomainError("FORBIDDEN", {}, 403);
+
+  if (!owner) {
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "document.list_viewed",
+      entityType,
+      entityId,
+      ipAddress,
+      userAgent,
+      reason: hr ? "hr_access" : "manager_access",
+    });
+  }
 
   const docs = await prisma.document.findMany({
     where: { entityType, entityId },

@@ -9,7 +9,7 @@ import {
   type DocumentEntityType,
 } from "@/lib/documents/document-service";
 
-export const GET = withApiHandler(async (req) => {
+export const GET = withApiHandler(async (req, ctx) => {
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -26,6 +26,8 @@ export const GET = withApiHandler(async (req) => {
       caller: { userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles },
       entityType,
       entityId,
+      ipAddress: ctx.ip,
+      userAgent: ctx.userAgent,
     });
     return apiOk(docs);
   } catch (err) {
