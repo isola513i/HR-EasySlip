@@ -20,6 +20,8 @@ export interface Employee {
   position?: { name: string } | null;
   manager?: { firstNameTh: string; lastNameTh: string } | null;
   user?: { email: string } | null;
+  hasProfilePicture?: boolean;
+  profilePictureUploadedAt?: string | null;
 }
 
 interface Filters {

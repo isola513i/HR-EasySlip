@@ -13,6 +13,16 @@ const EMPLOYEE_INCLUDE = {
   manager: { select: { id: true, firstNameTh: true, lastNameTh: true, employeeCode: true } },
 };
 
+/**
+ * Strip the raw Vercel Blob URL from any employee row before it leaves the
+ * service. The blob is public-by-knowledge — UI must use the proxy route
+ * (`/api/v1/employee/[id]/profile-picture`) which carries RBAC + audit.
+ */
+function shapeEmployeePublic<T extends { profilePicturePath: string | null }>(row: T) {
+  const { profilePicturePath, ...rest } = row;
+  return { ...rest, hasProfilePicture: profilePicturePath !== null };
+}
+
 export async function createEmployee(input: EmployeeCreateInput, caller: Caller, meta: RequestMeta) {
   const hireDate = new Date(input.hireDate);
   const initialPassword = generateInitialPassword(input.employeeCode);
@@ -43,7 +53,7 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
     return employee;
   });
 
-  return { ...result, initialPassword };
+  return { ...shapeEmployeePublic(result), initialPassword };
 }
 
 export async function updateEmployee(employeeId: string, input: EmployeeUpdateInput, caller: Caller, meta: RequestMeta) {
@@ -58,7 +68,7 @@ export async function updateEmployee(employeeId: string, input: EmployeeUpdateIn
 
   await writeAuditLog({ actorId: caller.userId, action: "employee.update", entityType: "Employee", entityId: employeeId, before: existing, after: updated, ipAddress: meta.ip, userAgent: meta.userAgent });
 
-  return updated;
+  return shapeEmployeePublic(updated);
 }
 
 export async function getEmployeeById(employeeId: string) {
@@ -67,7 +77,7 @@ export async function getEmployeeById(employeeId: string) {
     include: { ...EMPLOYEE_INCLUDE, user: { select: { email: true } } },
   });
   if (!employee) throw new DomainError(ErrorCodes.EMPLOYEE_NOT_FOUND, {}, 404);
-  return employee;
+  return shapeEmployeePublic(employee);
 }
 
 export async function listEmployees(filters: EmployeeListFilters) {
@@ -92,5 +102,5 @@ export async function listEmployees(filters: EmployeeListFilters) {
     prisma.employee.count({ where }),
   ]);
 
-  return { items, total, page: filters.page, perPage: filters.perPage };
+  return { items: items.map(shapeEmployeePublic), total, page: filters.page, perPage: filters.perPage };
 }

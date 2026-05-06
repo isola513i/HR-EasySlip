@@ -11,10 +11,12 @@ import {
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { EmployeeAvatar } from "@/components/hr/attendance/employee-avatar";
+import { EmployeeDocumentsCard } from "@/components/hr/employees/documents/employee-documents-card";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { statusTone } from "@/lib/employee/status-tones";
 import { getInitials } from "@/lib/employee/initials";
+import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import type { Employee } from "@/hooks/use-employees";
 
 interface Props {
@@ -41,7 +43,16 @@ export function EmployeeDetailSheet({ employee, onClose }: Props) {
 
         <div className="flex-1 overflow-auto px-5 pb-5">
           <div className="flex flex-col items-center gap-2 border-b border-[var(--es-neutral-100)] py-4 text-center">
-            <EmployeeAvatar seed={employee.employeeCode} initials={getInitials(employee)} size="lg" />
+            <EmployeeAvatar
+              seed={employee.employeeCode}
+              initials={getInitials(employee)}
+              size="lg"
+              pictureSrc={
+                employee.hasProfilePicture
+                  ? profilePictureSrc(employee.id, employee.profilePictureUploadedAt ?? null)
+                  : null
+              }
+            />
             <div>
               <div className="text-[16px] font-semibold">{name}</div>
               {nameEn && <div className="text-[12px] text-muted-foreground">{nameEn}</div>}
@@ -72,6 +83,10 @@ export function EmployeeDetailSheet({ employee, onClose }: Props) {
               value={employee.manager ? `${employee.manager.firstNameTh} ${employee.manager.lastNameTh}` : "—"}
             />
           </dl>
+
+          <div className="border-t border-[var(--es-neutral-100)] pt-4">
+            <EmployeeDocumentsCard employeeId={employee.id} />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

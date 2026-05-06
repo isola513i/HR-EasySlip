@@ -19,13 +19,27 @@ interface Props {
   seed: string;
   initials: string;
   size?: "sm" | "md" | "lg";
+  pictureSrc?: string | null;
   className?: string;
 }
 
 const SIZE = { sm: "size-7 text-[11px]", md: "size-9 text-xs", lg: "size-11 text-sm" };
 
-export function EmployeeAvatar({ seed, initials, size = "md", className }: Props) {
+export function EmployeeAvatar({ seed, initials, size = "md", pictureSrc, className }: Props) {
   const tone = PALETTE[hashToIndex(seed, PALETTE.length)];
+  if (pictureSrc) {
+    return (
+      <img
+        src={pictureSrc}
+        alt=""
+        className={cn(
+          "shrink-0 rounded-full object-cover",
+          SIZE[size].split(" ")[0], // size-X only
+          className,
+        )}
+      />
+    );
+  }
   return (
     <div
       className={cn(
