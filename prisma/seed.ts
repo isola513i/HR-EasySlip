@@ -24,6 +24,11 @@ import { seedPayrollCycle } from './seed/payroll-cycle';
 import { seedAttendanceRecords } from './seed/attendance-records';
 import { seedLeaveRequests } from './seed/leave-requests';
 import { seedOnboardingTemplate } from './seed/onboarding-template';
+import { seedOnboardingChecklists } from './seed/onboarding-checklists';
+import { seedDocuments } from './seed/documents';
+import { seedTimeAdjustmentRequests } from './seed/time-adjustment-requests';
+import { seedOvertimeRequests } from './seed/overtime-requests';
+import { seedPdpaConsents } from './seed/pdpa-consents';
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
@@ -64,6 +69,21 @@ async function main() {
 
   await seedOnboardingTemplate(prisma, systemUserId);
   console.log('  ✓ Onboarding: default template seeded\n');
+
+  const checklistCount = await seedOnboardingChecklists(prisma, employeeMap);
+  console.log(`  ✓ Onboarding checklists: ${checklistCount} per-employee instances\n`);
+
+  const docResult = await seedDocuments(prisma, employeeMap);
+  console.log(`  ✓ Documents: ${docResult.pictures} avatars + ${docResult.documents} files\n`);
+
+  const tarCount = await seedTimeAdjustmentRequests(prisma, employeeMap);
+  console.log(`  ✓ Time adjustments: ${tarCount} requests + 1 attached proof\n`);
+
+  const otCount = await seedOvertimeRequests(prisma, employeeMap);
+  console.log(`  ✓ Overtime requests: ${otCount} seeded (PENDING + APPROVED)\n`);
+
+  const consentCount = await seedPdpaConsents(prisma, employeeMap);
+  console.log(`  ✓ PDPA consents: ${consentCount} granted\n`);
 
   console.log('✅ Seed complete.\n');
   console.log('📧 Sign-in emails (all route to development.v001@gmail.com):');
