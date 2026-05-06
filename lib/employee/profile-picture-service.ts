@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { putBlob, deleteBlob, fetchBlob, IMAGE_ONLY_MIME, type ImageMime } from "@/lib/storage/blob";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError } from "@/lib/api/errors";
+import type { Role } from "@prisma/client";
+import { HR_ROLES } from "@/lib/security/rbac";
 import type { ParsedFile } from "@/lib/api/parse-multipart";
 
 export const PROFILE_PICTURE_MAX_BYTES = 3 * 1024 * 1024; // 3MB — avatars don't need 5MB
@@ -39,32 +41,41 @@ export async function uploadProfilePicture(input: UploadInput) {
   });
 
   const uploadedAt = new Date();
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.employee.update({
-      where: { id: employeeId },
-      data: {
-        profilePicturePath: stored.url,
-        profilePictureMime: file.contentType,
-        profilePictureUploadedAt: uploadedAt,
-      },
+  // If the DB transaction fails after the blob is already in storage, the
+  // new blob is orphaned (no row references it). Clean it up before rethrow.
+  try {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.employee.update({
+        where: { id: employeeId },
+        data: {
+          profilePicturePath: stored.url,
+          profilePictureMime: file.contentType,
+          profilePictureUploadedAt: uploadedAt,
+        },
+      });
+      await writeAuditLog(
+        {
+          actorId: actorUserId,
+          action: "employee.profile_picture_uploaded",
+          entityType: "Employee",
+          entityId: employeeId,
+          before: oldUrl ? { url: oldUrl } : null,
+          after: { url: stored.url, size: stored.size, mime: file.contentType },
+          ipAddress,
+          userAgent,
+        },
+        tx,
+      );
     });
-    await writeAuditLog(
-      {
-        actorId: actorUserId,
-        action: "employee.profile_picture_uploaded",
-        entityType: "Employee",
-        entityId: employeeId,
-        before: oldUrl ? { url: oldUrl } : null,
-        after: { url: stored.url, size: stored.size, mime: file.contentType },
-        ipAddress,
-        userAgent,
-      },
-      tx,
-    );
-  });
+  } catch (err) {
+    await deleteBlob(stored.url).catch(() => {/* secondary cleanup failure swallowed */});
+    throw err;
+  }
 
+  // Await: in serverless, fire-and-forget can be killed before the request
+  // to Vercel Blob completes, leaving an orphan. ~100-200ms hit on response.
   if (oldUrl && oldUrl !== stored.url) {
-    void deleteBlob(oldUrl).catch(() => {/* best-effort */});
+    await deleteBlob(oldUrl).catch(() => {/* old blob may already be gone */});
   }
 
   return { uploadedAt, mime: file.contentType, size: stored.size };
@@ -110,17 +121,59 @@ export async function deleteProfilePicture(input: DeleteInput) {
     );
   });
 
-  void deleteBlob(oldUrl).catch(() => {/* best-effort */});
+  await deleteBlob(oldUrl).catch(() => {/* best-effort, blob may already be gone */});
 }
 
-export async function streamProfilePicture(employeeId: string) {
+interface StreamInput {
+  employeeId: string;
+  caller: {
+    userId: string;
+    employeeId: string | null | undefined;
+    roles: readonly Role[];
+  };
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+/**
+ * Stream a profile picture with RBAC + PDPA audit.
+ *
+ * Authorization:
+ *  - owner reads own picture: no audit (high-volume, expected access)
+ *  - HR_ROLES (HR, CEO/CTO/COO/HRMG, ADMIN): audited
+ *  - direct manager (caller.employeeId === target.managerId): audited
+ *  - everyone else: 403 (no audit on denial — already in request log)
+ */
+export async function streamProfilePicture(input: StreamInput) {
+  const { employeeId, caller, ipAddress, userAgent } = input;
+
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    select: { profilePicturePath: true, profilePictureMime: true },
+    select: { profilePicturePath: true, profilePictureMime: true, managerId: true },
   });
   if (!employee?.profilePicturePath) {
     throw new DomainError("PROFILE_PICTURE_NOT_FOUND", {}, 404);
   }
+
+  const isOwner = !!caller.employeeId && caller.employeeId === employeeId;
+  const isHr = caller.roles.some((r) => HR_ROLES.includes(r));
+  const isDirectManager = !!caller.employeeId && employee.managerId === caller.employeeId;
+  if (!isOwner && !isHr && !isDirectManager) {
+    throw new DomainError("FORBIDDEN", {}, 403);
+  }
+
+  if (!isOwner) {
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "employee.profile_picture_viewed",
+      entityType: "Employee",
+      entityId: employeeId,
+      ipAddress,
+      userAgent,
+      reason: isHr ? "hr_access" : "manager_access",
+    });
+  }
+
   const blob = await fetchBlob(employee.profilePicturePath);
   return {
     body: blob.body,

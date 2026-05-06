@@ -13,7 +13,7 @@ import { useT } from "@/lib/i18n/locale-context";
 const categoryLinks: Record<string, string> = {
   personal: "/employee/me",
   address: "/employee/me",
-  bank: "/employee/me",
+  profile_picture: "/employee/me",
   emergency: "/employee/me",
 };
 
