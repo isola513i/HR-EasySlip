@@ -15,6 +15,7 @@ import { list } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { deleteBlob } from "@/lib/storage/blob";
 import { writeAuditLog } from "@/lib/audit/logger";
+import { logger } from "@/lib/observability/logger";
 
 const GRACE_MS = 24 * 60 * 60 * 1000;
 const PAGE_LIMIT = 1000;
@@ -26,6 +27,17 @@ interface CleanupResult {
   deleted: number;
   failed: number;
   graceSkipped: number;
+  dryRun: boolean;
+  partial: boolean;
+}
+
+interface CleanupOptions {
+  /**
+   * When true, candidates are reported but not actually deleted. Use for
+   * the first production run to verify the candidate set before the
+   * weekly schedule starts reclaiming blobs.
+   */
+  dryRun?: boolean;
 }
 
 /**
@@ -47,7 +59,8 @@ async function loadReferencedUrls(): Promise<Set<string>> {
   return refs;
 }
 
-export async function cleanupOrphanBlobs(): Promise<CleanupResult> {
+export async function cleanupOrphanBlobs(opts: CleanupOptions = {}): Promise<CleanupResult> {
+  const dryRun = !!opts.dryRun;
   const referenced = await loadReferencedUrls();
   const now = Date.now();
   const result: CleanupResult = {
@@ -57,28 +70,48 @@ export async function cleanupOrphanBlobs(): Promise<CleanupResult> {
     deleted: 0,
     failed: 0,
     graceSkipped: 0,
+    dryRun,
+    partial: false,
   };
 
-  let cursor: string | undefined;
-  do {
-    const page = await list({ limit: PAGE_LIMIT, cursor });
-    for (const blob of page.blobs) {
-      result.scanned += 1;
-      if (referenced.has(blob.url)) continue;
-      if (now - blob.uploadedAt.getTime() < GRACE_MS) {
-        result.graceSkipped += 1;
-        continue;
+  try {
+    let cursor: string | undefined;
+    do {
+      const page = await list({ limit: PAGE_LIMIT, cursor });
+      for (const blob of page.blobs) {
+        result.scanned += 1;
+        if (referenced.has(blob.url)) continue;
+        if (now - blob.uploadedAt.getTime() < GRACE_MS) {
+          result.graceSkipped += 1;
+          continue;
+        }
+        result.candidates += 1;
+        if (dryRun) {
+          logger.info("orphan blob candidate (dry-run)", { url: blob.url, uploadedAt: blob.uploadedAt.toISOString() });
+          continue;
+        }
+        try {
+          await deleteBlob(blob.url);
+          result.deleted += 1;
+        } catch (err) {
+          result.failed += 1;
+          logger.error("orphan blob delete failed", {
+            url: blob.url,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
       }
-      result.candidates += 1;
-      try {
-        await deleteBlob(blob.url);
-        result.deleted += 1;
-      } catch {
-        result.failed += 1;
-      }
-    }
-    cursor = page.hasMore ? page.cursor : undefined;
-  } while (cursor);
+      cursor = page.hasMore ? page.cursor : undefined;
+    } while (cursor);
+  } catch (err) {
+    // List/network error mid-walk — record partial counters in the
+    // audit row instead of leaving the run un-logged.
+    result.partial = true;
+    logger.error("orphan blob cleanup partial", {
+      error: err instanceof Error ? err.message : String(err),
+      ...result,
+    });
+  }
 
   await writeAuditLog({
     actorId: null,
