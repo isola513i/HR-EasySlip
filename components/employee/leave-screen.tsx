@@ -12,7 +12,7 @@ import { SectionLabel } from "@/components/shared/section-label";
 import { PillToggleGroup } from "@/components/shared/pill-toggle-group";
 import { LeaveTypeGrid } from "@/components/employee/leave/leave-type-grid";
 import { LeavePreviewSummary } from "@/components/employee/leave/leave-preview-summary";
-import { LeaveAttachmentPanel } from "@/components/employee/leave/leave-attachment-panel";
+import { EntityAttachmentPanel } from "@/components/shared/entity-attachment-panel";
 import { useLeaveForm } from "@/hooks/use-leave-form";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { bangkokTodayKey, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
@@ -187,8 +187,13 @@ export function LeaveScreen() {
 
         {submittedLeaveId ? (
           <>
-            <LeaveAttachmentPanel
-              leaveId={submittedLeaveId}
+            <EntityAttachmentPanel
+              entityType="LeaveRequest"
+              entityId={submittedLeaveId}
+              category="leave_attachment"
+              title={t.leave.attachmentPanelTitle}
+              description={t.leave.attachmentPanelDesc}
+              doneLabel={t.leave.attachmentDone}
               onDone={resetForm}
             />
             <Button

@@ -344,6 +344,10 @@ const en = {
     correctionSubmit: "Submit correction",
     correctionSuccess: "Correction request submitted. Awaiting manager approval.",
     correctionFailed: "Failed to submit correction",
+    correctionAttachmentTitle: "Attach proof",
+    correctionAttachmentDesc: "Optional — photo or PDF supporting your correction (e.g. screenshot, doctor note)",
+    correctionAttachmentDone: "Done",
+    correctionViewAttachments: "View attachments",
   },
   clock: {
     title: "Clock in/out",

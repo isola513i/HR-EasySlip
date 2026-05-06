@@ -8,23 +8,32 @@ import { useDocuments, useEntityDocuments } from "@/hooks/use-documents";
 import { useT } from "@/lib/i18n/locale-context";
 
 interface Props {
-  leaveId: string;
+  entityType: string;
+  entityId: string;
+  category: string;
+  title: string;
+  description?: string;
+  doneLabel: string;
   onDone: () => void;
 }
 
 /**
- * Shown after a leave request is created, so the user can attach a
- * medical certificate to that specific LeaveRequest. Uploads + list use
- * the polymorphic Document API (entityType=LeaveRequest).
+ * Generic post-submit attachment panel. Used by leave (medical cert) and
+ * time-correction (proof) flows after the parent record has been created.
+ * The shared `useDocuments().remove()` is reused only for its delete call —
+ * service-layer canWrite() RBAC gates it per category.
  */
-export function LeaveAttachmentPanel({ leaveId, onDone }: Props) {
+export function EntityAttachmentPanel({
+  entityType,
+  entityId,
+  category,
+  title,
+  description,
+  doneLabel,
+  onDone,
+}: Props) {
   const t = useT();
-  const { documents, refetch } = useEntityDocuments({
-    entityType: "LeaveRequest",
-    entityId: leaveId,
-  });
-  // Reuse the shared remove() — RBAC at the API enforces "owner can write
-  // leave_attachment" so this works without a leave-specific endpoint.
+  const { documents, refetch } = useEntityDocuments({ entityType, entityId });
   const { remove } = useDocuments();
 
   const handleDelete = async (id: string) => {
@@ -40,14 +49,14 @@ export function LeaveAttachmentPanel({ leaveId, onDone }: Props) {
   return (
     <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
       <div>
-        <div className="text-sm font-semibold">{t.leave.attachmentPanelTitle}</div>
-        <div className="text-xs text-muted-foreground">{t.leave.attachmentPanelDesc}</div>
+        <div className="text-sm font-semibold">{title}</div>
+        {description && <div className="text-xs text-muted-foreground">{description}</div>}
       </div>
 
       <DocumentUploader
-        category="leave_attachment"
-        entityType="LeaveRequest"
-        entityId={leaveId}
+        category={category}
+        entityType={entityType}
+        entityId={entityId}
         onUploaded={() => void refetch()}
       />
 
@@ -70,7 +79,7 @@ export function LeaveAttachmentPanel({ leaveId, onDone }: Props) {
         className="w-full rounded-full"
         onClick={onDone}
       >
-        {t.leave.attachmentDone}
+        {doneLabel}
       </Button>
     </div>
   );

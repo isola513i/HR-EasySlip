@@ -346,6 +346,10 @@ const th = {
     correctionSubmit: "ส่งคำขอ",
     correctionSuccess: "ส่งคำขอแก้เวลาแล้ว รอหัวหน้าอนุมัติ",
     correctionFailed: "ส่งคำขอแก้เวลาไม่สำเร็จ",
+    correctionAttachmentTitle: "แนบหลักฐาน",
+    correctionAttachmentDesc: "ไม่บังคับ — รูปหรือ PDF ประกอบ เช่น สกรีนช็อต, ใบรับรองแพทย์",
+    correctionAttachmentDone: "เสร็จสิ้น",
+    correctionViewAttachments: "ดูเอกสารแนบ",
   },
   clock: {
     title: "ลงเวลาเข้า-ออก",
