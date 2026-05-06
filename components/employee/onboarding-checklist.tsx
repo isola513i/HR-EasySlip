@@ -15,6 +15,7 @@ const categoryLinks: Record<string, string> = {
   address: "/employee/me",
   profile_picture: "/employee/me",
   emergency: "/employee/me",
+  documents: "/employee/me",
 };
 
 export function OnboardingChecklist() {

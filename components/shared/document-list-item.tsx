@@ -91,7 +91,12 @@ export function DocumentListItem({ document, canDelete, onDelete }: Props) {
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle>{t.documents.delete}</AlertDialogTitle>
-            <AlertDialogDescription>{t.documents.deleteConfirm}</AlertDialogDescription>
+            <AlertDialogDescription>
+              <span className="block">{t.documents.deleteConfirm}</span>
+              <span className="mt-2 block truncate font-mono text-xs text-foreground" title={document.filename}>
+                {document.filename}
+              </span>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>

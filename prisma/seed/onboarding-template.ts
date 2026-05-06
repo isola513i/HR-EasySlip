@@ -5,6 +5,7 @@ const DEFAULT_ITEMS = [
   { title: "กรอกที่อยู่ปัจจุบัน", description: "ที่อยู่ตามทะเบียนบ้าน และที่อยู่ที่ติดต่อได้", category: "address", sortOrder: 2 },
   { title: "อัปโหลดรูปโปรไฟล์", description: "รูปประจำตัวสำหรับใช้ในระบบ HR", category: "profile_picture", sortOrder: 3 },
   { title: "กรอกผู้ติดต่อฉุกเฉิน", description: "ชื่อ, นามสกุล, ความสัมพันธ์, เบอร์โทร", category: "emergency", sortOrder: 4 },
+  { title: "อัปโหลดเอกสารสัญญา/บัตรประชาชน", description: "สำเนาบัตรประชาชน, ใบรับรอง, เอกสารอื่น ๆ ที่ส่งให้ HR", category: "documents", sortOrder: 5 },
 ];
 
 export async function seedOnboardingTemplate(prisma: PrismaClient, createdBy: string) {
