@@ -14,6 +14,8 @@ import {
   Coins,
   Network,
   Boxes,
+  ClipboardCheck,
+  UserMinus,
 } from "lucide-react";
 import { AdminShell } from "@/components/shared/admin-shell";
 import type { NavItem, NavGroup } from "@/components/shared/admin-sidebar";
@@ -39,10 +41,12 @@ export function HRShell({ user, children }: Props) {
     { key: "overtime", href: "/hr/overtime", icon: Clock, label: nav.overtime },
     { key: "holidays", href: "/hr/holidays", icon: CalendarCheck, label: nav.holidays },
     { key: "assets", href: "/hr/assets", icon: Boxes, label: nav.assets },
+    { key: "offboarding", href: "/hr/offboarding", icon: UserMinus, label: nav.offboarding },
     { group: nav.groupPayroll },
     { key: "payroll", href: "/hr/payroll", icon: Banknote, label: nav.payroll },
     { key: "cashout", href: "/hr/payroll/cashout", icon: Coins, label: nav.cashout },
     { key: "reports", href: "/hr/reports", icon: FileBarChart, label: nav.reports },
+    { key: "reviews", href: "/hr/reviews", icon: ClipboardCheck, label: nav.reviews },
     { group: nav.groupCompliance },
     { key: "audit", href: "/hr/audit", icon: Scroll, label: nav.audit },
     { key: "pdpa", href: "/hr/pdpa", icon: ShieldCheck, label: nav.pdpa },

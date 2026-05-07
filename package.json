@@ -28,6 +28,7 @@
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@scalar/nextjs-api-reference": "^0.10.9",
+    "@sentry/nextjs": "^10.52.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "@types/web-push": "^3.6.4",
     "@vercel/blob": "^2.3.3",

@@ -205,6 +205,9 @@ model Employee {
   documents          Document[]
   documentSignatures DocumentSignature[]
   assetAssignments   AssetAssignment[]
+  reviewsAsSubject   Review[] @relation("ReviewSubject")
+  reviewsAsAuthor    Review[] @relation("ReviewAuthor")
+  offboardingChecklist OffboardingChecklist?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -747,4 +750,111 @@ enum AssetStatus {
   ASSIGNED
   RETIRED
   REPAIR
+}
+
+// Performance review templates and cycles. Lightweight OKR/KPI tooling.
+// No salary calculation here — payroll boundary preserved.
+model ReviewTemplate {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  questions Json     // [{ key, label, type: "scale"|"text", required }]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cycles ReviewCycle[]
+}
+
+model ReviewCycle {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  cadence     ReviewCadence
+  startDate   DateTime
+  endDate     DateTime
+  status      ReviewCycleStatus @default(DRAFT)
+  templateId  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  template ReviewTemplate? @relation(fields: [templateId], references: [id])
+  reviews  Review[]
+
+  @@index([status, endDate])
+}
+
+model Review {
+  id            String       @id @default(cuid())
+  cycleId       String
+  revieweeId    String
+  reviewerId    String
+  reviewType    ReviewType
+  status        ReviewStatus @default(DRAFT)
+  answers       Json?        // { [questionKey]: value }
+  overallRating Int?         // 1-5
+  comments      String?      @db.Text
+  submittedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  cycle    ReviewCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  reviewee Employee    @relation("ReviewSubject", fields: [revieweeId], references: [id])
+  reviewer Employee    @relation("ReviewAuthor", fields: [reviewerId], references: [id])
+
+  @@unique([cycleId, revieweeId, reviewerId])
+  @@index([revieweeId, status])
+  @@index([reviewerId, status])
+}
+
+enum ReviewCadence {
+  QUARTERLY
+  ANNUAL
+}
+
+enum ReviewCycleStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum ReviewType {
+  SELF
+  MANAGER
+  PEER
+}
+
+enum ReviewStatus {
+  DRAFT
+  SUBMITTED
+  ACKNOWLEDGED
+}
+
+// Lightweight offboarding checklist. Items live in JSON to keep the
+// model schema-stable as HR tweaks the checklist over time.
+model OffboardingChecklist {
+  id           String              @id @default(cuid())
+  employeeId   String              @unique
+  reason       OffboardingReason
+  lastDay      DateTime
+  status       OffboardingStatus   @default(IN_PROGRESS)
+  items        Json                // [{ key, label, completed, completedAt, completedBy }]
+  notes        String?             @db.Text
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  completedAt  DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+enum OffboardingReason {
+  RESIGNATION
+  TERMINATION
+  RETIREMENT
+  CONTRACT_END
+}
+
+enum OffboardingStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
 }
