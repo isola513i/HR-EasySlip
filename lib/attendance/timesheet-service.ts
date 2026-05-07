@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { loadAttendancePolicy } from "./policy";
+import { loadEmployeeAttendancePolicy } from "./policy";
 
 export interface TimesheetEntry {
   date: string;
@@ -39,7 +39,7 @@ export async function getEmployeeTimesheet(
       where: { employeeId, clockedAt: { gte: fromUtc, lte: toUtc } },
       orderBy: { clockedAt: "asc" },
     }),
-    loadAttendancePolicy(),
+    loadEmployeeAttendancePolicy(employeeId),
   ]);
 
   const shiftStart = policy.shiftStart;

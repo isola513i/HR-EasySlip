@@ -5,7 +5,7 @@ import {
   type AttendanceStatus,
   type WeekdayKey,
 } from "@/lib/attendance/constants";
-import { loadAttendancePolicy, type AttendancePolicy } from "@/lib/attendance/policy";
+import { loadAttendancePolicy } from "@/lib/attendance/policy";
 
 /** Pure status classifier — exported for unit testing. */
 export function computeStatus(args: {
@@ -34,6 +34,7 @@ interface ActiveEmployee {
   lastNameTh: string;
   departmentId: string | null;
   departmentName: string | null;
+  workShift: "MORNING" | "EVENING";
 }
 
 async function listActiveEmployees(): Promise<ActiveEmployee[]> {
@@ -45,6 +46,7 @@ async function listActiveEmployees(): Promise<ActiveEmployee[]> {
       firstNameTh: true,
       lastNameTh: true,
       departmentId: true,
+      workShift: true,
       department: { select: { name: true } },
     },
     orderBy: { employeeCode: "asc" },
@@ -56,7 +58,17 @@ async function listActiveEmployees(): Promise<ActiveEmployee[]> {
     lastNameTh: e.lastNameTh,
     departmentId: e.departmentId,
     departmentName: e.department?.name ?? null,
+    workShift: (e.workShift as "MORNING" | "EVENING") ?? "MORNING",
   }));
+}
+
+/** Build a lateAfter resolver for both shifts in a single fetch. */
+async function loadShiftLateMap(): Promise<Record<"MORNING" | "EVENING", { h: number; m: number }>> {
+  const [morning, evening] = await Promise.all([
+    loadAttendancePolicy("MORNING"),
+    loadAttendancePolicy("EVENING"),
+  ]);
+  return { MORNING: morning.lateAfter, EVENING: evening.lateAfter };
 }
 
 async function getDayContext(date: Date) {
@@ -95,10 +107,10 @@ async function getDayContext(date: Date) {
 }
 
 export async function getAttendanceSummary(date: Date) {
-  const [employees, ctx, policy] = await Promise.all([
+  const [employees, ctx, lateMap] = await Promise.all([
     listActiveEmployees(),
     getDayContext(date),
-    loadAttendancePolicy(),
+    loadShiftLateMap(),
   ]);
 
   let presentToday = 0;
@@ -112,7 +124,7 @@ export async function getAttendanceSummary(date: Date) {
       firstClockInAt: inAt,
       isOnLeave: ctx.onLeave.has(e.id),
       isHoliday: ctx.isHoliday,
-      lateAfter: policy.lateAfter,
+      lateAfter: lateMap[e.workShift],
     });
     if (status === "ON_TIME" || status === "LATE") presentToday++;
     if (status === "LATE") lateArrivals++;
@@ -137,9 +149,9 @@ export async function getAttendanceSummary(date: Date) {
 }
 
 export async function getWeeklyAttendance(weekStart: Date) {
-  const [employees, policy] = await Promise.all([
+  const [employees, lateMap] = await Promise.all([
     listActiveEmployees(),
-    loadAttendancePolicy(),
+    loadShiftLateMap(),
   ]);
 
   const days = await Promise.all(
@@ -155,7 +167,7 @@ export async function getWeeklyAttendance(weekStart: Date) {
           firstClockInAt: ctx.firstIn.get(e.id) ?? null,
           isOnLeave: ctx.onLeave.has(e.id),
           isHoliday: ctx.isHoliday,
-          lateAfter: policy.lateAfter,
+          lateAfter: lateMap[e.workShift],
         });
         if (status === "ON_TIME") present++;
         else if (status === "LATE") late++;
@@ -169,10 +181,10 @@ export async function getWeeklyAttendance(weekStart: Date) {
 }
 
 export async function getTodayAttendance(date: Date) {
-  const [employees, ctx, policy] = await Promise.all([
+  const [employees, ctx, lateMap] = await Promise.all([
     listActiveEmployees(),
     getDayContext(date),
-    loadAttendancePolicy(),
+    loadShiftLateMap(),
   ]);
 
   return employees.map((e) => {
@@ -182,7 +194,7 @@ export async function getTodayAttendance(date: Date) {
       firstClockInAt: inAt,
       isOnLeave: ctx.onLeave.has(e.id),
       isHoliday: ctx.isHoliday,
-      lateAfter: policy.lateAfter,
+      lateAfter: lateMap[e.workShift],
     });
     const workingMinutes = inAt && outAt && outAt > inAt
       ? Math.round((outAt.getTime() - inAt.getTime()) / 60_000)
