@@ -22,16 +22,27 @@ export async function markCycleExported(
   cycleId: string,
   meta: RequestMeta,
 ) {
-  const cycle = await prisma.payrollCycle.findUnique({ where: { id: cycleId } });
-  if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
-  if (cycle.status !== "LOCKED") {
-    throw new DomainError(ErrorCodes.ALREADY_PROCESSED, { status: cycle.status });
-  }
+  return prisma.$transaction(async (tx) => {
+    const cycle = await tx.payrollCycle.findUnique({ where: { id: cycleId } });
+    if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+    if (cycle.status !== "LOCKED") {
+      throw new DomainError(ErrorCodes.ALREADY_PROCESSED, { status: cycle.status });
+    }
 
-  const updated = await prisma.$transaction(async (tx) => {
     const exported = await tx.payrollCycle.update({
       where: { id: cycleId },
       data: { status: "EXPORTED" },
+    });
+
+    await tx.payrollOutboxEvent.create({
+      data: {
+        payrollCycleId: cycleId,
+        eventType: "cycle.exported",
+        aggregateId: cycleId,
+        payload: { cycleId, year: cycle.year, month: cycle.month },
+        idempotencyKey: `cycle-exported:${cycleId}`,
+        status: "PENDING",
+      },
     });
 
     await writeAuditLog({
@@ -47,8 +58,6 @@ export async function markCycleExported(
 
     return exported;
   });
-
-  return updated;
 }
 
 export async function lockCycle(

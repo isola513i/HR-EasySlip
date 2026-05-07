@@ -4,13 +4,6 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { usePayroll, type PayrollCycle } from "@/hooks/use-payroll";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
@@ -18,6 +11,7 @@ import { PayrollKpis } from "@/components/hr/payroll/payroll-kpis";
 import { CyclesTable } from "@/components/hr/payroll/cycles-table";
 import { CycleSummaryCard } from "@/components/hr/payroll/cycle-summary-card";
 import { CycleLifecycleStepper } from "@/components/hr/payroll/cycle-lifecycle-stepper";
+import { PayrollConfirmDialog } from "@/components/hr/payroll/payroll-confirm-dialog";
 
 const currentYear = new Date().getFullYear();
 const YEAR_OPTIONS = [currentYear - 1, currentYear, currentYear + 1];
@@ -37,17 +31,9 @@ export function PayrollDashboard() {
   const t = useT();
   const fmt = useFormat();
   const {
-    cycles,
-    isLoading,
-    error,
-    year,
-    setYear,
-    lockCycle,
-    markExported,
-    downloadTimestamps,
-    downloadCashout,
-    downloadPayrollInfo,
-    downloadEmployeeData,
+    cycles, isLoading, error, year, setYear,
+    lockCycle, markExported,
+    downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData,
   } = usePayroll();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -63,56 +49,48 @@ export function PayrollDashboard() {
     });
   }, [cycles]);
 
-  const monthName = (m: number) =>
-    fmt.formatMonthShort(`${year}-${String(m).padStart(2, "0")}`);
+  const monthName = (m: number) => fmt.formatMonthShort(`${year}-${String(m).padStart(2, "0")}`);
+  const selected = useMemo(() => cycles.find((c) => c.id === selectedId) ?? null, [cycles, selectedId]);
 
-  const selected = useMemo(
-    () => cycles.find((c) => c.id === selectedId) ?? null,
-    [cycles, selectedId],
+  const runConfirm = async (
+    setLoading: (v: boolean) => void,
+    fn: () => Promise<unknown>,
+    onSuccess: () => void,
+    success: string,
+    failure: string,
+  ) => {
+    setLoading(true);
+    try { await fn(); toast.success(success); onSuccess(); }
+    catch { toast.error(failure); }
+    finally { setLoading(false); }
+  };
+
+  const handleLockConfirm = () => lockTarget && runConfirm(
+    setLocking,
+    () => lockCycle(lockTarget.id),
+    () => setLockTarget(null),
+    t.hr.payrollLockSuccess.replace("{month}", monthName(lockTarget.month)),
+    t.hr.payrollLockFailed,
   );
 
-  const handleLockConfirm = async () => {
-    if (!lockTarget) return;
-    setLocking(true);
-    try {
-      await lockCycle(lockTarget.id);
-      toast.success(t.hr.payrollLockSuccess.replace("{month}", monthName(lockTarget.month)));
-      setLockTarget(null);
-    } catch {
-      toast.error(t.hr.payrollLockFailed);
-    } finally {
-      setLocking(false);
-    }
-  };
+  const handleMarkExportedConfirm = () => exportTarget && runConfirm(
+    setMarking,
+    () => markExported(exportTarget.id),
+    () => setExportTarget(null),
+    t.hr.payrollMarkExportedSuccess.replace("{month}", monthName(exportTarget.month)),
+    t.hr.payrollMarkExportedFailed,
+  );
 
   const runWithToast = async (fn: () => Promise<unknown>, success: string, failure: string) => {
-    try { await fn(); toast.success(success); }
-    catch { toast.error(failure); }
-  };
-
-  const handleMarkExportedConfirm = async () => {
-    if (!exportTarget) return;
-    setMarking(true);
-    try {
-      await markExported(exportTarget.id);
-      toast.success(t.hr.payrollMarkExportedSuccess.replace("{month}", monthName(exportTarget.month)));
-      setExportTarget(null);
-    } catch {
-      toast.error(t.hr.payrollMarkExportedFailed);
-    } finally {
-      setMarking(false);
-    }
+    try { await fn(); toast.success(success); } catch { toast.error(failure); }
   };
 
   const handleDownloadTimestamps = (c: PayrollCycle) =>
     runWithToast(() => downloadTimestamps(c.id), t.hr.downloadSuccess, t.hr.downloadFailed);
-
   const handleDownloadPayrollInfo = (c: PayrollCycle) =>
     runWithToast(() => downloadPayrollInfo(c.id), t.hr.payrollDownloadSuccess, t.hr.downloadFailed);
-
   const handleDownloadCashout = () =>
     runWithToast(() => downloadCashout(year), t.hr.downloadSuccess, t.hr.downloadFailed);
-
   const handleDownloadEmployeeData = () =>
     runWithToast(() => downloadEmployeeData(), t.hr.exportSuccess, t.hr.exportFailed);
 
@@ -163,43 +141,31 @@ export function PayrollDashboard() {
         <CycleLifecycleStepper cycle={selected} />
       </div>
 
-      <Dialog open={!!exportTarget} onOpenChange={(o) => { if (!o) setExportTarget(null); }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t.hr.payrollMarkExportedTitle}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t.hr.payrollMarkExportedConfirm
-              .replace("{month}", exportTarget ? monthName(exportTarget.month) : "")
-              .replace("{year}", String(year))}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setExportTarget(null)}>{t.common.cancel}</Button>
-            <Button disabled={marking} onClick={handleMarkExportedConfirm}>
-              {marking ? t.hr.payrollMarkingExported : t.hr.payrollConfirmMarkExported}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PayrollConfirmDialog
+        open={!!exportTarget}
+        title={t.hr.payrollMarkExportedTitle}
+        body={t.hr.payrollMarkExportedConfirm
+          .replace("{month}", exportTarget ? monthName(exportTarget.month) : "")
+          .replace("{year}", String(year))}
+        confirmLabel={t.hr.payrollConfirmMarkExported}
+        loadingLabel={t.hr.payrollMarkingExported}
+        loading={marking}
+        onClose={() => setExportTarget(null)}
+        onConfirm={handleMarkExportedConfirm}
+      />
 
-      <Dialog open={!!lockTarget} onOpenChange={(o) => { if (!o) setLockTarget(null); }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t.hr.payrollLockTitle}</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t.hr.payrollLockConfirm
-              .replace("{month}", lockTarget ? monthName(lockTarget.month) : "")
-              .replace("{year}", String(year))}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setLockTarget(null)}>{t.common.cancel}</Button>
-            <Button disabled={locking} onClick={handleLockConfirm}>
-              {locking ? t.hr.payrollLocking : t.hr.payrollConfirmLock}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PayrollConfirmDialog
+        open={!!lockTarget}
+        title={t.hr.payrollLockTitle}
+        body={t.hr.payrollLockConfirm
+          .replace("{month}", lockTarget ? monthName(lockTarget.month) : "")
+          .replace("{year}", String(year))}
+        confirmLabel={t.hr.payrollConfirmLock}
+        loadingLabel={t.hr.payrollLocking}
+        loading={locking}
+        onClose={() => setLockTarget(null)}
+        onConfirm={handleLockConfirm}
+      />
     </div>
   );
 }

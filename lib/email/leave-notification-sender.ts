@@ -2,15 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { sendNotificationEmail } from "./notification-service";
 import { leaveSubmittedHtml, leaveSubmittedText } from "./leave-submitted-template";
 import { leaveDecisionHtml, leaveDecisionText } from "./leave-decision-template";
+import { formatEmailDate } from "./utils";
 import { sendPushToUser } from "@/lib/push/push-service";
-
+import { logger } from "@/lib/observability/logger";
 import { formatLeaveType } from "@/lib/utils";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
-
-function fmtDate(d: Date): string {
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
 
 export async function notifyLeaveSubmitted(requestId: string): Promise<void> {
   try {
@@ -29,8 +26,8 @@ export async function notifyLeaveSubmitted(requestId: string): Promise<void> {
       employeeName: `${req.employee.firstNameTh} ${req.employee.lastNameTh}`,
       employeeCode: req.employee.employeeCode,
       leaveType: formatLeaveType(req.leaveType),
-      startDate: fmtDate(req.startDate),
-      endDate: fmtDate(req.endDate),
+      startDate: formatEmailDate(req.startDate),
+      endDate: formatEmailDate(req.endDate),
       days: req.daysRequested.toString(),
       reason: req.reason,
       appUrl: APP_URL,
@@ -43,7 +40,7 @@ export async function notifyLeaveSubmitted(requestId: string): Promise<void> {
       leaveSubmittedText(params),
     );
   } catch (err) {
-    console.error("[notifyLeaveSubmitted]", err);
+    logger.error("notifyLeaveSubmitted failed", { requestId, err: String(err) });
   }
 }
 
@@ -67,7 +64,7 @@ export async function notifyLeaveDecision(
     // Fire-and-forget push (best-effort; falls through if VAPID not set).
     sendPushToUser(req.employee.userId, {
       title: decision === "APPROVED" ? "Leave approved" : "Leave rejected",
-      body: `${formatLeaveType(req.leaveType)} · ${fmtDate(req.startDate)} → ${fmtDate(req.endDate)}`,
+      body: `${formatLeaveType(req.leaveType)} · ${formatEmailDate(req.startDate)} → ${formatEmailDate(req.endDate)}`,
       url: "/employee/inbox",
       tag: `leave-${requestId}`,
     }).catch(() => {});
@@ -75,11 +72,12 @@ export async function notifyLeaveDecision(
     const params = {
       employeeName: `${req.employee.firstNameTh} ${req.employee.lastNameTh}`,
       leaveType: formatLeaveType(req.leaveType),
-      startDate: fmtDate(req.startDate),
-      endDate: fmtDate(req.endDate),
+      startDate: formatEmailDate(req.startDate),
+      endDate: formatEmailDate(req.endDate),
       days: req.daysRequested.toString(),
       decision,
       rejectedReason: req.rejectedReason ?? undefined,
+      appUrl: APP_URL,
     };
 
     const subject = decision === "APPROVED"
@@ -93,6 +91,6 @@ export async function notifyLeaveDecision(
       leaveDecisionText(params),
     );
   } catch (err) {
-    console.error("[notifyLeaveDecision]", err);
+    logger.error("notifyLeaveDecision failed", { requestId, decision, err: String(err) });
   }
 }

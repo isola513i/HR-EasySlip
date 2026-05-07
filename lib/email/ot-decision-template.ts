@@ -2,7 +2,7 @@ interface Params {
   employeeName: string;
   otType: string;
   date: string;
-  hours: string;
+  hours: string | null;
   decision: "APPROVED" | "REJECTED";
   rejectedReason?: string;
   appUrl?: string;
@@ -37,7 +37,7 @@ export function otDecisionHtml(p: Params): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;color:${BRAND.dark};">
       <tr><td style="padding:6px 0;color:${BRAND.muted};">Type</td><td style="padding:6px 0;text-align:right;font-weight:600;">${p.otType}</td></tr>
       <tr><td style="padding:6px 0;color:${BRAND.muted};">Date</td><td style="padding:6px 0;text-align:right;font-weight:600;">${p.date}</td></tr>
-      <tr><td style="padding:6px 0;color:${BRAND.muted};">Hours</td><td style="padding:6px 0;text-align:right;font-weight:600;">${p.hours} hrs</td></tr>
+      ${p.hours ? `<tr><td style="padding:6px 0;color:${BRAND.muted};">Hours</td><td style="padding:6px 0;text-align:right;font-weight:600;">${p.hours} hrs</td></tr>` : ""}
     </table>
     ${!approved && p.rejectedReason ? `
     <div style="margin-top:16px;padding:12px;background:${BRAND.errorBg};border-radius:6px;border:1px solid #fecaca;">
@@ -62,8 +62,8 @@ export function otDecisionText(p: Params): string {
     "",
     `Type: ${p.otType}`,
     `Date: ${p.date}`,
-    `Hours: ${p.hours} hrs`,
   ];
+  if (p.hours) lines.push(`Hours: ${p.hours} hrs`);
   if (!approved && p.rejectedReason) {
     lines.push("", `Rejection reason: ${p.rejectedReason}`);
   }
