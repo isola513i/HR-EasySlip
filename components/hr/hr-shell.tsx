@@ -11,6 +11,7 @@ import {
   Settings,
   Clock,
   Banknote,
+  Coins,
 } from "lucide-react";
 import { AdminShell } from "@/components/shared/admin-shell";
 import type { NavItem, NavGroup } from "@/components/shared/admin-sidebar";
@@ -36,6 +37,7 @@ export function HRShell({ user, children }: Props) {
     { key: "holidays", href: "/hr/holidays", icon: CalendarCheck, label: nav.holidays },
     { group: nav.groupPayroll },
     { key: "payroll", href: "/hr/payroll", icon: Banknote, label: nav.payroll },
+    { key: "cashout", href: "/hr/payroll/cashout", icon: Coins, label: nav.cashout },
     { key: "reports", href: "/hr/reports", icon: FileBarChart, label: nav.reports },
     { group: nav.groupCompliance },
     { key: "audit", href: "/hr/audit", icon: Scroll, label: nav.audit },
