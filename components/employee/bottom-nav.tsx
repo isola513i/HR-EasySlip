@@ -12,17 +12,19 @@ import {
 import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { useT } from "@/lib/i18n/locale-context";
+import { useEmployeeInboxUnread } from "@/hooks/use-employee-inbox-unread";
 
 export function BottomNav() {
   const pathname = usePathname();
   const t = useT();
   const nav = t.employee.bottomNav;
+  const inboxUnread = useEmployeeInboxUnread();
   const items = [
-    { href: "/employee/today", icon: Home, label: nav.home },
-    { href: "/employee/clock", icon: Clock, label: nav.clock },
-    { href: "/employee/leave", icon: CalendarDays, label: nav.leave },
-    { href: "/employee/inbox", icon: Inbox, label: nav.inbox },
-    { href: "/employee/me", icon: User, label: nav.me },
+    { href: "/employee/today", icon: Home, label: nav.home, badge: false },
+    { href: "/employee/clock", icon: Clock, label: nav.clock, badge: false },
+    { href: "/employee/leave", icon: CalendarDays, label: nav.leave, badge: false },
+    { href: "/employee/inbox", icon: Inbox, label: nav.inbox, badge: inboxUnread },
+    { href: "/employee/me", icon: User, label: nav.me, badge: false },
   ] as const;
 
   return (
@@ -54,6 +56,15 @@ export function BottomNav() {
                 )}
               >
                 <item.icon className="size-[22px]" strokeWidth={active ? 2 : 1.75} />
+                {item.badge && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-0.5 -top-0.5 grid place-items-center"
+                  >
+                    <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
+                    <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
+                  </span>
+                )}
               </span>
               <span>{item.label}</span>
               {active && (

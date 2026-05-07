@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiFetchPaginated, ApiClientError } from "@/lib/api/client";
+import { markEmployeeInboxRead } from "@/hooks/use-employee-inbox-unread";
 import { formatRelativeTime } from "@/lib/format";
 import { getActionLabel } from "@/lib/audit/action-labels";
 import { getEntityLabel } from "@/lib/audit/entity-labels";
@@ -91,7 +92,10 @@ export function InboxScreen() {
         const { data } = await apiFetchPaginated<AuditLogEntry>(
           "/api/v1/employee/me/activity?perPage=10",
         );
-        if (!cancelled) setEntries(data);
+        if (!cancelled) {
+          setEntries(data);
+          markEmployeeInboxRead();
+        }
       } catch (err) {
         if (err instanceof ApiClientError && err.status === 403) {
           if (!cancelled) setEntries([]);
