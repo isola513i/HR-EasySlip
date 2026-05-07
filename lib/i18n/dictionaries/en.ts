@@ -485,6 +485,8 @@ const en = {
       SUSPENDED: "Suspended",
       RESIGNED: "Resigned",
       TERMINATED: "Terminated",
+      RETIRED: "Retired",
+      CONTRACT_ENDED: "Contract ended",
     },
     firstNameEn: "First name (EN)",
     firstNameEnPlaceholder: "English first name",
@@ -1187,6 +1189,14 @@ const en = {
         IN_PROGRESS: "In progress",
         COMPLETED: "Completed",
         CANCELLED: "Cancelled",
+      },
+      items: {
+        asset_return: "Return company assets (laptop, phone, equipment)",
+        knowledge_transfer: "Knowledge transfer to team members",
+        exit_interview: "Exit interview with HR",
+        final_pay_settlement: "Final pay + cashout settlement",
+        access_revocation: "Revoke system access (email, SSO, tools)",
+        ssf_notification: "Social Security Fund (SSF) termination notice",
       },
     },
     reviews: {

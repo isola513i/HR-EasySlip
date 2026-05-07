@@ -12,8 +12,12 @@ export const AssetCreateSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
-export const AssetUpdateSchema = AssetCreateSchema.partial().extend({
-  status: AssetStatusEnum.optional(),
+// Status transitions go through assignAsset / returnAsset / retireAsset to
+// preserve invariants with AssetAssignment. Generic update intentionally
+// excludes `status`.
+export const AssetUpdateSchema = AssetCreateSchema.partial();
+export const AssetRetireSchema = z.object({
+  notes: z.string().max(500).optional(),
 });
 
 export const AssetAssignSchema = z.object({
@@ -34,3 +38,4 @@ export type AssetCreateInput = z.infer<typeof AssetCreateSchema>;
 export type AssetUpdateInput = z.infer<typeof AssetUpdateSchema>;
 export type AssetAssignInput = z.infer<typeof AssetAssignSchema>;
 export type AssetReturnInput = z.infer<typeof AssetReturnSchema>;
+export type AssetRetireInput = z.infer<typeof AssetRetireSchema>;

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
-import type { AssetCreateInput, AssetUpdateInput, AssetAssignInput, AssetReturnInput } from "./schemas";
+import type { AssetCreateInput, AssetUpdateInput, AssetAssignInput, AssetReturnInput, AssetRetireInput } from "./schemas";
 
 export async function listAssets(filters: { status?: string; type?: string }) {
   return prisma.asset.findMany({
@@ -66,11 +66,17 @@ export async function updateAsset(caller: Caller, id: string, input: AssetUpdate
   const before = await prisma.asset.findUnique({ where: { id } });
   if (!before) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
 
+  // Whitelist mutable fields — status transitions go through assignAsset /
+  // returnAsset / retireAsset to keep AssetAssignment in sync.
   const after = await prisma.asset.update({
     where: { id },
     data: {
-      ...input,
+      type: input.type,
+      brand: input.brand,
+      model: input.model,
+      serialNumber: input.serialNumber,
       purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : undefined,
+      notes: input.notes,
     },
   });
 
@@ -124,6 +130,43 @@ export async function assignAsset(caller: Caller, assetId: string, input: AssetA
     }, tx);
 
     return { asset: updated, assignment };
+  });
+}
+
+export async function retireAsset(caller: Caller, assetId: string, input: AssetRetireInput, meta: RequestMeta) {
+  return prisma.$transaction(async (tx) => {
+    const asset = await tx.asset.findUnique({
+      where: { id: assetId },
+      include: { assignments: { where: { returnedAt: null }, take: 1 } },
+    });
+    if (!asset) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+    if (asset.status === "RETIRED") {
+      throw new DomainError(ErrorCodes.ALREADY_PROCESSED, { status: asset.status });
+    }
+    if (asset.assignments.length > 0) {
+      throw new DomainError("ASSET_ASSIGNED", { message: "Return the asset before retiring" });
+    }
+
+    const updated = await tx.asset.update({
+      where: { id: assetId },
+      data: {
+        status: "RETIRED",
+        notes: input.notes ? `${asset.notes ? asset.notes + "\n" : ""}[retired] ${input.notes}` : asset.notes,
+      },
+    });
+
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "asset.retired",
+      entityType: "Asset",
+      entityId: assetId,
+      before: asset,
+      after: updated,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+    }, tx);
+
+    return updated;
   });
 }
 

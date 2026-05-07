@@ -37,6 +37,8 @@ enum EmploymentStatus {
   SUSPENDED
   RESIGNED
   TERMINATED
+  RETIRED
+  CONTRACT_ENDED
 }
 
 enum WorkShift {

@@ -55,20 +55,24 @@ export function OffboardingCard({ record, onComplete }: Props) {
       </div>
 
       <ul className="mt-3 space-y-1.5">
-        {record.items.map((it) => (
-          <li key={it.key} className="flex items-start gap-2 rounded-lg p-1.5 hover:bg-muted/40">
-            <Checkbox
-              checked={it.completed}
-              disabled={isLocked}
-              onCheckedChange={(v) => toggleItem(record.id, it.key, !!v)}
-              aria-label={it.label}
-              className="mt-0.5"
-            />
-            <span className={`text-sm ${it.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
-              {it.label}
-            </span>
-          </li>
-        ))}
+        {record.items.map((it) => {
+          const itemLabels = t.hr.offboarding.items as Record<string, string>;
+          const label = itemLabels[it.key] ?? it.label ?? it.key;
+          return (
+            <li key={it.key} className="flex items-start gap-2 rounded-lg p-1.5 hover:bg-muted/40">
+              <Checkbox
+                checked={it.completed}
+                disabled={isLocked}
+                onCheckedChange={(v) => toggleItem(record.id, it.key, !!v)}
+                aria-label={label}
+                className="mt-0.5"
+              />
+              <span className={`text-sm ${it.completed ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                {label}
+              </span>
+            </li>
+          );
+        })}
       </ul>
 
       {!isLocked && (

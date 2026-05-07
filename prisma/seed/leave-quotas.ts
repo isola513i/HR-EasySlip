@@ -26,10 +26,12 @@ export async function seedLeaveQuotas(
   employees: Map<string, EmployeeRecord>,
 ): Promise<void> {
   for (const emp of employees.values()) {
-    // Skip terminated / resigned
+    // Skip employees no longer in service
     if (
       emp.employmentStatus === 'TERMINATED' ||
-      emp.employmentStatus === 'RESIGNED'
+      emp.employmentStatus === 'RESIGNED' ||
+      emp.employmentStatus === 'RETIRED' ||
+      emp.employmentStatus === 'CONTRACT_ENDED'
     ) {
       continue;
     }

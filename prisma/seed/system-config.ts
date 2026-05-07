@@ -26,7 +26,7 @@ const DEFAULTS: ConfigEntry[] = [
   { key: 'leave.annual.full_year_days', value: 6, description: 'สิทธิ์ลาพักร้อนเต็มปี หลังครบ 1 ปี' },
   { key: 'leave.annual.rounding_step', value: 0.5, description: 'Step สำหรับ round-down (ครึ่งวัน)' },
   { key: 'leave.annual.days_in_year_basis', value: 365, description: 'จำนวนวันฐานสำหรับ prorate' },
-  { key: 'leave.maternity.days', value: 98, description: 'วันลาคลอด (รวมก่อน/หลังคลอด)' },
+  { key: 'leave.maternity.days', value: 120, description: 'วันลาคลอด (รวมก่อน/หลังคลอด ตาม พ.ร.บ.คุ้มครองแรงงาน)' },
 
   // ─── Payroll: cut-off ───
   { key: 'payroll.cutoff.day_of_month', value: 25, description: 'วันปิดรอบ (ล็อก record)' },

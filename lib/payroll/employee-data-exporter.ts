@@ -17,6 +17,7 @@ const HEADERS = [
 const STATUS_MAP: Record<string, string> = {
   ACTIVE: "บรรจุ", PROBATION: "ทดลองงาน", SUSPENDED: "พักงาน",
   RESIGNED: "ลาออก", TERMINATED: "พ้นสภาพ",
+  RETIRED: "เกษียณ", CONTRACT_ENDED: "สิ้นสุดสัญญา",
 };
 
 function fmtDate(d: Date | null): string {

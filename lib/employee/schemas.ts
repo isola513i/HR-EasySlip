@@ -26,14 +26,14 @@ export const EmployeeUpdateSchema = z.object({
   departmentId: z.string().optional(),
   positionId: z.string().optional(),
   managerId: z.string().optional(),
-  employmentStatus: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED"]).optional(),
+  employmentStatus: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED", "RETIRED", "CONTRACT_ENDED"]).optional(),
   workShift: z.enum(["MORNING", "EVENING"]).optional(),
 });
 
 export const EmployeeListFiltersSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   perPage: z.coerce.number().int().min(1).max(100).default(20),
-  status: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED"]).optional(),
+  status: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED", "RETIRED", "CONTRACT_ENDED"]).optional(),
   departmentId: z.string().optional(),
   search: z.string().max(200).optional(),
 });

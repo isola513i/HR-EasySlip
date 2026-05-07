@@ -487,6 +487,8 @@ const th = {
       SUSPENDED: "พักงาน",
       RESIGNED: "ลาออก",
       TERMINATED: "พ้นสภาพ",
+      RETIRED: "เกษียณ",
+      CONTRACT_ENDED: "สิ้นสุดสัญญา",
     },
     firstNameEn: "ชื่อ (EN)",
     firstNameEnPlaceholder: "English first name",
@@ -1189,6 +1191,14 @@ const th = {
         IN_PROGRESS: "ดำเนินการอยู่",
         COMPLETED: "เสร็จสิ้น",
         CANCELLED: "ยกเลิก",
+      },
+      items: {
+        asset_return: "คืนอุปกรณ์บริษัท (โน้ตบุ๊ก, โทรศัพท์, อุปกรณ์อื่น)",
+        knowledge_transfer: "ส่งต่อองค์ความรู้ให้ทีม",
+        exit_interview: "สัมภาษณ์ exit กับ HR",
+        final_pay_settlement: "เคลียร์เงินเดือน + cashout งวดสุดท้าย",
+        access_revocation: "เพิกถอนสิทธิ์ระบบ (อีเมล, SSO, เครื่องมือ)",
+        ssf_notification: "แจ้งสำนักงานประกันสังคม (สปส.)",
       },
     },
     reviews: {

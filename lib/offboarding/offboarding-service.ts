@@ -1,27 +1,44 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, type EmploymentStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
+import { computeResignationAnnualProrate } from "@/lib/leave/annual-quota-engine";
+import { loadLeavePolicy } from "@/lib/leave/policy";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export type OffboardingReason = "RESIGNATION" | "TERMINATION" | "RETIREMENT" | "CONTRACT_END";
 
 export interface OffboardingItem {
   key: string;
-  label: string;
   completed: boolean;
   completedAt?: string;
   completedBy?: string;
 }
 
-const DEFAULT_ITEMS: { key: string; label: string }[] = [
-  { key: "asset_return", label: "Return company assets (laptop, phone, equipment)" },
-  { key: "knowledge_transfer", label: "Knowledge transfer to team members" },
-  { key: "exit_interview", label: "Exit interview with HR" },
-  { key: "final_pay_settlement", label: "Final pay + cashout settlement" },
-  { key: "access_revocation", label: "Revoke system access (email, SSO, tools)" },
-  { key: "ssf_notification", label: "Social Security Fund (SSF) termination notice" },
-];
+// Item keys are stable identifiers; UI resolves labels via i18n
+// (`t.hr.offboarding.items[key]`) per CLAUDE.md §6.
+const DEFAULT_ITEM_KEYS = [
+  "asset_return",
+  "knowledge_transfer",
+  "exit_interview",
+  "final_pay_settlement",
+  "access_revocation",
+  "ssf_notification",
+] as const;
+
+const REASON_TO_STATUS: Record<OffboardingReason, EmploymentStatus> = {
+  RESIGNATION: "RESIGNED",
+  TERMINATION: "TERMINATED",
+  RETIREMENT: "RETIRED",
+  CONTRACT_END: "CONTRACT_ENDED",
+};
+
+const REASON_TO_CASHOUT_TRIGGER: Record<OffboardingReason, "RESIGNATION" | "TERMINATION"> = {
+  RESIGNATION: "RESIGNATION",
+  TERMINATION: "TERMINATION",
+  RETIREMENT: "RESIGNATION",
+  CONTRACT_END: "TERMINATION",
+};
 
 interface StartInput {
   employeeId: string;
@@ -31,10 +48,13 @@ interface StartInput {
 }
 
 export async function startOffboarding(caller: Caller, input: StartInput, meta: RequestMeta) {
+  const policy = await loadLeavePolicy();
+  const lastDay = new Date(input.lastDay);
+
   return prisma.$transaction(async (tx) => {
     const employee = await tx.employee.findUnique({
       where: { id: input.employeeId },
-      select: { id: true, employmentStatus: true },
+      select: { id: true, employmentStatus: true, hireDate: true },
     });
     if (!employee) throw new DomainError(ErrorCodes.EMPLOYEE_NOT_FOUND, {}, 404);
 
@@ -49,31 +69,42 @@ export async function startOffboarding(caller: Caller, input: StartInput, meta: 
       data: {
         employeeId: input.employeeId,
         reason: input.reason,
-        lastDay: new Date(input.lastDay),
+        lastDay,
         notes: input.notes ?? null,
-        items: DEFAULT_ITEMS.map((it) => ({ ...it, completed: false })),
+        items: DEFAULT_ITEM_KEYS.map((key) => ({ key, completed: false })),
       },
     });
 
-    // Update employment status to align with offboarding reason
-    const newStatus = input.reason === "TERMINATION" ? "TERMINATED" : "RESIGNED";
+    // Mirror reason → status + record termination date for downstream
+    // (cashout, payroll exports, headcount reports key off these fields).
     await tx.employee.update({
       where: { id: input.employeeId },
-      data: { employmentStatus: newStatus },
+      data: {
+        employmentStatus: REASON_TO_STATUS[input.reason],
+        terminationDate: lastDay,
+      },
     });
 
-    // Auto-create a cashout record for unused annual leave (mirrors year-end logic)
-    const year = new Date(input.lastDay).getFullYear();
+    // Auto-create cashout for unused annual leave using the canonical
+    // resignation-prorate formula. usedDays only — pending requests get
+    // settled separately during the offboarding window.
     const annualQuota = await tx.leaveQuota.findFirst({
-      where: { employeeId: input.employeeId, leaveType: "ANNUAL", quotaYear: year },
+      where: { employeeId: input.employeeId, leaveType: "ANNUAL", quotaYear: lastDay.getFullYear() },
     });
     if (annualQuota) {
-      const unused = annualQuota.allocatedDays.minus(annualQuota.usedDays).minus(annualQuota.pendingDays);
+      const unused = computeResignationAnnualProrate(
+        {
+          hireDate: employee.hireDate,
+          terminationDate: lastDay,
+          usedDays: annualQuota.usedDays,
+        },
+        policy.annual,
+      );
       if (unused.gt(0)) {
-        const trigger = input.reason === "TERMINATION" ? "TERMINATION" : "RESIGNATION";
+        const trigger = REASON_TO_CASHOUT_TRIGGER[input.reason];
         await tx.annualLeaveCashOut.upsert({
-          where: { employeeId_year: { employeeId: input.employeeId, year } },
-          create: { employeeId: input.employeeId, year, unusedDays: unused, trigger },
+          where: { employeeId_year: { employeeId: input.employeeId, year: lastDay.getFullYear() } },
+          create: { employeeId: input.employeeId, year: lastDay.getFullYear(), unusedDays: unused, trigger },
           update: { unusedDays: unused, trigger },
         });
       }

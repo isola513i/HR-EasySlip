@@ -28,4 +28,6 @@ export const BLOCKED_EMPLOYMENT_STATUSES = [
   "SUSPENDED",
   "RESIGNED",
   "TERMINATED",
+  "RETIRED",
+  "CONTRACT_ENDED",
 ] as const;

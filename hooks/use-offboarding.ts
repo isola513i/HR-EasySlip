@@ -8,7 +8,8 @@ export type OffboardingStatus = "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 export interface OffboardingItem {
   key: string;
-  label: string;
+  /** Legacy field for records seeded before key-only refactor. UI resolves via i18n. */
+  label?: string;
   completed: boolean;
   completedAt?: string;
   completedBy?: string;

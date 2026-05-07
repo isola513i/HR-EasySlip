@@ -54,7 +54,7 @@ export async function onEmploymentStatusChanged(
   newStatus: string,
   actorId: string,
 ): Promise<void> {
-  const blockedStatuses = ["SUSPENDED", "RESIGNED", "TERMINATED"];
+  const blockedStatuses = ["SUSPENDED", "RESIGNED", "TERMINATED", "RETIRED", "CONTRACT_ENDED"];
   if (blockedStatuses.includes(newStatus)) {
     await invalidateUserSessions(
       userId,

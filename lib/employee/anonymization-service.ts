@@ -3,7 +3,7 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError } from "@/lib/api/errors";
 import type { RequestMeta } from "@/lib/api/types";
 
-const ELIGIBLE_STATUSES = ["TERMINATED", "RESIGNED"] as const;
+const ELIGIBLE_STATUSES = ["TERMINATED", "RESIGNED", "RETIRED", "CONTRACT_ENDED"] as const;
 
 /**
  * PDPA Article 33: Right to Erasure.
@@ -25,7 +25,7 @@ export async function anonymizeEmployee(
   }
   if (!(ELIGIBLE_STATUSES as readonly string[]).includes(employee.employmentStatus)) {
     throw new DomainError("NOT_ELIGIBLE_FOR_ANONYMIZATION", {
-      message: "Only TERMINATED or RESIGNED employees can be anonymized",
+      message: "Only TERMINATED / RESIGNED / RETIRED / CONTRACT_ENDED employees can be anonymized",
       current: employee.employmentStatus,
     }, 400);
   }

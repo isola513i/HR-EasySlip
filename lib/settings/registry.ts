@@ -135,7 +135,7 @@ export const SETTINGS_REGISTRY: Record<string, SettingDefinition> = {
     group: "leave",
     inputType: "number",
     validator: z.number().int().min(60).max(180),
-    defaultValue: 98,
+    defaultValue: 120,
     unitKey: "days",
     order: 25,
     min: 60,

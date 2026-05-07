@@ -57,6 +57,8 @@ export function EmployeeFilterBar({
     SUSPENDED: t.hr.suspended,
     RESIGNED: t.hr.resigned,
     TERMINATED: t.hr.resigned,
+    RETIRED: t.hr.resigned,
+    CONTRACT_ENDED: t.hr.resigned,
   };
   const statusLabel = (s: string) => statusLabels[s as EmploymentStatus] ?? s;
 

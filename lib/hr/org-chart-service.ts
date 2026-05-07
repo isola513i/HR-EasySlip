@@ -25,7 +25,7 @@ interface FlatRow {
   managerId: string | null;
   position: { name: string } | null;
   department: { name: string } | null;
-  hasProfilePicture: boolean;
+  profilePicturePath: string | null;
   profilePictureUploadedAt: Date | null;
 }
 
@@ -40,7 +40,7 @@ function toNode(row: FlatRow, children: OrgChartNode[]): OrgChartNode {
     positionName: row.position?.name ?? null,
     departmentName: row.department?.name ?? null,
     managerId: row.managerId,
-    hasProfilePicture: row.hasProfilePicture,
+    hasProfilePicture: row.profilePicturePath !== null,
     profilePictureUploadedAt: row.profilePictureUploadedAt?.toISOString() ?? null,
     children,
   };
@@ -58,7 +58,7 @@ export async function getOrgChart(): Promise<OrgChartNode[]> {
       firstNameEn: true,
       lastNameEn: true,
       managerId: true,
-      hasProfilePicture: true,
+      profilePicturePath: true,
       profilePictureUploadedAt: true,
       position: { select: { name: true } },
       department: { select: { name: true } },
