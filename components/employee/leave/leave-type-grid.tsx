@@ -2,7 +2,18 @@
 
 import { LeaveTypeCard } from "@/components/employee/leave/leave-type-card";
 
-export type LeaveTypeKey = "SICK" | "PERSONAL" | "ANNUAL" | "LEAVE_WITHOUT_PAY";
+export type LeaveTypeKey =
+  | "SICK"
+  | "PERSONAL"
+  | "ANNUAL"
+  | "LEAVE_WITHOUT_PAY"
+  | "MATERNITY"
+  | "PATERNITY"
+  | "CHILD_CARE"
+  | "ORDINATION"
+  | "MILITARY"
+  | "FUNERAL"
+  | "TRAINING";
 
 interface LeaveTypeOption {
   key: LeaveTypeKey;

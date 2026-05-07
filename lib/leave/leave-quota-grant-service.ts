@@ -9,22 +9,31 @@ type TxClient = Omit<
 >;
 
 /**
- * Grant initial SICK (30d) + PERSONAL (3d) quota for a new employee.
- * Thai law: พนักงานวันแรกต้องได้ลาป่วย 30 วัน + ลากิจ 3 วัน
+ * Grant initial leave quotas for a new employee. Thai law: พนักงานวันแรก
+ * ต้องได้ ลาป่วย 30 / ลากิจ 3. We also seed yearly-renewable types (CHILD_CARE,
+ * FUNERAL, TRAINING, PATERNITY) so the UI can surface meaningful balances.
+ * MATERNITY / ORDINATION / MILITARY are event-driven (once-in-event) — HR
+ * grants those manually via the quota adjust UI when triggered.
+ *
  * Idempotent: uses upsert — safe to call multiple times.
  */
 export async function grantInitialLeaveQuota(
   employeeId: string,
   hireDate: Date,
   tx?: TxClient,
+  quotaYearOverride?: number,
 ): Promise<void> {
   const client = tx ?? prisma;
-  const quotaYear = hireDate.getFullYear();
+  const quotaYear = quotaYearOverride ?? hireDate.getFullYear();
   const policy = await loadLeavePolicy();
 
-  const grants: { leaveType: "SICK" | "PERSONAL"; days: number }[] = [
+  const grants: { leaveType: "SICK" | "PERSONAL" | "CHILD_CARE" | "FUNERAL" | "TRAINING" | "PATERNITY"; days: number }[] = [
     { leaveType: "SICK", days: policy.sickMaxPaidDays },
     { leaveType: "PERSONAL", days: policy.personalMaxDays },
+    { leaveType: "CHILD_CARE", days: policy.childCareDays },
+    { leaveType: "FUNERAL", days: policy.funeralDays },
+    { leaveType: "TRAINING", days: policy.trainingDays },
+    { leaveType: "PATERNITY", days: policy.paternityDays },
   ];
 
   for (const g of grants) {
@@ -114,17 +123,23 @@ export async function grantAnniversaryLeave() {
     granted++;
   }
 
-  // Safety net: grant initial SICK + PERSONAL for employees missing them
+  // Safety net: backfill any missing initial-grant types for current year.
+  // grantInitialLeaveQuota is idempotent (upsert), so this is safe to run for
+  // both new hires and existing employees missing the new types added in
+  // Phase 3 (CHILD_CARE, FUNERAL, TRAINING, PATERNITY).
   let initialGranted = 0;
-  const newHires = await prisma.employee.findMany({
+  const initialGrantTypes = ["SICK", "PERSONAL", "CHILD_CARE", "FUNERAL", "TRAINING", "PATERNITY"] as const;
+  const employeesNeedingBackfill = await prisma.employee.findMany({
     where: {
       employmentStatus: { in: ["ACTIVE", "PROBATION"] },
-      leaveQuotas: { none: { leaveType: "SICK", quotaYear: today.getFullYear() } },
+      OR: initialGrantTypes.map((t) => ({
+        leaveQuotas: { none: { leaveType: t, quotaYear: today.getFullYear() } },
+      })),
     },
     select: { id: true, hireDate: true },
   });
-  for (const emp of newHires) {
-    await grantInitialLeaveQuota(emp.id, emp.hireDate);
+  for (const emp of employeesNeedingBackfill) {
+    await grantInitialLeaveQuota(emp.id, emp.hireDate, undefined, today.getFullYear());
     initialGranted++;
   }
 

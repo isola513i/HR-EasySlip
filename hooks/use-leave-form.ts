@@ -4,7 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
 import type { LeaveType as PrismaLeaveType, LeaveStatus } from "@prisma/client";
 
-type LeaveType = "SICK" | "PERSONAL" | "ANNUAL" | "LEAVE_WITHOUT_PAY";
+type LeaveType =
+  | "SICK"
+  | "PERSONAL"
+  | "ANNUAL"
+  | "LEAVE_WITHOUT_PAY"
+  | "MATERNITY"
+  | "PATERNITY"
+  | "CHILD_CARE"
+  | "ORDINATION"
+  | "MILITARY"
+  | "FUNERAL"
+  | "TRAINING";
 type HalfDay = "FULL" | "MORNING" | "AFTERNOON";
 
 export interface QuotaInfo {

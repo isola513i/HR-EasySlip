@@ -36,8 +36,19 @@ export function LeaveScreen() {
       { key: "PERSONAL" as const, label: t.leave.personal },
       { key: "ANNUAL" as const, label: t.leave.annual },
       { key: "LEAVE_WITHOUT_PAY" as const, label: t.leave.lwp },
+      { key: "MATERNITY" as const, label: t.leave.maternity },
+      { key: "PATERNITY" as const, label: t.leave.paternity },
+      { key: "CHILD_CARE" as const, label: t.leave.childCare },
+      { key: "ORDINATION" as const, label: t.leave.ordination },
+      { key: "MILITARY" as const, label: t.leave.military },
+      { key: "FUNERAL" as const, label: t.leave.funeral },
+      { key: "TRAINING" as const, label: t.leave.training },
     ],
-    [t.leave.sick, t.leave.personal, t.leave.annual, t.leave.lwp],
+    [
+      t.leave.sick, t.leave.personal, t.leave.annual, t.leave.lwp,
+      t.leave.maternity, t.leave.paternity, t.leave.childCare, t.leave.ordination,
+      t.leave.military, t.leave.funeral, t.leave.training,
+    ],
   );
 
   const DURATION_OPTIONS = useMemo(
