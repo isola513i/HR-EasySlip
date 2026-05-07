@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Check, X, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,12 +21,26 @@ export function ApprovalInbox() {
   const t = useT();
   const fmt = useFormat();
   const { rows, isLoading, error: fetchError, approve, reject, bulkDecision } = useApprovalInbox();
+  const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detailRow, setDetailRow] = useState<ApprovalRow | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ApprovalRow | null>(null);
   const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
   /** IDs that are animating out optimistically (approved/rejected awaiting refetch). */
   const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+
+  const visibleRows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const name = `${r.employee.firstNameTh} ${r.employee.lastNameTh}`.toLowerCase();
+      return (
+        name.includes(q) ||
+        r.employee.employeeCode.toLowerCase().includes(q) ||
+        formatLeaveType(r.leaveType).toLowerCase().includes(q)
+      );
+    });
+  }, [rows, query]);
 
   const optimisticDismiss = useCallback((id: string) => {
     setExitingIds((prev) => new Set(prev).add(id));
@@ -45,9 +59,9 @@ export function ApprovalInbox() {
 
   const toggleAll = useCallback(() => {
     setSelected((prev) =>
-      prev.size === rows.length ? new Set() : new Set(rows.map((r) => r.id)),
+      prev.size === visibleRows.length ? new Set() : new Set(visibleRows.map((r) => r.id)),
     );
-  }, [rows]);
+  }, [visibleRows]);
 
   const handleApprove = useCallback(async (id: string) => {
     hapticTap();
@@ -130,12 +144,16 @@ export function ApprovalInbox() {
   return (
     <div className="relative">
       <div className="mb-4 flex items-center gap-2.5">
-        <SearchInput placeholder={t.manager.searchPlaceholder} />
-        <StatusPill tone="neutral" dot={false}>{`${t.common.all} (${rows.length})`}</StatusPill>
+        <SearchInput placeholder={t.manager.searchPlaceholder} value={query} onChange={setQuery} />
+        <StatusPill tone="neutral" dot={false}>{`${t.common.all} (${visibleRows.length})`}</StatusPill>
       </div>
 
+      {visibleRows.length === 0 && (
+        <div className="py-16 text-center text-sm text-muted-foreground">{t.common.noResults}</div>
+      )}
+
       <div className="space-y-2 md:hidden">
-        {rows.map((r) => {
+        {visibleRows.map((r) => {
           const sel = selected.has(r.id);
           const exiting = exitingIds.has(r.id);
           const name = `${r.employee.firstNameTh} ${r.employee.lastNameTh}`;
@@ -196,11 +214,11 @@ export function ApprovalInbox() {
       <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)] md:block">
         <ScrollableTable minWidth={820}>
             <div className="grid grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-              <Checkbox checked={selected.size === rows.length && rows.length > 0} onCheckedChange={toggleAll} aria-label={t.manager.selectAriaAll} />
+              <Checkbox checked={selected.size === visibleRows.length && visibleRows.length > 0} onCheckedChange={toggleAll} aria-label={t.manager.selectAriaAll} />
               <span>{t.manager.employee}</span><span>{t.manager.type}</span><span>{t.manager.dates}</span><span>{t.manager.daysCol}</span><span>{t.manager.submitted}</span><span />
             </div>
 
-            {rows.map((r) => {
+            {visibleRows.map((r) => {
               const sel = selected.has(r.id);
               const exiting = exitingIds.has(r.id);
               const name = `${r.employee.firstNameTh} ${r.employee.lastNameTh}`;
