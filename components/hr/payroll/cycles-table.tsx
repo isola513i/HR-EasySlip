@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileText, Lock } from "lucide-react";
+import { CheckCheck, Download, FileText, Lock } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,6 +27,7 @@ interface Props {
   selectedId: string | null;
   onSelect: (id: string) => void;
   onLock: (cycle: PayrollCycle) => void;
+  onMarkExported: (cycle: PayrollCycle) => void;
   onDownloadTimestamps: (cycle: PayrollCycle) => void;
   onDownloadPayrollInfo: (cycle: PayrollCycle) => void;
   isLoading: boolean;
@@ -41,6 +42,7 @@ export function CyclesTable({
   selectedId,
   onSelect,
   onLock,
+  onMarkExported,
   onDownloadTimestamps,
   onDownloadPayrollInfo,
   isLoading,
@@ -133,6 +135,11 @@ export function CyclesTable({
                       <Download className="mr-1 size-3.5" /> {t.hr.payrollExport}
                     </Button>
                   </>
+                )}
+                {c.status === "LOCKED" && (
+                  <Button size="sm" variant="outline" onClick={() => onMarkExported(c)}>
+                    <CheckCheck className="mr-1 size-3.5" /> {t.hr.payrollConfirmMarkExported}
+                  </Button>
                 )}
               </div>
             </button>

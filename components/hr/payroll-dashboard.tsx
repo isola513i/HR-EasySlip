@@ -43,6 +43,7 @@ export function PayrollDashboard() {
     year,
     setYear,
     lockCycle,
+    markExported,
     downloadTimestamps,
     downloadCashout,
     downloadPayrollInfo,
@@ -52,6 +53,8 @@ export function PayrollDashboard() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
   const [locking, setLocking] = useState(false);
+  const [exportTarget, setExportTarget] = useState<PayrollCycle | null>(null);
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     setSelectedId((prev) => {
@@ -85,6 +88,20 @@ export function PayrollDashboard() {
   const runWithToast = async (fn: () => Promise<unknown>, success: string, failure: string) => {
     try { await fn(); toast.success(success); }
     catch { toast.error(failure); }
+  };
+
+  const handleMarkExportedConfirm = async () => {
+    if (!exportTarget) return;
+    setMarking(true);
+    try {
+      await markExported(exportTarget.id);
+      toast.success(t.hr.payrollMarkExportedSuccess.replace("{month}", monthName(exportTarget.month)));
+      setExportTarget(null);
+    } catch {
+      toast.error(t.hr.payrollMarkExportedFailed);
+    } finally {
+      setMarking(false);
+    }
   };
 
   const handleDownloadTimestamps = (c: PayrollCycle) =>
@@ -128,6 +145,7 @@ export function PayrollDashboard() {
         selectedId={selectedId}
         onSelect={setSelectedId}
         onLock={setLockTarget}
+        onMarkExported={setExportTarget}
         onDownloadTimestamps={handleDownloadTimestamps}
         onDownloadPayrollInfo={handleDownloadPayrollInfo}
         isLoading={isLoading}
@@ -140,9 +158,29 @@ export function PayrollDashboard() {
           year={year}
           onLock={setLockTarget}
           onExport={handleDownloadPayrollInfo}
+          onMarkExported={setExportTarget}
         />
         <CycleLifecycleStepper cycle={selected} />
       </div>
+
+      <Dialog open={!!exportTarget} onOpenChange={(o) => { if (!o) setExportTarget(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.hr.payrollMarkExportedTitle}</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            {t.hr.payrollMarkExportedConfirm
+              .replace("{month}", exportTarget ? monthName(exportTarget.month) : "")
+              .replace("{year}", String(year))}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExportTarget(null)}>{t.common.cancel}</Button>
+            <Button disabled={marking} onClick={handleMarkExportedConfirm}>
+              {marking ? t.hr.payrollMarkingExported : t.hr.payrollConfirmMarkExported}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!lockTarget} onOpenChange={(o) => { if (!o) setLockTarget(null); }}>
         <DialogContent className="sm:max-w-md">

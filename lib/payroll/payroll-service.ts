@@ -17,6 +17,40 @@ export async function listCycles(year?: number, status?: string) {
   });
 }
 
+export async function markCycleExported(
+  caller: Caller,
+  cycleId: string,
+  meta: RequestMeta,
+) {
+  const cycle = await prisma.payrollCycle.findUnique({ where: { id: cycleId } });
+  if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
+  if (cycle.status !== "LOCKED") {
+    throw new DomainError(ErrorCodes.ALREADY_PROCESSED, { status: cycle.status });
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    const exported = await tx.payrollCycle.update({
+      where: { id: cycleId },
+      data: { status: "EXPORTED" },
+    });
+
+    await writeAuditLog({
+      actorId: caller.userId,
+      action: "payroll.cycle_exported",
+      entityType: "PayrollCycle",
+      entityId: cycleId,
+      before: cycle,
+      after: exported,
+      ipAddress: meta.ip,
+      userAgent: meta.userAgent,
+    }, tx);
+
+    return exported;
+  });
+
+  return updated;
+}
+
 export async function lockCycle(
   caller: Caller,
   cycleId: string,

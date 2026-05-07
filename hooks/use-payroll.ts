@@ -57,6 +57,14 @@ export function usePayroll(initialYear?: number) {
     [year, fetchCycles],
   );
 
+  const markExported = useCallback(
+    async (id: string) => {
+      await apiFetch(`/api/v1/payroll/cycles/${id}/mark-exported`, { method: "POST" });
+      await fetchCycles(year);
+    },
+    [year, fetchCycles],
+  );
+
   const downloadTimestamps = useCallback(async (id: string) => {
     const res = await fetch(`/api/v1/payroll/cycles/${id}/export/timestamps`);
     if (!res.ok) throw new Error("Failed to download timestamps");
@@ -117,7 +125,7 @@ export function usePayroll(initialYear?: number) {
 
   return {
     cycles, isLoading, error, year, setYear,
-    lockCycle, downloadTimestamps, downloadCashout,
+    lockCycle, markExported, downloadTimestamps, downloadCashout,
     downloadPayrollInfo, downloadEmployeeData,
   };
 }

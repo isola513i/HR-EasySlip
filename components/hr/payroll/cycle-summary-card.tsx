@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Lock } from "lucide-react";
+import { Download, Lock, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/shared/status-pill";
 import { useT } from "@/lib/i18n/locale-context";
@@ -12,6 +12,7 @@ interface Props {
   year: number;
   onLock: (cycle: PayrollCycle) => void;
   onExport: (cycle: PayrollCycle) => void;
+  onMarkExported: (cycle: PayrollCycle) => void;
 }
 
 function workingDays(start: string, end: string): number {
@@ -25,7 +26,7 @@ function workingDays(start: string, end: string): number {
   return count;
 }
 
-export function CycleSummaryCard({ cycle, year, onLock, onExport }: Props) {
+export function CycleSummaryCard({ cycle, year, onLock, onExport, onMarkExported }: Props) {
   const t = useT();
   const fmt = useFormat();
 
@@ -77,6 +78,12 @@ export function CycleSummaryCard({ cycle, year, onLock, onExport }: Props) {
             <Button onClick={() => onExport(cycle)} className="w-full gap-1.5">
               <Download className="size-4" />
               {t.hr.payroll.cycleSummaryExportButton}
+            </Button>
+          )}
+          {cycle.status === "LOCKED" && (
+            <Button variant="outline" onClick={() => onMarkExported(cycle)} className="w-full gap-1.5">
+              <CheckCheck className="size-4" />
+              {t.hr.payroll.cycleSummaryMarkExportedButton}
             </Button>
           )}
         </div>
