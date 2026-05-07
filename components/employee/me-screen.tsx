@@ -16,6 +16,7 @@ import { ChangePasswordButton } from "@/components/employee/me/change-password-b
 import { ProfilePictureUploader } from "@/components/employee/me/profile-picture-uploader";
 import { DocumentsSection } from "@/components/employee/me/documents-section";
 import { CashoutSection } from "@/components/employee/me/cashout-section";
+import { AssetsSection } from "@/components/employee/me/assets-section";
 import { useProfile } from "@/hooks/use-profile";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { useT } from "@/lib/i18n/locale-context";
@@ -91,6 +92,10 @@ export function MeScreen({ user }: Props) {
 
           <AccordionItem title={t.profile.cashout.title}>
             <CashoutSection />
+          </AccordionItem>
+
+          <AccordionItem title={t.profile.assets.title}>
+            <AssetsSection />
           </AccordionItem>
 
           <AccordionItem title={t.notifications.title} defaultOpen>
