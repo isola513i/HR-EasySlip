@@ -1,10 +1,15 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { prisma } from "@/lib/prisma";
 
-export const WORK_END_HOUR = 18; // 18:00 Bangkok time
+export const WORK_END_HOUR = 18; // 18:00 — default MORNING shift end
+export const EVENING_WORK_END_HOUR = 22; // 22:00 — default EVENING shift end
 const MIN_OT_MINUTES = 30;
 const ROUND_STEP_MINUTES = 30;
 const BANGKOK_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+export function getWorkEndHour(shift: "MORNING" | "EVENING" = "MORNING"): number {
+  return shift === "EVENING" ? EVENING_WORK_END_HOUR : WORK_END_HOUR;
+}
 
 /** Convert UTC Date to Bangkok hours+minutes */
 function toBangkokHM(d: Date): { h: number; m: number } {
@@ -22,9 +27,12 @@ export function roundDown30(minutes: number): number {
  * OT starts at 18:00. Must be ≥30 min. Rounded down to 30-min step.
  * Returns null if <30 min (not eligible).
  */
-export function calculateWeekdayOT(clockOut: Date): Decimal | null {
+export function calculateWeekdayOT(
+  clockOut: Date,
+  shift: "MORNING" | "EVENING" = "MORNING",
+): Decimal | null {
   const bkk = toBangkokHM(clockOut);
-  const otMinutes = (bkk.h * 60 + bkk.m) - (WORK_END_HOUR * 60);
+  const otMinutes = (bkk.h * 60 + bkk.m) - (getWorkEndHour(shift) * 60);
   if (otMinutes < MIN_OT_MINUTES) return null;
 
   const rounded = roundDown30(otMinutes);

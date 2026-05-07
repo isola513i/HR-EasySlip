@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
 
-type OTType = "WEEKDAY" | "HOLIDAY";
+export type OTType = "WEEKDAY" | "HOLIDAY" | "HOLIDAY_WORK";
 
 export function useOTRequests() {
   const [otType, setOTType] = useState<OTType>("WEEKDAY");
@@ -16,7 +16,7 @@ export function useOTRequests() {
 
   const submit = useCallback(async () => {
     if (!date || !reason.trim()) return null;
-    if (otType === "HOLIDAY" && (!assignedStart || !assignedEnd)) return null;
+    if (otType !== "WEEKDAY" && (!assignedStart || !assignedEnd)) return null;
 
     setIsSubmitting(true);
     setError(null);
@@ -24,7 +24,7 @@ export function useOTRequests() {
       const body =
         otType === "WEEKDAY"
           ? { date, reason: reason.trim() }
-          : { date, assignedStart, assignedEnd, reason: reason.trim() };
+          : { date, assignedStart, assignedEnd, reason: reason.trim(), kind: otType };
 
       const result = await apiFetch<{ id: string }>(
         "/api/v1/overtime/requests",

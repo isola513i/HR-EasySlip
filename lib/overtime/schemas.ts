@@ -14,6 +14,7 @@ export const OTSubmitHolidaySchema = z.object({
   assignedStart: z.string().datetime(),
   assignedEnd: z.string().datetime(),
   reason: z.string().min(1).max(500),
+  kind: z.enum(["HOLIDAY", "HOLIDAY_WORK"]).default("HOLIDAY"),
 });
 
 export const OTRejectSchema = z.object({

@@ -12,7 +12,7 @@ import { InfoBanner } from "@/components/shared/info-banner";
 import { useOTRequests } from "@/hooks/use-ot-requests";
 import { useT } from "@/lib/i18n/locale-context";
 
-type OTType = "WEEKDAY" | "HOLIDAY";
+import type { OTType } from "@/hooks/use-ot-requests";
 
 export function OTRequestForm() {
   const t = useT();
@@ -49,6 +49,13 @@ export function OTRequestForm() {
     reason.trim() &&
     (otType === "WEEKDAY" || (assignedStart && assignedEnd));
 
+  const needsTimeRange = otType !== "WEEKDAY";
+  const infoBanner = otType === "WEEKDAY"
+    ? t.ot.weekdayInfo
+    : otType === "HOLIDAY"
+    ? t.ot.holidayInfo
+    : t.ot.holidayWorkInfo;
+
   return (
     <>
       <MobileTopbar title={t.ot.title} />
@@ -56,11 +63,14 @@ export function OTRequestForm() {
       <div className="flex flex-col gap-5 p-4">
 <Tabs value={otType} onValueChange={(v) => setOTType(v as OTType)}>
           <TabsList className="h-11 w-full rounded-full p-1">
-            <TabsTrigger value="WEEKDAY" className="flex-1 rounded-full">
+            <TabsTrigger value="WEEKDAY" className="flex-1 rounded-full text-xs">
               {t.ot.weekday}
             </TabsTrigger>
-            <TabsTrigger value="HOLIDAY" className="flex-1 rounded-full">
+            <TabsTrigger value="HOLIDAY" className="flex-1 rounded-full text-xs">
               {t.ot.holiday}
+            </TabsTrigger>
+            <TabsTrigger value="HOLIDAY_WORK" className="flex-1 rounded-full text-xs">
+              {t.ot.holidayWork}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -70,9 +80,7 @@ export function OTRequestForm() {
           <DatePicker value={date} onChange={setDate} className="h-11 w-full rounded-xl" />
         </div>
 
-{otType === "WEEKDAY" ? (
-          <InfoBanner tone="accent">{t.ot.weekdayInfo}</InfoBanner>
-        ) : (
+{needsTimeRange && (
           <>
             <div>
               <SectionLabel htmlFor="ot-start">{t.ot.assignedStart}</SectionLabel>
@@ -95,9 +103,9 @@ export function OTRequestForm() {
                 className="h-11 w-full rounded-xl border border-[var(--es-neutral-300)] bg-card px-3 text-sm outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
               />
             </div>
-            <InfoBanner tone="accent">{t.ot.holidayInfo}</InfoBanner>
           </>
         )}
+        <InfoBanner tone="accent">{infoBanner}</InfoBanner>
 
 <div>
           <SectionLabel htmlFor="ot-reason">{t.ot.reason}</SectionLabel>
