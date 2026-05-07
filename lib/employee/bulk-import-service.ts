@@ -18,12 +18,45 @@ interface ImportRow {
   lastNameEn?: string;
   phone?: string;
   workShift?: string;
+  departmentCode?: string;
+  positionTitle?: string;
+  managerEmployeeCode?: string;
 }
 
 interface BulkImportResult {
   created: { rowIndex: number; employeeCode: string; initialPassword: string }[];
   errors: { rowIndex: number; field?: string; message: string }[];
   totalRows: number;
+}
+
+interface LookupMaps {
+  deptByCode: Map<string, string>;
+  positionByName: Map<string, string>;
+  employeeByCode: Map<string, string>;
+}
+
+async function buildLookupMaps(rows: ImportRow[]): Promise<LookupMaps> {
+  const deptCodes = new Set(rows.map((r) => r.departmentCode).filter((v): v is string => !!v));
+  const positionNames = new Set(rows.map((r) => r.positionTitle).filter((v): v is string => !!v));
+  const managerCodes = new Set(rows.map((r) => r.managerEmployeeCode).filter((v): v is string => !!v));
+
+  const [depts, positions, employees] = await Promise.all([
+    deptCodes.size > 0
+      ? prisma.department.findMany({ where: { code: { in: [...deptCodes] } }, select: { id: true, code: true } })
+      : Promise.resolve([]),
+    positionNames.size > 0
+      ? prisma.position.findMany({ where: { name: { in: [...positionNames] } }, select: { id: true, name: true } })
+      : Promise.resolve([]),
+    managerCodes.size > 0
+      ? prisma.employee.findMany({ where: { employeeCode: { in: [...managerCodes] } }, select: { id: true, employeeCode: true } })
+      : Promise.resolve([]),
+  ]);
+
+  return {
+    deptByCode: new Map(depts.map((d) => [d.code, d.id])),
+    positionByName: new Map(positions.map((p) => [p.name, p.id])),
+    employeeByCode: new Map(employees.map((e) => [e.employeeCode, e.id])),
+  };
 }
 
 export async function bulkImportEmployees(
@@ -59,7 +92,32 @@ export async function bulkImportEmployees(
         errors.push({ rowIndex: i + 1, field: issue.path.join("."), message: issue.message });
       }
     } else {
-      rows.push({ rowIndex: i + 1, ...result.data });
+      rows.push({
+        rowIndex: i + 1,
+        ...result.data,
+        departmentCode: raw.departmentCode?.trim() || undefined,
+        positionTitle: raw.positionTitle?.trim() || undefined,
+        managerEmployeeCode: raw.managerEmployeeCode?.trim() || undefined,
+      });
+    }
+  }
+
+  if (errors.length > 0) {
+    return { created: [], errors, totalRows: parsed.data.length };
+  }
+
+  const lookups = await buildLookupMaps(rows);
+
+  // Validate FK references before opening the transaction
+  for (const row of rows) {
+    if (row.departmentCode && !lookups.deptByCode.has(row.departmentCode)) {
+      errors.push({ rowIndex: row.rowIndex, field: "departmentCode", message: `Unknown department code: ${row.departmentCode}` });
+    }
+    if (row.positionTitle && !lookups.positionByName.has(row.positionTitle)) {
+      errors.push({ rowIndex: row.rowIndex, field: "positionTitle", message: `Unknown position: ${row.positionTitle}` });
+    }
+    if (row.managerEmployeeCode && !lookups.employeeByCode.has(row.managerEmployeeCode)) {
+      errors.push({ rowIndex: row.rowIndex, field: "managerEmployeeCode", message: `Unknown manager: ${row.managerEmployeeCode}` });
     }
   }
 
@@ -92,6 +150,9 @@ export async function bulkImportEmployees(
           firstNameEn: row.firstNameEn, lastNameEn: row.lastNameEn,
           phone: row.phone, hireDate: new Date(row.hireDate),
           workShift: (row.workShift as "MORNING" | "EVENING") ?? "MORNING",
+          departmentId: row.departmentCode ? lookups.deptByCode.get(row.departmentCode) : undefined,
+          positionId: row.positionTitle ? lookups.positionByName.get(row.positionTitle) : undefined,
+          managerId: row.managerEmployeeCode ? lookups.employeeByCode.get(row.managerEmployeeCode) : undefined,
         },
       });
 
