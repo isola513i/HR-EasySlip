@@ -1,21 +1,16 @@
 "use client";
 
-import { CheckCheck, Download, FileText, Lock } from "lucide-react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/shared/status-pill";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
 import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { PAYROLL_STATUS_TONE, type PayrollCycle } from "@/hooks/use-payroll";
+import { CycleActions } from "./cycle-actions";
 
 const GRID = "grid-cols-[80px_1.6fr_140px_180px_220px]";
 
@@ -51,6 +46,13 @@ export function CyclesTable({
   const t = useT();
   const fmt = useFormat();
   const monthName = (m: number) => fmt.formatMonthShort(`${year}-${String(m).padStart(2, "0")}`);
+  const labels = {
+    lock: t.hr.payrollLock,
+    timestamps: t.hr.payrollTimestamps,
+    export: t.hr.payrollExport,
+    markExported: t.hr.payrollConfirmMarkExported,
+  };
+  const actionProps = { onLock, onMarkExported, onDownloadTimestamps, onDownloadPayrollInfo, labels };
 
   return (
     <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
@@ -71,35 +73,19 @@ export function CyclesTable({
         </Select>
       </div>
 
-      <ScrollableTable minWidth={920}>
-        <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
-          <span>{t.hr.payrollMonth}</span>
-          <span>{t.hr.payrollPeriod}</span>
-          <span>{t.profile.status}</span>
-          <span>{t.hr.payrollLockedAt}</span>
-          <span>{t.hr.payrollActions}</span>
-        </div>
-
-        {isLoading && Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5`}>
-            <Skeleton className="h-4 w-12" />
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-5 w-16 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-8 w-32" />
-          </div>
+      {/* Mobile cards */}
+      <div className="space-y-2 p-3 md:hidden">
+        {isLoading && Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-28 w-full rounded-xl" />
         ))}
-
         {!isLoading && error && (
-          <div className="px-4 py-8 text-center text-sm text-destructive">{error}</div>
+          <div className="px-2 py-8 text-center text-sm text-destructive">{error}</div>
         )}
-
         {!isLoading && !error && cycles.length === 0 && (
-          <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+          <div className="px-2 py-12 text-center text-sm text-muted-foreground">
             {t.hr.noPayrollCycles.replace("{year}", String(year))}
           </div>
         )}
-
         {!isLoading && !error && cycles.map((c) => {
           const isSelected = c.id === selectedId;
           return (
@@ -108,44 +94,87 @@ export function CyclesTable({
               type="button"
               onClick={() => onSelect(c.id)}
               className={cn(
-                `grid ${GRID} w-full items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-left text-[13px] transition-colors last:border-b-0`,
-                isSelected ? "bg-[var(--es-accent-50)]" : "hover:bg-muted/40",
+                "w-full rounded-xl border bg-card p-3.5 text-left shadow-[var(--es-shadow-sm)] transition-colors",
+                isSelected ? "border-[var(--es-accent-300)] bg-[var(--es-accent-50)] ring-1 ring-[var(--es-accent-300)]" : "border-border hover:bg-muted/40",
               )}
             >
-              <span className="font-semibold">{monthName(c.month)}</span>
-              <span className="tabular-nums text-muted-foreground">
-                {fmt.formatShortDate(c.cycleStart)} – {fmt.formatShortDate(c.cycleEnd)}
-              </span>
-              <span><StatusPill tone={PAYROLL_STATUS_TONE[c.status]}>{c.status}</StatusPill></span>
-              <span className="tabular-nums text-muted-foreground">
-                {c.lockedAt ? fmt.formatDateTime(c.lockedAt) : "—"}
-              </span>
-              <div className="flex flex-wrap gap-1.5" onClick={(e) => e.stopPropagation()}>
-                {c.status === "OPEN" && (
-                  <Button size="sm" variant="outline" onClick={() => onLock(c)}>
-                    <Lock className="mr-1 size-3.5" /> {t.hr.payrollLock}
-                  </Button>
-                )}
-                {(c.status === "LOCKED" || c.status === "EXPORTED") && (
-                  <>
-                    <Button size="sm" variant="outline" onClick={() => onDownloadTimestamps(c)}>
-                      <FileText className="mr-1 size-3.5" /> {t.hr.payrollTimestamps}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => onDownloadPayrollInfo(c)}>
-                      <Download className="mr-1 size-3.5" /> {t.hr.payrollExport}
-                    </Button>
-                  </>
-                )}
-                {c.status === "LOCKED" && (
-                  <Button size="sm" variant="outline" onClick={() => onMarkExported(c)}>
-                    <CheckCheck className="mr-1 size-3.5" /> {t.hr.payrollConfirmMarkExported}
-                  </Button>
-                )}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="text-sm font-semibold">{monthName(c.month)} {c.year}</div>
+                  <div className="text-[11px] tabular-nums text-muted-foreground">
+                    {fmt.formatShortDate(c.cycleStart)} – {fmt.formatShortDate(c.cycleEnd)}
+                  </div>
+                </div>
+                <StatusPill tone={PAYROLL_STATUS_TONE[c.status]}>{c.status}</StatusPill>
               </div>
+              {c.lockedAt && (
+                <div className="mt-1.5 text-[11px] tabular-nums text-muted-foreground">
+                  {t.hr.payrollLockedAt}: {fmt.formatDateTime(c.lockedAt)}
+                </div>
+              )}
+              <div className="mt-3"><CycleActions cycle={c} {...actionProps} /></div>
             </button>
           );
         })}
-      </ScrollableTable>
+      </div>
+
+      {/* Desktop table */}
+      <div className="hidden md:block">
+        <ScrollableTable minWidth={920}>
+          <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+            <span>{t.hr.payrollMonth}</span>
+            <span>{t.hr.payrollPeriod}</span>
+            <span>{t.profile.status}</span>
+            <span>{t.hr.payrollLockedAt}</span>
+            <span>{t.hr.payrollActions}</span>
+          </div>
+
+          {isLoading && Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5`}>
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+          ))}
+
+          {!isLoading && error && (
+            <div className="px-4 py-8 text-center text-sm text-destructive">{error}</div>
+          )}
+
+          {!isLoading && !error && cycles.length === 0 && (
+            <div className="px-4 py-12 text-center text-sm text-muted-foreground">
+              {t.hr.noPayrollCycles.replace("{year}", String(year))}
+            </div>
+          )}
+
+          {!isLoading && !error && cycles.map((c) => {
+            const isSelected = c.id === selectedId;
+            return (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => onSelect(c.id)}
+                className={cn(
+                  `grid ${GRID} w-full items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-left text-[13px] transition-colors last:border-b-0`,
+                  isSelected ? "bg-[var(--es-accent-50)]" : "hover:bg-muted/40",
+                )}
+              >
+                <span className="font-semibold">{monthName(c.month)}</span>
+                <span className="tabular-nums text-muted-foreground">
+                  {fmt.formatShortDate(c.cycleStart)} – {fmt.formatShortDate(c.cycleEnd)}
+                </span>
+                <span><StatusPill tone={PAYROLL_STATUS_TONE[c.status]}>{c.status}</StatusPill></span>
+                <span className="tabular-nums text-muted-foreground">
+                  {c.lockedAt ? fmt.formatDateTime(c.lockedAt) : "—"}
+                </span>
+                <CycleActions cycle={c} {...actionProps} />
+              </button>
+            );
+          })}
+        </ScrollableTable>
+      </div>
     </div>
   );
 }
