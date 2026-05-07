@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
+import { notifyOTDecision } from "@/lib/email/ot-notification-sender";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function getPendingOTForApprover(
@@ -48,7 +49,7 @@ async function decideOT(
 ) {
   const { reason, hrOverride = false } = opts;
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const request = await tx.overtimeRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
     if (request.status !== "PENDING") {
@@ -82,6 +83,9 @@ async function decideOT(
 
     return updated;
   });
+
+  notifyOTDecision(id, decision).catch(() => {});
+  return result;
 }
 
 export const approveOT = (caller: Caller, id: string, meta: RequestMeta) =>

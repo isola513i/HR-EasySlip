@@ -8,6 +8,7 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { calculateWeekdayOT, calculateHolidayOT, getOTRate, isHolidayOrWeekend, checkOTLimits, WORK_END_HOUR } from "./ot-calculation";
+import { notifyOTSubmitted } from "@/lib/email/ot-notification-sender";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { OTSubmitWeekdayInput, OTSubmitHolidayInput, OTFilters } from "./schemas";
 
@@ -77,6 +78,8 @@ export async function submitWeekdayOT(
     ipAddress: meta.ip,
     userAgent: meta.userAgent,
   });
+
+  notifyOTSubmitted(request.id).catch(() => {});
 
   const warnings = await checkOTLimits(caller.employeeId, date, Number(hours));
   return { ...request, warnings };
@@ -160,6 +163,8 @@ export async function submitHolidayOT(
     ipAddress: meta.ip,
     userAgent: meta.userAgent,
   });
+
+  notifyOTSubmitted(request.id).catch(() => {});
 
   const warnings = await checkOTLimits(caller.employeeId, date, Number(hours));
   return { ...request, warnings };
