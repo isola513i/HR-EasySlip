@@ -18,6 +18,7 @@ const en = {
     export: "Export",
     loading: "Loading...",
     noData: "No data",
+    noResults: "No results match your search.",
     error: "Error",
     success: "Success",
     prev: "Prev",
