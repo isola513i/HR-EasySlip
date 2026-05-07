@@ -13,6 +13,8 @@ export interface DocumentRecord {
   mime: string;
   size: number;
   uploadedAt: string;
+  requiresSignature?: boolean;
+  signedByMe?: boolean;
 }
 
 const MAX_BYTES = 5 * 1024 * 1024;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileText, Image as ImageIcon, ExternalLink, Trash2 } from "lucide-react";
+import { FileText, Image as ImageIcon, ExternalLink, Trash2, PenLine, CheckCircle2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +12,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { StatusPill } from "@/components/shared/status-pill";
+import { DocumentSignDialog } from "@/components/shared/document-sign-dialog";
 import { documentFileHref, type DocumentRecord } from "@/hooks/use-documents";
 import { useFormat } from "@/hooks/use-format";
 import { useT } from "@/lib/i18n/locale-context";
@@ -19,7 +21,9 @@ import { useT } from "@/lib/i18n/locale-context";
 interface Props {
   document: DocumentRecord;
   canDelete: boolean;
+  canSign?: boolean;
   onDelete?: (documentId: string) => Promise<void>;
+  onSigned?: () => void;
 }
 
 function formatSize(bytes: number, t: ReturnType<typeof useT>): string {
@@ -29,14 +33,17 @@ function formatSize(bytes: number, t: ReturnType<typeof useT>): string {
   return t.documents.sizeMB.replace("{size}", (bytes / (1024 * 1024)).toFixed(1));
 }
 
-export function DocumentListItem({ document, canDelete, onDelete }: Props) {
+export function DocumentListItem({ document, canDelete, canSign = false, onDelete, onSigned }: Props) {
   const t = useT();
   const { formatDate } = useFormat();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [signOpen, setSignOpen] = useState(false);
 
   const isImage = document.mime.startsWith("image/");
   const Icon = isImage ? ImageIcon : FileText;
+  const showSignButton = canSign && document.requiresSignature && !document.signedByMe;
+  const showSignedBadge = document.requiresSignature && document.signedByMe;
 
   const handleDelete = async () => {
     if (!onDelete) return;
@@ -64,7 +71,29 @@ export function DocumentListItem({ document, canDelete, onDelete }: Props) {
             <span className="mx-1.5">·</span>
             {formatSize(document.size, t)}
           </div>
+          {showSignedBadge && (
+            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-[var(--es-success-700)]">
+              <CheckCircle2 className="size-3" />
+              {t.documents.signature.signedBadge}
+            </div>
+          )}
+          {document.requiresSignature && !document.signedByMe && (
+            <div className="mt-1.5">
+              <StatusPill tone="warn">{t.documents.signature.required}</StatusPill>
+            </div>
+          )}
         </div>
+        {showSignButton && (
+          <button
+            type="button"
+            onClick={() => setSignOpen(true)}
+            className="grid size-11 shrink-0 place-items-center rounded-full text-[var(--es-accent-600)] transition-colors hover:bg-[var(--es-accent-50)]"
+            aria-label={t.documents.signature.signAction}
+            title={t.documents.signature.signAction}
+          >
+            <PenLine className="size-4" />
+          </button>
+        )}
         <a
           href={documentFileHref(document.id)}
           target="_blank"
@@ -109,6 +138,14 @@ export function DocumentListItem({ document, canDelete, onDelete }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DocumentSignDialog
+        open={signOpen}
+        documentId={signOpen ? document.id : null}
+        filename={document.filename}
+        onClose={() => setSignOpen(false)}
+        onSigned={() => onSigned?.()}
+      />
     </>
   );
 }

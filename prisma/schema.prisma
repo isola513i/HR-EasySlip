@@ -203,6 +203,7 @@ model Employee {
   overtimeApprovals  OvertimeRequest[]    @relation("OTApprover")
   onboardingChecklist OnboardingChecklist?
   documents          Document[]
+  documentSignatures DocumentSignature[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -673,9 +674,26 @@ model Document {
   size            Int
   uploadedById    String
   uploadedAt      DateTime @default(now())
+  requiresSignature Boolean @default(false)
 
   owner           Employee @relation(fields: [ownerEmployeeId], references: [id], onDelete: Cascade)
+  signatures      DocumentSignature[]
 
   @@index([ownerEmployeeId, category])
   @@index([entityType, entityId])
+}
+
+model DocumentSignature {
+  id               String   @id @default(cuid())
+  documentId       String
+  signerEmployeeId String
+  signatureDataUrl String   @db.Text
+  signedAt         DateTime @default(now())
+  ipAddress        String?
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  signer   Employee @relation(fields: [signerEmployeeId], references: [id])
+
+  @@unique([documentId, signerEmployeeId])
+  @@index([signerEmployeeId])
 }

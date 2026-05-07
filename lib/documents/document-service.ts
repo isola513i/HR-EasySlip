@@ -33,7 +33,7 @@ export {
 
 // Public projection — strips blobPath so the Vercel Blob URL never leaks
 // outside the service. API callers must use the /file proxy to read bytes.
-export type PublicDocument = Omit<Document, "blobPath">;
+export type PublicDocument = Omit<Document, "blobPath"> & { signedByMe?: boolean };
 const publicView = ({ blobPath: _blobPath, ...rest }: Document): PublicDocument => rest;
 
 interface UploadInput {
@@ -269,5 +269,16 @@ export async function listDocuments(input: ListInput): Promise<PublicDocument[]>
     },
     orderBy: { uploadedAt: "desc" },
   });
-  return docs.map(publicView);
+
+  // Annotate signedByMe for documents that require signature
+  const signatureRequired = docs.filter((d) => d.requiresSignature).map((d) => d.id);
+  const mySignatures = signatureRequired.length > 0 && caller.employeeId
+    ? await prisma.documentSignature.findMany({
+        where: { documentId: { in: signatureRequired }, signerEmployeeId: caller.employeeId },
+        select: { documentId: true },
+      })
+    : [];
+  const signedSet = new Set(mySignatures.map((s) => s.documentId));
+
+  return docs.map((d) => ({ ...publicView(d), signedByMe: signedSet.has(d.id) }));
 }

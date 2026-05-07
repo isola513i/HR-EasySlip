@@ -106,6 +106,8 @@ export function DocumentsSection({ employeeId }: Props) {
                       key={doc.id}
                       document={doc}
                       canDelete={canDelete(cat)}
+                      canSign
+                      onSigned={refetch}
                       onDelete={canDelete(cat) ? handleDelete : undefined}
                     />
                   ))}
