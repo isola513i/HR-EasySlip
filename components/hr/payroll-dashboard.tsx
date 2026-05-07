@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Download, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -30,24 +31,39 @@ function pickDefaultCycle(cycles: PayrollCycle[]): string | null {
 export function PayrollDashboard() {
   const t = useT();
   const fmt = useFormat();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const cycleParam = searchParams.get("cycle");
+
   const {
     cycles, isLoading, error, year, setYear,
     lockCycle, markExported,
     downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData,
   } = usePayroll();
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
   const [locking, setLocking] = useState(false);
   const [exportTarget, setExportTarget] = useState<PayrollCycle | null>(null);
   const [marking, setMarking] = useState(false);
 
+  const setSelectedId = useCallback((id: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (id) params.set("cycle", id); else params.delete("cycle");
+    const qs = params.toString();
+    router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [router, pathname, searchParams]);
+
+  const selectedId = cycleParam && cycles.some((c) => c.id === cycleParam)
+    ? cycleParam
+    : null;
+
   useEffect(() => {
-    setSelectedId((prev) => {
-      if (prev && cycles.some((c) => c.id === prev)) return prev;
-      return pickDefaultCycle(cycles);
-    });
-  }, [cycles]);
+    if (cycles.length === 0) return;
+    if (selectedId) return;
+    const fallback = pickDefaultCycle(cycles);
+    if (fallback) setSelectedId(fallback);
+  }, [cycles, selectedId, setSelectedId]);
 
   const monthName = (m: number) => fmt.formatMonthShort(`${year}-${String(m).padStart(2, "0")}`);
   const selected = useMemo(() => cycles.find((c) => c.id === selectedId) ?? null, [cycles, selectedId]);
@@ -150,6 +166,7 @@ export function PayrollDashboard() {
         confirmLabel={t.hr.payrollConfirmMarkExported}
         loadingLabel={t.hr.payrollMarkingExported}
         loading={marking}
+        destructive
         onClose={() => setExportTarget(null)}
         onConfirm={handleMarkExportedConfirm}
       />
@@ -163,6 +180,7 @@ export function PayrollDashboard() {
         confirmLabel={t.hr.payrollConfirmLock}
         loadingLabel={t.hr.payrollLocking}
         loading={locking}
+        destructive
         onClose={() => setLockTarget(null)}
         onConfirm={handleLockConfirm}
       />
