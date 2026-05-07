@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Check, X, CheckCircle, Clock } from "lucide-react";
+import { Check, X, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusPill } from "@/components/shared/status-pill";
@@ -16,9 +16,12 @@ export function OvertimeInbox() {
   const t = useT();
   const { rows, isLoading, error, approve, reject } = useOvertimeInbox();
   const [rejectTarget, setRejectTarget] = useState<OvertimeRow | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const handleApprove = useCallback(async (id: string) => {
+    if (pendingId) return;
     hapticTap();
+    setPendingId(id);
     try {
       await approve(id);
       hapticSuccess();
@@ -26,12 +29,15 @@ export function OvertimeInbox() {
     } catch {
       hapticError();
       toast.error(t.manager.approveFailed);
+    } finally {
+      setPendingId(null);
     }
-  }, [approve, t.manager.approved, t.manager.approveFailed]);
+  }, [approve, pendingId, t.manager.approved, t.manager.approveFailed]);
 
   const handleReject = useCallback(async (reason: string) => {
     if (!rejectTarget) return;
     hapticTap();
+    setPendingId(rejectTarget.id);
     try {
       await reject(rejectTarget.id, reason);
       hapticSuccess();
@@ -39,6 +45,8 @@ export function OvertimeInbox() {
     } catch {
       hapticError();
       toast.error(t.manager.rejectFailed);
+    } finally {
+      setPendingId(null);
     }
   }, [rejectTarget, reject, t.manager.rejected, t.manager.rejectFailed]);
 
@@ -104,15 +112,17 @@ export function OvertimeInbox() {
                   title={t.manager.approve}
                   aria-label={`${t.manager.approve} ${name}`}
                   onClick={() => handleApprove(r.id)}
-                  className="rounded-md p-2 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]"
+                  disabled={pendingId === r.id}
+                  className="rounded-md p-2 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Check className="size-4" />
+                  {pendingId === r.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
                 </button>
                 <button
                   title={t.manager.reject}
                   aria-label={`${t.manager.reject} ${name}`}
                   onClick={() => setRejectTarget(r)}
-                  className="rounded-md p-2 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"
+                  disabled={pendingId === r.id}
+                  className="rounded-md p-2 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X className="size-4" />
                 </button>
