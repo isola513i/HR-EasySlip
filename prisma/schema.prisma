@@ -1021,14 +1021,23 @@ model Notification {
   id        String           @id @default(cuid())
   userId    String
   kind      NotificationKind
-  title     String           @db.Text
-  body      String           @db.Text
+  /// Structured params for view-time rendering via i18n dictionary.
+  /// Source-of-truth display state lives here; title/body are kept as
+  /// optional pre-rendered fallbacks for legacy / non-templated kinds.
+  meta      Json?
+  /// Optional foreign key for entities the notification refers to
+  /// (e.g. PayrollCycle for cut-off reminders). Used together with
+  /// (userId, kind) as a unique idempotency key.
+  refId     String?
+  title     String?          @db.Text
+  body      String?          @db.Text
   link      String?
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, kind, refId])
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@index([userId, kind, createdAt])

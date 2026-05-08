@@ -613,6 +613,28 @@ const th = {
       PUSH_DENIED: "สิทธิ์ถูกบล็อก เปิดใน browser settings",
       failed: "อัปเดต push notifications ไม่สำเร็จ",
     },
+    payrollCutoff: {
+      T3: {
+        title: "อีก 3 วันถึงวัน cut-off",
+        action: "ตรวจคำขอที่รออนุมัติ",
+      },
+      T1: {
+        title: "พรุ่งนี้คือวัน cut-off",
+        action: "ตรวจสอบรอบสุดท้าย",
+      },
+      DDAY: {
+        title: "วันนี้คือวัน cut-off — ส่ง Empeo",
+        action: "ปิดงวดและ export",
+      },
+      bodyLine1: "งวด {month} • cut-off {cutoff}",
+      bodyLine2: "OT {ot} · ลา {leave} · ค่าใช้จ่าย {expense} (รออนุมัติ)",
+      bodySalaryWarn: "พนักงาน {count} คนยังไม่ตั้งค่า baseSalary — OT ใน Empeo จะเป็น 0",
+      emailHeading: "งวดเงินเดือน: {month}",
+      emailCutoffLabel: "วัน cut-off",
+      emailPendingOt: "OT รออนุมัติ",
+      emailPendingLeave: "ลา รออนุมัติ",
+      emailPendingExpense: "ค่าใช้จ่าย รออนุมัติ",
+    },
   },
   onboarding: {
     welcomeTitle: "ยินดีต้อนรับสู่ EasySlip HR",

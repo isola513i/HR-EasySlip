@@ -6,7 +6,12 @@ import { Bell, AlertTriangle, Clock, Calendar } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatRelativeTime } from "@/lib/format";
 import { useT } from "@/lib/i18n/locale-context";
-import { useNotifications, type Notification, type NotificationKind } from "@/hooks/use-notifications";
+import {
+  useNotifications,
+  type Notification,
+  type NotificationKind,
+  type PayrollCutoffMeta,
+} from "@/hooks/use-notifications";
 import { cn } from "@/lib/utils";
 
 interface NotificationBellProps {
@@ -80,19 +85,20 @@ interface RowProps {
 }
 
 function NotificationRow({ item, onClick }: RowProps) {
+  const t = useT();
   const Icon = KIND_ICON[item.kind] ?? Bell;
   const tone = KIND_TONE[item.kind] ?? "text-muted-foreground";
   const isUnread = !item.readAt;
-
-  // Strip the dedupe-key prefix ("cycle:<id>\n") from the body for display.
-  const visibleBody = item.body.replace(/^cycle:[^\n]*\n/, "");
+  const rendered = renderPayrollCutoff(item, t);
+  const visibleTitle = rendered?.title ?? item.title ?? "";
+  const visibleBody = rendered?.body ?? item.body ?? "";
 
   const inner = (
     <div className="flex w-full items-start gap-2.5">
       <Icon className={cn("mt-0.5 size-4 shrink-0", tone)} strokeWidth={2} />
       <div className="min-w-0 flex-1">
         <div className={cn("text-[13px] leading-tight", isUnread ? "font-semibold" : "font-medium")}>
-          {item.title}
+          {visibleTitle}
         </div>
         <div className="mt-0.5 line-clamp-2 whitespace-pre-line text-[11px] text-muted-foreground">
           {visibleBody}
@@ -122,4 +128,31 @@ function NotificationRow({ item, onClick }: RowProps) {
       {inner}
     </button>
   );
+}
+
+type Dict = ReturnType<typeof useT>;
+
+const PAYROLL_KIND_KEY: Record<NotificationKind, "T3" | "T1" | "DDAY"> = {
+  PAYROLL_CUTOFF_T3: "T3",
+  PAYROLL_CUTOFF_T1: "T1",
+  PAYROLL_CUTOFF_DDAY: "DDAY",
+};
+
+function renderPayrollCutoff(item: Notification, t: Dict): { title: string; body: string } | null {
+  const key = PAYROLL_KIND_KEY[item.kind];
+  if (!key || !item.meta) return null;
+  const meta = item.meta as PayrollCutoffMeta;
+  const dict = t.notifications.payrollCutoff;
+  const line1 = dict.bodyLine1
+    .replace("{month}", meta.monthLabel)
+    .replace("{cutoff}", meta.cutoffDateLabel);
+  const line2 = dict.bodyLine2
+    .replace("{ot}", String(meta.pendingOt))
+    .replace("{leave}", String(meta.pendingLeave))
+    .replace("{expense}", String(meta.pendingExpense));
+  const lines = [line1, line2];
+  if (meta.missingSalary > 0) {
+    lines.push(dict.bodySalaryWarn.replace("{count}", String(meta.missingSalary)));
+  }
+  return { title: dict[key].title, body: lines.join("\n") };
 }

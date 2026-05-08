@@ -8,11 +8,24 @@ export type NotificationKind =
   | "PAYROLL_CUTOFF_T1"
   | "PAYROLL_CUTOFF_DDAY";
 
+export interface PayrollCutoffMeta {
+  cycleId: string;
+  cutoffDateLabel: string;
+  monthLabel: string;
+  pendingOt: number;
+  pendingLeave: number;
+  pendingExpense: number;
+  missingSalary: number;
+}
+
 export interface Notification {
   id: string;
   kind: NotificationKind;
-  title: string;
-  body: string;
+  meta: PayrollCutoffMeta | Record<string, unknown> | null;
+  refId: string | null;
+  /** Pre-rendered fallbacks; new notifications render via dictionary + meta. */
+  title: string | null;
+  body: string | null;
   link: string | null;
   readAt: string | null;
   createdAt: string;

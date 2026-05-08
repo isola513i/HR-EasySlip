@@ -611,6 +611,28 @@ const en = {
       PUSH_DENIED: "Permission blocked. Enable in browser settings.",
       failed: "Couldn't update push notifications",
     },
+    payrollCutoff: {
+      T3: {
+        title: "3 days to payroll cut-off",
+        action: "Review pending approvals",
+      },
+      T1: {
+        title: "Cut-off is tomorrow",
+        action: "Final review",
+      },
+      DDAY: {
+        title: "Cut-off today — export to Empeo",
+        action: "Lock cycle & export",
+      },
+      bodyLine1: "{month} • cut-off {cutoff}",
+      bodyLine2: "Pending OT {ot} · Leave {leave} · Expense {expense}",
+      bodySalaryWarn: "{count} employee(s) missing baseSalary — Empeo OT will export 0",
+      emailHeading: "Payroll cycle: {month}",
+      emailCutoffLabel: "Cut-off date",
+      emailPendingOt: "Pending OT",
+      emailPendingLeave: "Pending Leave",
+      emailPendingExpense: "Pending Expense",
+    },
   },
   onboarding: {
     welcomeTitle: "Welcome to EasySlip HR",

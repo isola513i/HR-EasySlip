@@ -10,18 +10,12 @@ import {
   type ReminderKind,
 } from "@/lib/email/payroll-reminder-template";
 import { createNotification } from "@/lib/notifications/notification-service";
-import { HR_ROLES_FOR_REMINDERS } from "./payroll-reminders-constants";
+import { SENSITIVE_DATA_ROLES } from "@/lib/security/role-helpers";
 
 interface ReminderPlan {
   kind: ReminderKind;
   notifKind: NotificationKind;
 }
-
-const KIND_TITLE_TH: Record<ReminderKind, string> = {
-  T3:   "อีก 3 วันถึงวัน cut-off",
-  T1:   "พรุ่งนี้คือวัน cut-off",
-  DDAY: "วันนี้คือวัน cut-off — ส่ง Empeo",
-};
 
 /** Wall-clock day in Bangkok for the given UTC date. */
 function bangkokDateOnly(d: Date): Date {
@@ -50,11 +44,17 @@ interface PendingCounts {
   missingSalary: number;
 }
 
-async function gatherPending(cycleId: string): Promise<PendingCounts> {
+/**
+ * Pending counts are cycle-agnostic: a request stays in PENDING until
+ * the manager/HR acts, and `payrollCycleId` is only stamped at approval
+ * time. Filtering by `payrollCycleId = currentCycle` here would silently
+ * return zero on the days HR most needs the visibility.
+ */
+async function gatherPending(): Promise<PendingCounts> {
   const [pendingOt, pendingLeave, pendingExpense, missingSalary] = await Promise.all([
-    prisma.overtimeRequest.count({ where: { status: "PENDING", payrollCycleId: cycleId } }),
-    prisma.leaveRequest.count({ where: { status: "PENDING", payrollCycleId: cycleId } }),
-    prisma.expenseClaim.count({ where: { status: "PENDING", payrollCycleId: cycleId } }),
+    prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
+    prisma.leaveRequest.count({ where: { status: "PENDING" } }),
+    prisma.expenseClaim.count({ where: { status: "PENDING" } }),
     prisma.employee.count({ where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] }, baseSalary: null } }),
   ]);
   return { pendingOt, pendingLeave, pendingExpense, missingSalary };
@@ -69,7 +69,7 @@ async function listHrRecipients(): Promise<RecipientRow[]> {
   const employees = await prisma.employee.findMany({
     where: {
       employmentStatus: { in: ["ACTIVE", "PROBATION"] },
-      roles: { hasSome: [...HR_ROLES_FOR_REMINDERS] },
+      roles: { hasSome: [...SENSITIVE_DATA_ROLES] },
       user: { isDisabled: false },
     },
     select: { userId: true, user: { select: { email: true } } },
@@ -90,17 +90,26 @@ export interface PayrollRemindersResult {
 }
 
 /**
- * Send T-3 / T-1 / D-day cut-off reminders to HR. Idempotent: each
- * (user, kind, cycle) gets at most one notification — the cron can
- * safely re-run without spamming.
+ * Send T-3 / T-1 / D-day cut-off reminders to HR. Idempotent at the DB
+ * level via the unique index on (userId, kind, refId=cycleId) — the
+ * cron can safely re-run without spamming.
  */
 export async function runPayrollReminders(now = new Date()): Promise<PayrollRemindersResult> {
   const ranAt = now.toISOString();
 
-  const cycle = await prisma.payrollCycle.findFirst({
-    where: { status: "OPEN" },
-    orderBy: [{ year: "asc" }, { month: "asc" }],
-  });
+  // Pick the cycle that *should* be active for today: prefer the cycle
+  // matching the current Bangkok wall-clock month, fall back to the
+  // newest OPEN cycle. Sorting OPEN ascending (the previous behaviour)
+  // would target the oldest unclosed cycle and miss the current one.
+  const bkk = new Date(now.getTime() + 7 * 3600_000);
+  const cycle =
+    (await prisma.payrollCycle.findFirst({
+      where: { status: "OPEN", year: bkk.getUTCFullYear(), month: bkk.getUTCMonth() + 1 },
+    })) ??
+    (await prisma.payrollCycle.findFirst({
+      where: { status: "OPEN" },
+      orderBy: [{ year: "desc" }, { month: "desc" }],
+    }));
   if (!cycle) {
     return { ranAt, cycleId: null, kind: null, recipients: 0, emailsSent: 0, notificationsCreated: 0, reason: "No open cycle" };
   }
@@ -110,7 +119,7 @@ export async function runPayrollReminders(now = new Date()): Promise<PayrollRemi
     return { ranAt, cycleId: cycle.id, kind: null, recipients: 0, emailsSent: 0, notificationsCreated: 0, reason: "Not a reminder day" };
   }
 
-  const [counts, recipients] = await Promise.all([gatherPending(cycle.id), listHrRecipients()]);
+  const [counts, recipients] = await Promise.all([gatherPending(), listHrRecipients()]);
   if (recipients.length === 0) {
     return { ranAt, cycleId: cycle.id, kind: plan.kind, recipients: 0, emailsSent: 0, notificationsCreated: 0, reason: "No HR recipients" };
   }
@@ -119,49 +128,41 @@ export async function runPayrollReminders(now = new Date()): Promise<PayrollRemi
   const monthLabel = `${cycle.year}-${String(cycle.month).padStart(2, "0")}`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://easyslip.app";
 
-  const emailParams = {
-    kind: plan.kind,
+  const meta = {
+    cycleId: cycle.id,
     cutoffDateLabel,
     monthLabel,
     pendingOt: counts.pendingOt,
     pendingLeave: counts.pendingLeave,
     pendingExpense: counts.pendingExpense,
     missingSalary: counts.missingSalary,
-    appUrl,
   };
-  const subject = payrollReminderSubject(emailParams);
-  const html = payrollReminderHtml(emailParams);
-  const text = payrollReminderText(emailParams);
+  const subject = payrollReminderSubject({ kind: plan.kind, cutoffDateLabel, monthLabel, pendingOt: counts.pendingOt, pendingLeave: counts.pendingLeave, pendingExpense: counts.pendingExpense, missingSalary: counts.missingSalary, appUrl });
+  const html = payrollReminderHtml({ kind: plan.kind, cutoffDateLabel, monthLabel, pendingOt: counts.pendingOt, pendingLeave: counts.pendingLeave, pendingExpense: counts.pendingExpense, missingSalary: counts.missingSalary, appUrl });
+  const text = payrollReminderText({ kind: plan.kind, cutoffDateLabel, monthLabel, pendingOt: counts.pendingOt, pendingLeave: counts.pendingLeave, pendingExpense: counts.pendingExpense, missingSalary: counts.missingSalary, appUrl });
 
   let emailsSent = 0;
+  let emailsFailed = 0;
   let notificationsCreated = 0;
   for (const r of recipients) {
     const dedupeKey = `${r.userId}:${plan.notifKind}:${cycle.id}`;
     try {
-      // Idempotency: skip if a notification for this user+kind already
-      // exists for this cycle. We encode the cycleId in the body's
-      // first line to make matching cheap.
-      const exists = await prisma.notification.findFirst({
-        where: {
-          userId: r.userId,
-          kind: plan.notifKind,
-          body: { startsWith: `cycle:${cycle.id}` },
-        },
-        select: { id: true },
-      });
-      if (exists) continue;
-
-      await createNotification({
+      const created = await createNotification({
         userId: r.userId,
         kind: plan.notifKind,
-        title: KIND_TITLE_TH[plan.kind],
-        body: `cycle:${cycle.id}\n${monthLabel} • cut-off ${cutoffDateLabel}\nPending OT ${counts.pendingOt} · Leave ${counts.pendingLeave} · Expense ${counts.pendingExpense}${counts.missingSalary > 0 ? ` · Missing salary ${counts.missingSalary}` : ""}`,
+        meta,
+        refId: cycle.id,
         link: plan.kind === "DDAY" ? "/hr/payroll" : "/hr/dashboard",
       });
+      if (!created) continue; // already sent for this (user, kind, cycle)
       notificationsCreated++;
 
       const ok = await sendNotificationEmail(r.email, subject, html, text);
       if (ok) emailsSent++;
+      else {
+        emailsFailed++;
+        logger.warn("payroll-reminder email send returned false", { dedupeKey });
+      }
     } catch (err) {
       logger.error("payroll-reminder failed for recipient", { dedupeKey, error: (err as Error).message });
     }
@@ -172,7 +173,7 @@ export async function runPayrollReminders(now = new Date()): Promise<PayrollRemi
     action: "payroll.reminder_sent",
     entityType: "PayrollCycle",
     entityId: cycle.id,
-    after: { kind: plan.kind, recipients: recipients.length, emailsSent, notificationsCreated, counts },
+    after: { kind: plan.kind, recipients: recipients.length, emailsSent, emailsFailed, notificationsCreated, counts },
   });
 
   return { ranAt, cycleId: cycle.id, kind: plan.kind, recipients: recipients.length, emailsSent, notificationsCreated };
