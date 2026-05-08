@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Calendar, Mail, Phone, ShieldCheck, User, Wallet } from "lucide-react";
 import {
   Sheet,
@@ -8,10 +9,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { StatusPill } from "@/components/shared/status-pill";
 import { RoleBadge } from "@/components/shared/role-badge";
 import { EmployeeAvatar } from "@/components/hr/attendance/employee-avatar";
 import { EmployeeDocumentsCard } from "@/components/hr/employees/documents/employee-documents-card";
+import { SalaryInfoDialog } from "@/components/hr/employees/salary-info-dialog";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { statusTone } from "@/lib/employee/status-tones";
@@ -22,13 +25,19 @@ import type { Employee } from "@/hooks/use-employees";
 interface Props {
   employee: Employee | null;
   onClose: () => void;
+  onUpdated?: () => void;
 }
 
-export function EmployeeDetailSheet({ employee, onClose }: Props) {
+export function EmployeeDetailSheet({ employee, onClose, onUpdated }: Props) {
   const t = useT();
   const fmt = useFormat();
+  const [salaryOpen, setSalaryOpen] = useState(false);
 
   if (!employee) return null;
+
+  // baseSalary is omitted from the API response when caller is not in
+  // SENSITIVE_DATA_ROLES — use the field's presence as the gate signal.
+  const canViewSalary = employee.baseSalary !== undefined;
 
   const name = `${employee.firstNameTh} ${employee.lastNameTh}`;
   const nameEn = [employee.firstNameEn, employee.lastNameEn].filter(Boolean).join(" ");
@@ -80,13 +89,6 @@ export function EmployeeDetailSheet({ employee, onClose }: Props) {
                   : "—"
               }
             />
-            {employee.baseSalary !== undefined && (
-              <Field
-                icon={Wallet}
-                label={t.hr.employees.baseSalary}
-                value={employee.baseSalary ? fmt.formatTHB(employee.baseSalary) : "—"}
-              />
-            )}
             <Field
               icon={Calendar}
               label={t.hr.start}
@@ -99,11 +101,27 @@ export function EmployeeDetailSheet({ employee, onClose }: Props) {
             />
           </dl>
 
+          {canViewSalary && (
+            <div className="border-t border-[var(--es-neutral-100)] pt-4">
+              <Button variant="outline" onClick={() => setSalaryOpen(true)} className="w-full gap-1.5">
+                <Wallet className="size-4" /> {t.hr.employees.salaryInfoBtn}
+              </Button>
+            </div>
+          )}
+
           <div className="border-t border-[var(--es-neutral-100)] pt-4">
             <EmployeeDocumentsCard employeeId={employee.id} />
           </div>
         </div>
       </SheetContent>
+
+      {salaryOpen && (
+        <SalaryInfoDialog
+          employee={employee}
+          onClose={() => setSalaryOpen(false)}
+          onUpdated={() => { onUpdated?.(); }}
+        />
+      )}
     </Sheet>
   );
 }

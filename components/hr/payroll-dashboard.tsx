@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { usePayroll, type PayrollCycle } from "@/hooks/use-payroll";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
+import { useMissingSalaryCount } from "@/hooks/use-missing-salary-count";
 import { PayrollKpis } from "@/components/hr/payroll/payroll-kpis";
 import { CyclesTable } from "@/components/hr/payroll/cycles-table";
 import { CycleSummaryCard } from "@/components/hr/payroll/cycle-summary-card";
@@ -44,6 +45,7 @@ export function PayrollDashboard() {
 
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
   const [locking, setLocking] = useState(false);
+  const { count: missingSalaryCount } = useMissingSalaryCount();
   const [exportTarget, setExportTarget] = useState<PayrollCycle | null>(null);
   const [marking, setMarking] = useState(false);
 
@@ -177,9 +179,18 @@ export function PayrollDashboard() {
       <PayrollConfirmDialog
         open={!!lockTarget}
         title={t.hr.payrollLockTitle}
-        body={t.hr.payrollLockConfirm
-          .replace("{month}", lockTarget ? monthName(lockTarget.month) : "")
-          .replace("{year}", String(year))}
+        body={
+          <>
+            {t.hr.payrollLockConfirm
+              .replace("{month}", lockTarget ? monthName(lockTarget.month) : "")
+              .replace("{year}", String(year))}
+            {missingSalaryCount && missingSalaryCount > 0 ? (
+              <span className="mt-2 block rounded-md border border-amber-300 bg-amber-50 p-2 text-[12px] text-amber-900 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-200">
+                {t.hr.employees.cycleLockMissingSalary.replace("{count}", String(missingSalaryCount))}
+              </span>
+            ) : null}
+          </>
+        }
         confirmLabel={t.hr.payrollConfirmLock}
         loadingLabel={t.hr.payrollLocking}
         loading={locking}

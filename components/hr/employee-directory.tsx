@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Plus, Check, Copy } from "lucide-react";
+import { Plus, Check, Copy, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -15,6 +15,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { cn } from "@/lib/utils";
 import { useEmployees, type Employee } from "@/hooks/use-employees";
+import { useMissingSalaryCount } from "@/hooks/use-missing-salary-count";
 import { downloadBlob } from "@/lib/export/csv-download";
 import { openMailto } from "@/lib/email/open-mailto";
 import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
@@ -43,6 +44,8 @@ export function EmployeeDirectory() {
   const [typeValue, setTypeValue] = useState("");
   const [view, setView] = useState<EmployeeView>("list");
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const { count: missingSalaryCount, hasAccess: canSeeMissingSalary, refetch: refetchMissingSalary } = useMissingSalaryCount();
 
   const [bulkImportOpen, setBulkImportOpen] = useState(false);
   const [detailEmployee, setDetailEmployee] = useState<Employee | null>(null);
@@ -152,6 +155,15 @@ export function EmployeeDirectory() {
         </Link>
       </div>
 
+      {canSeeMissingSalary && missingSalaryCount !== null && missingSalaryCount > 0 && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[12px] text-amber-900 dark:border-amber-700/40 dark:bg-amber-950/30 dark:text-amber-200">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <span>
+            {t.hr.employees.missingSalaryWarn.replace("{count}", String(missingSalaryCount))}
+          </span>
+        </div>
+      )}
+
       <EmployeeFilterBar
         search={filters.search}
         onSearchChange={setSearch}
@@ -208,10 +220,14 @@ export function EmployeeDirectory() {
       <BulkImportDialog
         open={bulkImportOpen}
         onClose={() => setBulkImportOpen(false)}
-        onDone={() => refetch()}
+        onDone={() => { refetch(); refetchMissingSalary(); }}
       />
 
-      <EmployeeDetailSheet employee={detailEmployee} onClose={() => setDetailEmployee(null)} />
+      <EmployeeDetailSheet
+        employee={detailEmployee}
+        onClose={() => setDetailEmployee(null)}
+        onUpdated={() => { refetch(); refetchMissingSalary(); }}
+      />
 
       <ConfirmDialog
         open={deleteOpen}

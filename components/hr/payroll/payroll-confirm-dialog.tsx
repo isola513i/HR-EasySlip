@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import { useT } from "@/lib/i18n/locale-context";
 interface Props {
   open: boolean;
   title: string;
-  body: string;
+  body: ReactNode;
   confirmLabel: string;
   loadingLabel: string;
   loading: boolean;
@@ -41,7 +42,7 @@ export function PayrollConfirmDialog({
             {title}
           </DialogTitle>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">{body}</p>
+        <div className="text-sm text-muted-foreground">{body}</div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>{t.common.cancel}</Button>
           <Button

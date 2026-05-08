@@ -4,6 +4,9 @@ const SENSITIVE_FIELDS = z.object({
   // Sensitive — only writable when caller passes isSensitiveDataRole at the route boundary.
   employmentType: z.enum(["MONTHLY", "DAILY", "INTERN"]).optional(),
   baseSalary: z.coerce.number().nonnegative().max(99999999.99).optional(),
+  // Optional metadata persisted into the auto-created SalaryAdjustment row.
+  salaryAdjustmentType: z.enum(["INITIAL", "RAISE", "DEMOTION", "PROMOTION", "CORRECTION"]).optional(),
+  salaryAdjustmentNote: z.string().max(500).optional(),
 });
 
 export const EmployeeCreateSchema = z.object({

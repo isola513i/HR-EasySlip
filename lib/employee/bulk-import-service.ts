@@ -170,6 +170,17 @@ export async function bulkImportEmployees(
         },
       });
 
+      if (row.baseSalary !== undefined) {
+        await tx.salaryAdjustment.create({
+          data: {
+            employeeId: employee.id, effectiveDate: new Date(row.hireDate),
+            adjustmentType: "INITIAL",
+            salaryBefore: null, salaryAfter: new Prisma.Decimal(row.baseSalary),
+            ratePct: null, actorId: caller.userId,
+          },
+        });
+      }
+
       await grantInitialLeaveQuota(employee.id, new Date(row.hireDate), tx);
       await createChecklistForEmployee(employee.id, undefined, tx);
 

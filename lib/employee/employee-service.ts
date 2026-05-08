@@ -61,6 +61,21 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
       include: EMPLOYEE_INCLUDE,
     });
 
+    if (input.baseSalary !== undefined) {
+      await tx.salaryAdjustment.create({
+        data: {
+          employeeId: employee.id,
+          effectiveDate: hireDate,
+          adjustmentType: "INITIAL",
+          salaryBefore: null,
+          salaryAfter: new Prisma.Decimal(input.baseSalary),
+          ratePct: null,
+          note: null,
+          actorId: caller.userId,
+        },
+      });
+    }
+
     await grantInitialLeaveQuota(employee.id, hireDate, tx);
     await createChecklistForEmployee(employee.id, undefined, tx);
 
@@ -74,22 +89,48 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
 
 export async function updateEmployee(employeeId: string, input: EmployeeUpdateInput, caller: Caller, meta: RequestMeta) {
   pickSensitiveOrThrow(input, caller);
-  const existing = await prisma.employee.findUnique({ where: { id: employeeId } });
-  if (!existing) throw new DomainError(ErrorCodes.EMPLOYEE_NOT_FOUND, {}, 404);
+  const { baseSalary, salaryAdjustmentType, salaryAdjustmentNote, ...rest } = input;
 
-  const { baseSalary, ...rest } = input;
-  const updated = await prisma.employee.update({
-    where: { id: employeeId },
-    data: {
-      ...rest,
-      ...(baseSalary !== undefined ? { baseSalary: new Prisma.Decimal(baseSalary) } : {}),
-    },
-    include: EMPLOYEE_INCLUDE,
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.employee.findUnique({ where: { id: employeeId } });
+    if (!existing) throw new DomainError(ErrorCodes.EMPLOYEE_NOT_FOUND, {}, 404);
+
+    const updated = await tx.employee.update({
+      where: { id: employeeId },
+      data: {
+        ...rest,
+        ...(baseSalary !== undefined ? { baseSalary: new Prisma.Decimal(baseSalary) } : {}),
+      },
+      include: EMPLOYEE_INCLUDE,
+    });
+
+    if (baseSalary !== undefined) {
+      const before = existing.baseSalary ?? null;
+      const after = new Prisma.Decimal(baseSalary);
+      const changed = !before || !before.equals(after);
+      if (changed) {
+        const ratePct = before && !before.isZero()
+          ? after.minus(before).div(before).mul(100).toDecimalPlaces(2, Prisma.Decimal.ROUND_HALF_UP)
+          : null;
+        await tx.salaryAdjustment.create({
+          data: {
+            employeeId,
+            effectiveDate: new Date(),
+            adjustmentType: salaryAdjustmentType ?? (before ? "CORRECTION" : "INITIAL"),
+            salaryBefore: before,
+            salaryAfter: after,
+            ratePct,
+            note: salaryAdjustmentNote ?? null,
+            actorId: caller.userId,
+          },
+        });
+      }
+    }
+
+    await writeAuditLog({ actorId: caller.userId, action: "employee.update", entityType: "Employee", entityId: employeeId, before: existing, after: updated, ipAddress: meta.ip, userAgent: meta.userAgent }, tx);
+
+    return shapeEmployeePublic(updated, caller);
   });
-
-  await writeAuditLog({ actorId: caller.userId, action: "employee.update", entityType: "Employee", entityId: employeeId, before: existing, after: updated, ipAddress: meta.ip, userAgent: meta.userAgent });
-
-  return shapeEmployeePublic(updated, caller);
 }
 
 export async function getEmployeeById(employeeId: string, caller?: Caller) {
@@ -99,6 +140,20 @@ export async function getEmployeeById(employeeId: string, caller?: Caller) {
   });
   if (!employee) throw new DomainError(ErrorCodes.EMPLOYEE_NOT_FOUND, {}, 404);
   return shapeEmployeePublic(employee, caller);
+}
+
+/**
+ * Count active/probation employees that are missing baseSalary. Used by
+ * the directory banner + cycle-lock confirmation to warn HR that OT
+ * calculation will yield zero for those rows.
+ */
+export async function countEmployeesMissingBaseSalary(): Promise<number> {
+  return prisma.employee.count({
+    where: {
+      employmentStatus: { in: ["ACTIVE", "PROBATION"] },
+      baseSalary: null,
+    },
+  });
 }
 
 export async function listEmployees(filters: EmployeeListFilters, caller?: Caller) {

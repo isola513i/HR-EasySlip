@@ -221,6 +221,7 @@ model Employee {
   expensesApproved   ExpenseClaim[] @relation("ExpenseClaim_approver")
   geofenceOverrideRequests GeofenceOverrideRequest[] @relation("GeofenceOverride_employee")
   geofenceOverrideDecisions GeofenceOverrideRequest[] @relation("GeofenceOverride_decidedBy")
+  salaryAdjustments  SalaryAdjustment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -975,4 +976,36 @@ model GeofenceOverrideRequest {
 
   @@index([status, requestedAt])
   @@index([employeeId, status])
+}
+
+// ────────────────────────────────────────────────────────────────
+// SALARY ADJUSTMENT — auto-tracked when Employee.baseSalary changes.
+// Bonus grants share the same table via adjustmentType=BONUS_GRANT.
+// ────────────────────────────────────────────────────────────────
+
+enum SalaryAdjustmentType {
+  INITIAL       // first time baseSalary set (post-import or new hire)
+  RAISE         // increase
+  DEMOTION      // decrease
+  PROMOTION     // promotion-linked raise
+  CORRECTION    // fix wrong value
+  BONUS_GRANT   // one-off bonus
+}
+
+model SalaryAdjustment {
+  id             String                @id @default(cuid())
+  employeeId     String
+  effectiveDate  DateTime              @db.Date
+  adjustmentType SalaryAdjustmentType
+  salaryBefore   Decimal?              @db.Decimal(12, 2)
+  salaryAfter    Decimal               @db.Decimal(12, 2)
+  ratePct        Decimal?              @db.Decimal(6, 2) // (after-before)/before*100; null when before is null
+  note           String?               @db.Text
+  actorId        String                // userId of HR who made the change
+  createdAt      DateTime              @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, effectiveDate])
+  @@index([employeeId, adjustmentType])
 }
