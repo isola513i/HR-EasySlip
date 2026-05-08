@@ -1240,6 +1240,7 @@ const en = {
       rejectReasonPlaceholder: "Tell the requester why this is rejected",
       pendingTab: "Pending",
       historyTab: "History",
+      showingFirstN: "Showing first {shown} of {total} claims. Refine filters to see more.",
       categories: {
         TRAVEL: "Travel",
         MEAL: "Meal",

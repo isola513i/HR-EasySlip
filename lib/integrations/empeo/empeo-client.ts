@@ -1,14 +1,5 @@
-// ════════════════════════════════════════════════════════════════
-// Empeo Client — outbound HTTP sender for outbox events.
-// ----------------------------------------------------------------
-// Phase 3 skeleton: signs payload with HMAC-SHA256 and POSTs to the
-// configured Empeo webhook URL. Retries are handled by the outbox
-// processor via attempts counter — this module only does I/O.
-//
-// NOTE: Empeo API spec is not finalized. The wire format below is
-// our internal envelope; map onto Empeo's schema once published.
-// ════════════════════════════════════════════════════════════════
-
+// Empeo wire format is our internal envelope — remap onto Empeo's
+// schema once their API spec is finalized (Phase 4 follow-up).
 import { createHmac, timingSafeEqual } from "crypto";
 
 export interface EmpeoEnvelope {

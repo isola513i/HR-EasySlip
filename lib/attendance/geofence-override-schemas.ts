@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GeofenceOverrideStatus } from "@prisma/client";
 
 export const GeofenceOverrideRequestSchema = z.object({
   reason: z.string().min(5).max(500),
@@ -8,7 +9,7 @@ export const GeofenceOverrideRequestSchema = z.object({
 });
 
 export const GeofenceOverrideDecisionSchema = z.object({
-  decision: z.enum(["APPROVED", "REJECTED"]),
+  decision: z.enum([GeofenceOverrideStatus.APPROVED, GeofenceOverrideStatus.REJECTED]),
   decisionNote: z.string().max(500).optional(),
 });
 

@@ -3,6 +3,7 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles, HR_ROLES } from "@/lib/security/rbac";
+import { approvalLimiter } from "@/lib/security/rate-limit";
 import { decideOverride } from "@/lib/attendance/geofence-override-service";
 import { GeofenceOverrideDecisionSchema } from "@/lib/attendance/geofence-override-schemas";
 
@@ -18,4 +19,4 @@ export const PATCH = withApiHandler(async (req, ctx) => {
     { ip: ctx.ip, userAgent: ctx.userAgent },
   );
   return apiOk(updated);
-});
+}, { rateLimit: approvalLimiter, rateLimitKey: "userId" });

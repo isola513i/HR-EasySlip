@@ -8,6 +8,7 @@ import {
   formatMonthShort,
   formatRelativeTime,
   formatShortDate,
+  formatTHB,
   formatTime,
 } from "@/lib/format";
 
@@ -22,6 +23,7 @@ export function useFormat() {
         formatShortDate(iso, year, locale),
       formatMonthShort: (monthKey: string) => formatMonthShort(monthKey, locale),
       formatDateTime: (iso: string) => formatDateTime(iso, locale),
+      formatTHB: (value: number | string) => formatTHB(value, locale),
       locale,
     }),
     [locale],

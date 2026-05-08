@@ -1,11 +1,7 @@
-// ════════════════════════════════════════════════════════════════
-// Empeo Inbound Service — accept signed webhook, store for replay.
-// ----------------------------------------------------------------
-// Per Phase 3 plan: persist verbatim only. Apply-step (e.g. update
-// Employee salary fields, link payslip URL) lives in Phase 4 once
-// Empeo's payload schema is finalized.
-// ════════════════════════════════════════════════════════════════
-
+// Apply-step (write to Employee, link payslip, etc.) is deferred to
+// Phase 4 once Empeo's payload schema is finalized — for now we
+// persist the envelope verbatim so it can be replayed.
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
@@ -26,36 +22,39 @@ export async function recordInbound(env: InboundEnvelope): Promise<InboundOutcom
     return { ok: false, reason: "INVALID_PAYLOAD" };
   }
 
-  const existing = await prisma.empeoInboundEvent.findUnique({
-    where: { idempotencyKey: env.idempotencyKey },
-    select: { id: true },
-  });
-  if (existing) {
-    return { ok: true, eventId: existing.id, deduped: true };
-  }
+  try {
+    const event = await prisma.empeoInboundEvent.create({
+      data: {
+        eventType: env.eventType,
+        externalId: env.externalId ?? null,
+        idempotencyKey: env.idempotencyKey,
+        payload: env.payload as never,
+        status: "RECEIVED",
+      },
+    });
 
-  const event = await prisma.empeoInboundEvent.create({
-    data: {
+    await writeAuditLog({
+      actorId: null,
+      action: "empeo.inbound_received",
+      entityType: "EmpeoInboundEvent",
+      entityId: event.id,
+      after: { eventType: env.eventType, externalId: env.externalId ?? null },
+    });
+
+    logger.info("Empeo inbound event recorded", {
+      eventId: event.id,
       eventType: env.eventType,
-      externalId: env.externalId ?? null,
-      idempotencyKey: env.idempotencyKey,
-      payload: env.payload as never,
-      status: "RECEIVED",
-    },
-  });
+    });
 
-  await writeAuditLog({
-    actorId: null,
-    action: "empeo.inbound_received",
-    entityType: "EmpeoInboundEvent",
-    entityId: event.id,
-    after: { eventType: env.eventType, externalId: env.externalId ?? null },
-  });
-
-  logger.info("Empeo inbound event recorded", {
-    eventId: event.id,
-    eventType: env.eventType,
-  });
-
-  return { ok: true, eventId: event.id, deduped: false };
+    return { ok: true, eventId: event.id, deduped: false };
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      const existing = await prisma.empeoInboundEvent.findUnique({
+        where: { idempotencyKey: env.idempotencyKey },
+        select: { id: true },
+      });
+      if (existing) return { ok: true, eventId: existing.id, deduped: true };
+    }
+    throw err;
+  }
 }

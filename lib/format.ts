@@ -9,6 +9,11 @@ const TAG: Record<Locale, string> = {
   en: "en-GB",
 };
 
+export function formatTHB(value: number | string, locale: Locale = "th"): string {
+  const n = typeof value === "string" ? Number(value) : value;
+  return `฿${n.toLocaleString(TAG[locale], { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 const RELATIVE_LABELS = {
   th: {
     justNow: "เมื่อสักครู่",

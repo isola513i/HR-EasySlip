@@ -1242,6 +1242,7 @@ const th = {
       rejectReasonPlaceholder: "อธิบายเหตุผลการปฏิเสธให้ผู้ขอทราบ",
       pendingTab: "รออนุมัติ",
       historyTab: "ประวัติ",
+      showingFirstN: "แสดง {shown} จากทั้งหมด {total} รายการ ลดผลลัพธ์ด้วยตัวกรองเพื่อดูเพิ่ม",
       categories: {
         TRAVEL: "เดินทาง",
         MEAL: "อาหาร",

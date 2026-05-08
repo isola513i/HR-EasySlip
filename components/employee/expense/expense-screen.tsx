@@ -9,14 +9,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { ExpenseSubmitDialog } from "./expense-submit-dialog";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
-import { useMyExpenses, type ExpenseStatus } from "@/hooks/use-expense";
-
-const STATUS_TONE: Record<ExpenseStatus, "info" | "success" | "error" | "neutral"> = {
-  PENDING: "info",
-  APPROVED: "success",
-  REJECTED: "error",
-  CANCELLED: "neutral",
-};
+import { useMyExpenses, EXPENSE_STATUS_TONE } from "@/hooks/use-expense";
 
 export function ExpenseScreen() {
   const t = useT();
@@ -68,14 +61,12 @@ export function ExpenseScreen() {
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <div className="text-base font-semibold tabular-nums">
-                    ฿{Number(it.amountTHB).toLocaleString("th-TH", { minimumFractionDigits: 2 })}
-                  </div>
+                  <div className="text-base font-semibold tabular-nums">{fmt.formatTHB(it.amountTHB)}</div>
                   <div className="mt-0.5 text-[12px] text-muted-foreground">
                     {t.hr.expense.categories[it.category]} · {fmt.formatShortDate(it.occurredOn)}
                   </div>
                 </div>
-                <StatusPill tone={STATUS_TONE[it.status]}>
+                <StatusPill tone={EXPENSE_STATUS_TONE[it.status]}>
                   {t.hr.expense.statuses[it.status]}
                 </StatusPill>
               </div>

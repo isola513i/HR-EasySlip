@@ -1,18 +1,13 @@
-// ════════════════════════════════════════════════════════════════
-// Empeo Dispatcher — drains PENDING + FAILED outbox events to Empeo.
-// ----------------------------------------------------------------
-// Called by the daily cron (system/cron/empeo-dispatch). When Empeo
-// integration is disabled (no env vars), this no-ops cleanly so the
-// system keeps working in CSV-only mode.
-// ════════════════════════════════════════════════════════════════
-
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
+import { markOutboxConsumed, markOutboxFailed } from "@/lib/payroll/outbox-processor";
 import { isEmpeoEnabled, sendEnvelope } from "./empeo-client";
 
 const BATCH_SIZE = 50;
 const MAX_ATTEMPTS = 5;
+// Empeo SLA unknown; cap concurrency so a slow remote can't tie up cron.
+const CONCURRENCY = 8;
 
 export interface DispatchResult {
   enabled: boolean;
@@ -42,51 +37,37 @@ export async function dispatchToEmpeo(): Promise<DispatchResult> {
   let failed = 0;
   let skipped = 0;
 
-  for (const evt of events) {
-    if (evt.attempts >= MAX_ATTEMPTS) {
-      skipped++;
-      continue;
-    }
+  for (let i = 0; i < events.length; i += CONCURRENCY) {
+    const slice = events.slice(i, i + CONCURRENCY);
+    await Promise.all(slice.map(async (evt) => {
+      if (evt.attempts >= MAX_ATTEMPTS) {
+        skipped++;
+        return;
+      }
 
-    try {
-      const result = await sendEnvelope({
-        eventType: evt.eventType,
-        aggregateId: evt.aggregateId,
-        idempotencyKey: evt.idempotencyKey,
-        payload: evt.payload,
-        emittedAt: evt.createdAt.toISOString(),
-      });
+      try {
+        const result = await sendEnvelope({
+          eventType: evt.eventType,
+          aggregateId: evt.aggregateId,
+          idempotencyKey: evt.idempotencyKey,
+          payload: evt.payload,
+          emittedAt: evt.createdAt.toISOString(),
+        });
 
-      if (result.ok) {
-        await prisma.payrollOutboxEvent.update({
-          where: { id: evt.id },
-          data: { status: "CONSUMED", consumedAt: new Date(), lastError: null },
-        });
-        consumed++;
-      } else {
-        await prisma.payrollOutboxEvent.update({
-          where: { id: evt.id },
-          data: {
-            status: "FAILED",
-            attempts: { increment: 1 },
-            lastError: `HTTP ${result.status}: ${result.body}`,
-          },
-        });
+        if (result.ok) {
+          await markOutboxConsumed(evt.id);
+          consumed++;
+        } else {
+          await markOutboxFailed(evt.id, `HTTP ${result.status}: ${result.body}`);
+          failed++;
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "unknown error";
+        logger.error("Empeo dispatch error", { eventId: evt.id, error: msg });
+        await markOutboxFailed(evt.id, msg.slice(0, 500));
         failed++;
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "unknown error";
-      logger.error("Empeo dispatch error", { eventId: evt.id, error: msg });
-      await prisma.payrollOutboxEvent.update({
-        where: { id: evt.id },
-        data: {
-          status: "FAILED",
-          attempts: { increment: 1 },
-          lastError: msg.slice(0, 500),
-        },
-      });
-      failed++;
-    }
+    }));
   }
 
   if (consumed > 0 || failed > 0) {

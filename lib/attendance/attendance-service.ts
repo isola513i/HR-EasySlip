@@ -12,22 +12,15 @@ import { getBangkokDayBounds, validateClockAction } from "./clock-validation";
 import { isSensitiveDataRole } from "@/lib/security/role-helpers";
 import { evaluateGeofence, type GeofenceEvaluation } from "./geofence";
 import {
-  canBypassGeofence,
-  findUnusedApprovedOverride,
-} from "./geofence-override-service";
+  annotateNote,
+  buildDistanceTag,
+  clockAuditAction,
+  resolveGeofenceClock,
+} from "./clock-geofence";
 import { loadAttendancePolicy } from "./policy";
 
 interface ClockMeta extends RequestMeta {
   deviceId?: string;
-}
-
-const GEOFENCE_TAG = "[OUT_OF_GEOFENCE]";
-const GEOFENCE_BYPASS_TAG = "[GEOFENCE_BYPASS_ROLE]";
-const GEOFENCE_OVERRIDE_TAG = "[GEOFENCE_OVERRIDE_APPROVED]";
-
-function annotateNote(original: string | undefined, ...tags: string[]): string {
-  const prefix = tags.filter(Boolean).join(" ");
-  return original ? `${prefix} ${original}` : prefix;
 }
 
 export async function clockInOut(
@@ -46,47 +39,20 @@ export async function clockInOut(
   const lng = policy.gpsCaptureEnabled ? input.longitude : undefined;
   const acc = policy.gpsCaptureEnabled ? input.gpsAccuracyM : undefined;
 
-  // Geofence: evaluation always runs when enforce is on. The block flag
-  // controls whether out-of-fence requests fail outright. Senior roles
-  // (HRMG/CEO/COO/CTO) bypass the block; everyone else needs an
-  // APPROVED, unused GeofenceOverrideRequest.
   const geofence = await evaluateGeofence(lat, lng);
   const isOutOfFence =
     geofence.enforced && geofence.distanceMeters !== null && !geofence.inside;
-  const distanceTag = isOutOfFence
-    ? `${GEOFENCE_TAG} ~${geofence.distanceMeters}m / max ${geofence.config.radiusMeters}m`
-    : "";
-
-  const bypass = canBypassGeofence(caller.roles);
+  const distanceTag = buildDistanceTag(geofence, isOutOfFence);
 
   const { record, usedOverrideId } = await prisma.$transaction(async (tx) => {
     await validateClockAction(tx, caller.employeeId, input.clockType, todayStart, todayEnd);
 
-    let usedOverrideId: string | null = null;
-    let extraTag = "";
-
-    if (isOutOfFence && geofence.config.blockOutOfFence) {
-      if (bypass) {
-        extraTag = GEOFENCE_BYPASS_TAG;
-      } else {
-        const override = await findUnusedApprovedOverride(tx, caller.employeeId);
-        if (!override) {
-          throw new DomainError(
-            "GEOFENCE_BLOCKED",
-            {
-              distanceMeters: geofence.distanceMeters,
-              radiusMeters: geofence.config.radiusMeters,
-            },
-            403,
-          );
-        }
-        usedOverrideId = override.id;
-        extraTag = GEOFENCE_OVERRIDE_TAG;
-      }
-    }
+    const { noteTag, usedOverrideId } = await resolveGeofenceClock(
+      tx, caller.employeeId, caller.roles, geofence, isOutOfFence,
+    );
 
     const finalNote = isOutOfFence
-      ? annotateNote(input.note, distanceTag, extraTag)
+      ? annotateNote(input.note, distanceTag, noteTag)
       : input.note;
 
     const created = await tx.attendanceRecord.create({
@@ -114,15 +80,9 @@ export async function clockInOut(
     return { record: created, usedOverrideId };
   }, { isolationLevel: "Serializable" });
 
-  const auditAction = isOutOfFence
-    ? usedOverrideId
-      ? `attendance.clock_${input.clockType.toLowerCase()}.geofence_override`
-      : `attendance.clock_${input.clockType.toLowerCase()}.out_of_geofence`
-    : `attendance.clock_${input.clockType.toLowerCase()}`;
-
   await writeAuditLog({
     actorId: caller.userId,
-    action: auditAction,
+    action: clockAuditAction(input.clockType, isOutOfFence, Boolean(usedOverrideId)),
     entityType: "AttendanceRecord",
     entityId: record.id,
     after: record,
