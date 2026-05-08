@@ -1032,6 +1032,8 @@ const en = {
     importFailed: "Import failed",
     importErrors: "Import Errors",
     importSkipped: "Skipped rows",
+    importFromEmpeo: "Import from Empeo",
+    empeoImportHint: "Have an Empeo employee export? Click \"Import from Empeo\" to bulk-create active employees in one upload.",
     empeoFormatDetected: "Empeo Excel format detected",
     totalRows: "Total rows",
     willImport: "Will import",

@@ -1034,6 +1034,8 @@ const th = {
     importFailed: "นำเข้าข้อมูลไม่สำเร็จ",
     importErrors: "ข้อผิดพลาดในการนำเข้า",
     importSkipped: "แถวที่ข้าม",
+    importFromEmpeo: "นำเข้าจาก Empeo",
+    empeoImportHint: "มีไฟล์ employee export จาก Empeo อยู่แล้ว? กด \"นำเข้าจาก Empeo\" เพื่อสร้างพนักงาน active ทั้งหมดในครั้งเดียว",
     empeoFormatDetected: "ตรวจพบไฟล์ Excel จาก Empeo",
     totalRows: "จำนวนแถวทั้งหมด",
     willImport: "จะนำเข้า",

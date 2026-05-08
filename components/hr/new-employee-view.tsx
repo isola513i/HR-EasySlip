@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { Breadcrumbs } from "@/components/shared/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EmployeeForm } from "@/components/hr/employee-form";
+import { BulkImportDialog } from "@/components/hr/bulk-import-dialog";
 import { useEmployees } from "@/hooks/use-employees";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -17,6 +18,7 @@ export function NewEmployeeView() {
   const { create } = useEmployees();
   const [createdPassword, setCreatedPassword] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
 
   const handleSuccess = (initialPassword: string | null) => {
     if (initialPassword) {
@@ -49,9 +51,19 @@ export function NewEmployeeView() {
         ]}
       />
 
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">{t.hr.addEmployeeTitle}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t.hr.newEmployeeSubtitle}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">{t.hr.addEmployeeTitle}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t.hr.newEmployeeSubtitle}</p>
+        </div>
+        <Button variant="outline" onClick={() => setBulkOpen(true)} className="gap-1.5">
+          <FileSpreadsheet className="size-4" />
+          {t.hr.importFromEmpeo}
+        </Button>
+      </div>
+
+      <div className="max-w-2xl rounded-xl border border-[var(--es-info-200)] bg-[var(--es-info-50)] p-3 text-[12px] text-[var(--es-info-700)]">
+        {t.hr.empeoImportHint}
       </div>
 
       <div className="max-w-2xl rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)] sm:p-6">
@@ -61,6 +73,12 @@ export function NewEmployeeView() {
           cancelHref="/hr/employees"
         />
       </div>
+
+      <BulkImportDialog
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        onDone={() => router.push("/hr/employees")}
+      />
 
       <Dialog open={!!createdPassword} onOpenChange={(v) => { if (!v) handleCloseDialog(); }}>
         <DialogContent className="max-w-sm">
