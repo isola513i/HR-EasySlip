@@ -47,26 +47,27 @@ enum WorkShift {
 }
 
 enum EmploymentType {
-  MONTHLY  // รายเดือน — base = monthly salary
-  DAILY    // รายวัน — base = daily wage
-  INTERN   // ฝึกงาน — treated like DAILY for hourly math
+  MONTHLY // รายเดือน — base = monthly salary
+  DAILY // รายวัน — base = daily wage
+  INTERN // ฝึกงาน — treated like DAILY for hourly math
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique @db.Citext
-  emailVerified DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  isDisabled    Boolean   @default(false)
-  passwordHash      String?  @db.Text
-  mustChangePassword Boolean  @default(false)
+  id                 String    @id @default(cuid())
+  email              String    @unique @db.Citext
+  emailVerified      DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  isDisabled         Boolean   @default(false)
+  passwordHash       String?   @db.Text
+  mustChangePassword Boolean   @default(false)
 
-  employee  Employee?
-  sessions  Session[]
-  accounts  Account[]
-  auditLogs AuditLog[]      @relation("AuditActor")
-  consents  ConsentRecord[]
+  employee      Employee?
+  sessions      Session[]
+  accounts      Account[]
+  auditLogs     AuditLog[]      @relation("AuditActor")
+  consents      ConsentRecord[]
+  notifications Notification[]
 
   @@index([email])
 }
@@ -120,31 +121,31 @@ model PushSubscription {
 }
 
 model Employee {
-  id               String           @id @default(cuid())
-  userId           String           @unique
-  employeeCode     String           @unique // e.g. ES0042 (reference ของ Empeo)
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  employeeCode  String    @unique // e.g. ES0042 (reference ของ Empeo)
   // ── ข้อมูลพื้นฐาน ──
-  prefix           String?          // คำนำหน้า (นาย/นางสาว/นาง)
-  gender           String?          // เพศ (ชาย/หญิง/อื่นๆ)
-  firstNameTh      String
-  lastNameTh       String
-  firstNameEn      String?
-  lastNameEn       String?
-  nicknameTh       String?          // ชื่อเล่น (TH)
-  nicknameEn       String?          // ชื่อเล่น (EN)
-  nationalId       String?          // เลขบัตรประชาชน
-  phone            String?
-  personalEmail    String?          // อีเมลส่วนตัว
-  lineId           String?          // LINE ID
-  dateOfBirth      DateTime?        @db.Date
+  prefix        String? // คำนำหน้า (นาย/นางสาว/นาง)
+  gender        String? // เพศ (ชาย/หญิง/อื่นๆ)
+  firstNameTh   String
+  lastNameTh    String
+  firstNameEn   String?
+  lastNameEn    String?
+  nicknameTh    String? // ชื่อเล่น (TH)
+  nicknameEn    String? // ชื่อเล่น (EN)
+  nationalId    String? // เลขบัตรประชาชน
+  phone         String?
+  personalEmail String? // อีเมลส่วนตัว
+  lineId        String? // LINE ID
+  dateOfBirth   DateTime? @db.Date
 
   // ── ข้อมูลตำแหน่ง ──
   roles            Role[]           @default([EMPLOYEE])
-  level            String?          // ระดับ (CEO/E/M/O3 etc.)
+  level            String? // ระดับ (CEO/E/M/O3 etc.)
   departmentId     String?
   positionId       String?
   managerId        String?
-  employmentType   EmploymentType?  // รายเดือน / รายวัน / ฝึกงาน
+  employmentType   EmploymentType? // รายเดือน / รายวัน / ฝึกงาน
   baseSalary       Decimal?         @db.Decimal(12, 2) // sensitive — RBAC: SENSITIVE_DATA_ROLES
   hireDate         DateTime         @db.Date
   probationEndDate DateTime?        @db.Date
@@ -153,47 +154,47 @@ model Employee {
   terminationDate  DateTime?        @db.Date
 
   // ── ข้อมูลส่วนตัว ──
-  nationality      String?          // สัญชาติ
-  ethnicity        String?          // เชื้อชาติ
-  religion         String?          // ศาสนา
-  maritalStatus    String?          // สถานะสมรส
-  militaryStatus   String?          // สถานะเกณฑ์ทหาร
-  bloodType        String?          // กรุ๊ปเลือด
+  nationality    String? // สัญชาติ
+  ethnicity      String? // เชื้อชาติ
+  religion       String? // ศาสนา
+  maritalStatus  String? // สถานะสมรส
+  militaryStatus String? // สถานะเกณฑ์ทหาร
+  bloodType      String? // กรุ๊ปเลือด
 
   // ── ข้อมูลรัฐ/ประกัน ──
-  socialSecurityNo String?          // เลขประกันสังคม
-  hospitalCode     String?          // รหัสโรงพยาบาล
+  socialSecurityNo String? // เลขประกันสังคม
+  hospitalCode     String? // รหัสโรงพยาบาล
 
   // ── รูปโปรไฟล์ (Vercel Blob path) ──
-  profilePicturePath        String?   @db.Text
-  profilePictureMime        String?
-  profilePictureUploadedAt  DateTime?
+  profilePicturePath       String?   @db.Text
+  profilePictureMime       String?
+  profilePictureUploadedAt DateTime?
 
   // ── ที่อยู่ตามทะเบียนบ้าน ──
-  addressRegistered String?         @db.Text
-  provinceRegistered String?
-  districtRegistered String?
+  addressRegistered     String? @db.Text
+  provinceRegistered    String?
+  districtRegistered    String?
   subdistrictRegistered String?
-  zipCodeRegistered String?
+  zipCodeRegistered     String?
 
   // ── ที่อยู่ที่ติดต่อได้ ──
-  addressCurrent   String?          @db.Text
-  provinceCurrent  String?
-  districtCurrent  String?
+  addressCurrent     String? @db.Text
+  provinceCurrent    String?
+  districtCurrent    String?
   subdistrictCurrent String?
-  zipCodeCurrent   String?
+  zipCodeCurrent     String?
 
   // ── ผู้ติดต่อฉุกเฉิน ──
-  emergencyName    String?
+  emergencyName     String?
   emergencyLastName String?
   emergencyRelation String?
-  emergencyPhone   String?
+  emergencyPhone    String?
 
   // ── ระบบ ──
-  isAnonymized     Boolean          @default(false)
-  anonymizedAt     DateTime?
-  notifyLeave      Boolean          @default(true)
-  notifyApproval   Boolean          @default(true)
+  isAnonymized   Boolean   @default(false)
+  anonymizedAt   DateTime?
+  notifyLeave    Boolean   @default(true)
+  notifyApproval Boolean   @default(true)
 
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   department   Department? @relation(fields: [departmentId], references: [id])
@@ -201,27 +202,27 @@ model Employee {
   manager      Employee?   @relation("ManagerTree", fields: [managerId], references: [id])
   subordinates Employee[]  @relation("ManagerTree")
 
-  attendanceRecords  AttendanceRecord[]
-  timeAdjRequests    TimeAdjustmentRequest[] @relation("TimeAdjRequester")
-  timeAdjApprovals   TimeAdjustmentRequest[] @relation("TimeAdjApprover")
-  leaveRequests      LeaveRequest[]          @relation("LeaveRequester")
-  leaveApprovals     LeaveRequest[]          @relation("LeaveApprover")
-  leaveQuotas        LeaveQuota[]
-  cashOutRecords     AnnualLeaveCashOut[]
-  overtimeRequests   OvertimeRequest[]    @relation("OTRequester")
-  overtimeApprovals  OvertimeRequest[]    @relation("OTApprover")
-  onboardingChecklist OnboardingChecklist?
-  documents          Document[]
-  documentSignatures DocumentSignature[]
-  assetAssignments   AssetAssignment[]
-  reviewsAsSubject   Review[] @relation("ReviewSubject")
-  reviewsAsAuthor    Review[] @relation("ReviewAuthor")
-  offboardingChecklist OffboardingChecklist?
-  expensesSubmitted  ExpenseClaim[] @relation("ExpenseClaim_employee")
-  expensesApproved   ExpenseClaim[] @relation("ExpenseClaim_approver")
-  geofenceOverrideRequests GeofenceOverrideRequest[] @relation("GeofenceOverride_employee")
+  attendanceRecords         AttendanceRecord[]
+  timeAdjRequests           TimeAdjustmentRequest[]   @relation("TimeAdjRequester")
+  timeAdjApprovals          TimeAdjustmentRequest[]   @relation("TimeAdjApprover")
+  leaveRequests             LeaveRequest[]            @relation("LeaveRequester")
+  leaveApprovals            LeaveRequest[]            @relation("LeaveApprover")
+  leaveQuotas               LeaveQuota[]
+  cashOutRecords            AnnualLeaveCashOut[]
+  overtimeRequests          OvertimeRequest[]         @relation("OTRequester")
+  overtimeApprovals         OvertimeRequest[]         @relation("OTApprover")
+  onboardingChecklist       OnboardingChecklist?
+  documents                 Document[]
+  documentSignatures        DocumentSignature[]
+  assetAssignments          AssetAssignment[]
+  reviewsAsSubject          Review[]                  @relation("ReviewSubject")
+  reviewsAsAuthor           Review[]                  @relation("ReviewAuthor")
+  offboardingChecklist      OffboardingChecklist?
+  expensesSubmitted         ExpenseClaim[]            @relation("ExpenseClaim_employee")
+  expensesApproved          ExpenseClaim[]            @relation("ExpenseClaim_approver")
+  geofenceOverrideRequests  GeofenceOverrideRequest[] @relation("GeofenceOverride_employee")
   geofenceOverrideDecisions GeofenceOverrideRequest[] @relation("GeofenceOverride_decidedBy")
-  salaryAdjustments  SalaryAdjustment[]
+  salaryAdjustments         SalaryAdjustment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -281,9 +282,9 @@ model AttendanceRecord {
   payrollCycleId String?
   createdAt      DateTime     @default(now())
 
-  employee       Employee      @relation(fields: [employeeId], references: [id])
-  payrollCycle   PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
-  timeAdjustment TimeAdjustmentRequest? // populated when created from approved adjustment
+  employee         Employee                 @relation(fields: [employeeId], references: [id])
+  payrollCycle     PayrollCycle?            @relation(fields: [payrollCycleId], references: [id])
+  timeAdjustment   TimeAdjustmentRequest? // populated when created from approved adjustment
   geofenceOverride GeofenceOverrideRequest?
 
   @@index([employeeId, clockedAt])
@@ -418,15 +419,15 @@ model LeaveQuota {
 // Year-end unused ANNUAL → cash-out (NO carry-over)
 // Also used when employee resigns mid-year (prorate ตาม terminationDate)
 model AnnualLeaveCashOut {
-  id           String       @id @default(cuid())
+  id           String        @id @default(cuid())
   employeeId   String
   year         Int
-  unusedDays   Decimal      @db.Decimal(5, 2)
+  unusedDays   Decimal       @db.Decimal(5, 2)
   trigger      CashOutReason @default(YEAR_END)
-  exportStatus ExportStatus @default(PENDING)
+  exportStatus ExportStatus  @default(PENDING)
   exportedAt   DateTime?
   empeoBatchId String?
-  computedAt   DateTime     @default(now())
+  computedAt   DateTime      @default(now())
 
   employee Employee @relation(fields: [employeeId], references: [id])
 
@@ -601,30 +602,30 @@ model SystemConfig {
 // ────────────────────────────────────────────────────────────────
 
 enum OvertimeType {
-  WEEKDAY      // OT หลังเลิกงาน จ-ศ (1.5x)
-  HOLIDAY      // OT วันหยุด ส/อา/นักขัตฤกษ์ (3x)
+  WEEKDAY // OT หลังเลิกงาน จ-ศ (1.5x)
+  HOLIDAY // OT วันหยุด ส/อา/นักขัตฤกษ์ (3x)
   HOLIDAY_WORK // ทำงานวันหยุด (1x เพิ่ม)
 }
 
 model OvertimeRequest {
-  id              String       @id @default(cuid())
-  employeeId      String
-  date            DateTime     @db.Date
-  overtimeType    OvertimeType
-  assignedStart   DateTime?    // หัวหน้ากำหนด (HOLIDAY only)
-  assignedEnd     DateTime?    // หัวหน้ากำหนด (HOLIDAY only)
-  actualStart     DateTime?    // เวลาสแกนจริง
-  actualEnd       DateTime?    // เวลาสแกนจริง
-  hoursApproved   Decimal?     @db.Decimal(4, 2)
-  rateMultiplier  Decimal      @db.Decimal(3, 1) // 1.0 / 1.5 / 3.0
-  reason          String       @db.Text
-  status          LeaveStatus  @default(PENDING)
-  approverId      String?
-  approvedAt      DateTime?
-  rejectedReason  String?
-  payrollCycleId  String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  employeeId     String
+  date           DateTime     @db.Date
+  overtimeType   OvertimeType
+  assignedStart  DateTime? // หัวหน้ากำหนด (HOLIDAY only)
+  assignedEnd    DateTime? // หัวหน้ากำหนด (HOLIDAY only)
+  actualStart    DateTime? // เวลาสแกนจริง
+  actualEnd      DateTime? // เวลาสแกนจริง
+  hoursApproved  Decimal?     @db.Decimal(4, 2)
+  rateMultiplier Decimal      @db.Decimal(3, 1) // 1.0 / 1.5 / 3.0
+  reason         String       @db.Text
+  status         LeaveStatus  @default(PENDING)
+  approverId     String?
+  approvedAt     DateTime?
+  rejectedReason String?
+  payrollCycleId String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   employee     Employee      @relation("OTRequester", fields: [employeeId], references: [id])
   approver     Employee?     @relation("OTApprover", fields: [approverId], references: [id])
@@ -673,8 +674,8 @@ model OnboardingChecklist {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  employee Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  template OnboardingTemplate  @relation(fields: [templateId], references: [id])
+  employee Employee                  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  template OnboardingTemplate        @relation(fields: [templateId], references: [id])
   items    OnboardingChecklistItem[]
 }
 
@@ -701,20 +702,20 @@ model OnboardingChecklistItem {
 // ────────────────────────────────────────────────────────────────
 
 model Document {
-  id              String   @id @default(cuid())
-  ownerEmployeeId String
-  category        String   // "contract" | "certificate" | "general" | "leave_attachment" | "time_correction_proof"
-  entityType      String   // "Employee" | "LeaveRequest" | "TimeAdjustmentRequest"
-  entityId        String
-  blobPath        String   @db.Text
-  filename        String   @db.Text
-  mime            String
-  size            Int
-  uploadedById    String
-  uploadedAt      DateTime @default(now())
-  requiresSignature Boolean @default(false)
+  id                String   @id @default(cuid())
+  ownerEmployeeId   String
+  category          String // "contract" | "certificate" | "general" | "leave_attachment" | "time_correction_proof"
+  entityType        String // "Employee" | "LeaveRequest" | "TimeAdjustmentRequest"
+  entityId          String
+  blobPath          String   @db.Text
+  filename          String   @db.Text
+  mime              String
+  size              Int
+  uploadedById      String
+  uploadedAt        DateTime @default(now())
+  requiresSignature Boolean  @default(false)
 
-  owner           Employee @relation(fields: [ownerEmployeeId], references: [id], onDelete: Cascade)
+  owner           Employee            @relation(fields: [ownerEmployeeId], references: [id], onDelete: Cascade)
   signatures      DocumentSignature[]
   expenseReceipts ExpenseClaim[]
 
@@ -739,19 +740,19 @@ model DocumentSignature {
 
 // IT-issued asset registry (laptop, phone, monitor, headset, etc.)
 model Asset {
-  id            String       @id @default(cuid())
-  type          AssetType
-  brand         String?
-  model         String?
-  serialNumber  String?      @unique
-  purchaseDate  DateTime?
-  status        AssetStatus  @default(AVAILABLE)
-  notes         String?      @db.Text
+  id           String      @id @default(cuid())
+  type         AssetType
+  brand        String?
+  model        String?
+  serialNumber String?     @unique
+  purchaseDate DateTime?
+  status       AssetStatus @default(AVAILABLE)
+  notes        String?     @db.Text
 
-  assignments   AssetAssignment[]
+  assignments AssetAssignment[]
 
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([type, status])
 }
@@ -792,7 +793,7 @@ enum AssetStatus {
 model ReviewTemplate {
   id        String   @id @default(cuid())
   name      String   @unique
-  questions Json     // [{ key, label, type: "scale"|"text", required }]
+  questions Json // [{ key, label, type: "scale"|"text", required }]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -800,15 +801,15 @@ model ReviewTemplate {
 }
 
 model ReviewCycle {
-  id          String            @id @default(cuid())
-  name        String            @unique
-  cadence     ReviewCadence
-  startDate   DateTime
-  endDate     DateTime
-  status      ReviewCycleStatus @default(DRAFT)
-  templateId  String?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id         String            @id @default(cuid())
+  name       String            @unique
+  cadence    ReviewCadence
+  startDate  DateTime
+  endDate    DateTime
+  status     ReviewCycleStatus @default(DRAFT)
+  templateId String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
 
   template ReviewTemplate? @relation(fields: [templateId], references: [id])
   reviews  Review[]
@@ -823,8 +824,8 @@ model Review {
   reviewerId    String
   reviewType    ReviewType
   status        ReviewStatus @default(DRAFT)
-  answers       Json?        // { [questionKey]: value }
-  overallRating Int?         // 1-5
+  answers       Json? // { [questionKey]: value }
+  overallRating Int? // 1-5
   comments      String?      @db.Text
   submittedAt   DateTime?
   createdAt     DateTime     @default(now())
@@ -865,16 +866,16 @@ enum ReviewStatus {
 // Lightweight offboarding checklist. Items live in JSON to keep the
 // model schema-stable as HR tweaks the checklist over time.
 model OffboardingChecklist {
-  id           String              @id @default(cuid())
-  employeeId   String              @unique
-  reason       OffboardingReason
-  lastDay      DateTime
-  status       OffboardingStatus   @default(IN_PROGRESS)
-  items        Json                // [{ key, label, completed, completedAt, completedBy }]
-  notes        String?             @db.Text
-  createdAt    DateTime            @default(now())
-  updatedAt    DateTime            @updatedAt
-  completedAt  DateTime?
+  id          String            @id @default(cuid())
+  employeeId  String            @unique
+  reason      OffboardingReason
+  lastDay     DateTime
+  status      OffboardingStatus @default(IN_PROGRESS)
+  items       Json // [{ key, label, completed, completedAt, completedBy }]
+  notes       String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  completedAt DateTime?
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
@@ -923,20 +924,20 @@ model ExpenseClaim {
   occurredOn  DateTime
   status      ExpenseStatus   @default(PENDING)
 
-  approverId  String?
-  approvedAt  DateTime?
-  rejectedAt  DateTime?
-  rejectReason String?        @db.Text
+  approverId   String?
+  approvedAt   DateTime?
+  rejectedAt   DateTime?
+  rejectReason String?   @db.Text
 
   receiptDocumentId String?
-  payrollCycleId  String?
+  payrollCycleId    String?
 
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  employee Employee @relation("ExpenseClaim_employee", fields: [employeeId], references: [id], onDelete: Cascade)
-  approver Employee? @relation("ExpenseClaim_approver", fields: [approverId], references: [id])
-  receipt  Document? @relation(fields: [receiptDocumentId], references: [id])
+  employee     Employee      @relation("ExpenseClaim_employee", fields: [employeeId], references: [id], onDelete: Cascade)
+  approver     Employee?     @relation("ExpenseClaim_approver", fields: [approverId], references: [id])
+  receipt      Document?     @relation(fields: [receiptDocumentId], references: [id])
   payrollCycle PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
 
   @@index([employeeId, status])
@@ -956,22 +957,22 @@ enum GeofenceOverrideStatus {
 }
 
 model GeofenceOverrideRequest {
-  id              String   @id @default(cuid())
-  employeeId      String
-  attendanceRecordId String? @unique
-  requestedAt     DateTime @default(now())
-  reason          String   @db.Text
-  latitude        Decimal? @db.Decimal(9, 6)
-  longitude       Decimal? @db.Decimal(9, 6)
-  distanceMeters  Int?
+  id                 String   @id @default(cuid())
+  employeeId         String
+  attendanceRecordId String?  @unique
+  requestedAt        DateTime @default(now())
+  reason             String   @db.Text
+  latitude           Decimal? @db.Decimal(9, 6)
+  longitude          Decimal? @db.Decimal(9, 6)
+  distanceMeters     Int?
 
-  status          GeofenceOverrideStatus @default(PENDING)
-  decidedById     String?
-  decidedAt       DateTime?
-  decisionNote    String?  @db.Text
+  status       GeofenceOverrideStatus @default(PENDING)
+  decidedById  String?
+  decidedAt    DateTime?
+  decisionNote String?                @db.Text
 
-  employee   Employee @relation("GeofenceOverride_employee", fields: [employeeId], references: [id], onDelete: Cascade)
-  decidedBy  Employee? @relation("GeofenceOverride_decidedBy", fields: [decidedById], references: [id])
+  employee   Employee          @relation("GeofenceOverride_employee", fields: [employeeId], references: [id], onDelete: Cascade)
+  decidedBy  Employee?         @relation("GeofenceOverride_decidedBy", fields: [decidedById], references: [id])
   attendance AttendanceRecord? @relation(fields: [attendanceRecordId], references: [id])
 
   @@index([status, requestedAt])
@@ -984,28 +985,51 @@ model GeofenceOverrideRequest {
 // ────────────────────────────────────────────────────────────────
 
 enum SalaryAdjustmentType {
-  INITIAL       // first time baseSalary set (post-import or new hire)
-  RAISE         // increase
-  DEMOTION      // decrease
-  PROMOTION     // promotion-linked raise
-  CORRECTION    // fix wrong value
-  BONUS_GRANT   // one-off bonus
+  INITIAL // first time baseSalary set (post-import or new hire)
+  RAISE // increase
+  DEMOTION // decrease
+  PROMOTION // promotion-linked raise
+  CORRECTION // fix wrong value
+  BONUS_GRANT // one-off bonus
 }
 
 model SalaryAdjustment {
-  id             String                @id @default(cuid())
+  id             String               @id @default(cuid())
   employeeId     String
-  effectiveDate  DateTime              @db.Date
+  effectiveDate  DateTime             @db.Date
   adjustmentType SalaryAdjustmentType
-  salaryBefore   Decimal?              @db.Decimal(12, 2)
-  salaryAfter    Decimal               @db.Decimal(12, 2)
-  ratePct        Decimal?              @db.Decimal(6, 2) // (after-before)/before*100; null when before is null
-  note           String?               @db.Text
-  actorId        String                // userId of HR who made the change
-  createdAt      DateTime              @default(now())
+  salaryBefore   Decimal?             @db.Decimal(12, 2)
+  salaryAfter    Decimal              @db.Decimal(12, 2)
+  ratePct        Decimal?             @db.Decimal(6, 2) // (after-before)/before*100; null when before is null
+  note           String?              @db.Text
+  actorId        String // userId of HR who made the change
+  createdAt      DateTime             @default(now())
 
   employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
 
   @@index([employeeId, effectiveDate])
   @@index([employeeId, adjustmentType])
+}
+
+enum NotificationKind {
+  PAYROLL_CUTOFF_T3 // 3 days before cutoff — review pending approvals
+  PAYROLL_CUTOFF_T1 // 1 day before — final review
+  PAYROLL_CUTOFF_DDAY // cutoff day — lock + export to Empeo
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  kind      NotificationKind
+  title     String           @db.Text
+  body      String           @db.Text
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([userId, kind, createdAt])
 }
