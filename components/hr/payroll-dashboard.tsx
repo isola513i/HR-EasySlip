@@ -39,7 +39,7 @@ export function PayrollDashboard() {
   const {
     cycles, isLoading, error, year, setYear,
     lockCycle, markExported,
-    downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData,
+    downloadTimestamps, downloadCashout, downloadPayrollInfo, downloadEmployeeData, downloadEmpeoTemplate,
   } = usePayroll();
 
   const [lockTarget, setLockTarget] = useState<PayrollCycle | null>(null);
@@ -109,6 +109,8 @@ export function PayrollDashboard() {
     runWithToast(() => downloadCashout(year), t.hr.downloadSuccess, t.hr.downloadFailed);
   const handleDownloadEmployeeData = () =>
     runWithToast(() => downloadEmployeeData(), t.hr.exportSuccess, t.hr.exportFailed);
+  const handleDownloadEmpeoTemplate = (c: PayrollCycle) =>
+    runWithToast(() => downloadEmpeoTemplate(c.id), t.hr.payrollEmpeoTemplateDownloadSuccess, t.hr.downloadFailed);
 
   return (
     <div className="flex flex-col gap-5">
@@ -142,6 +144,7 @@ export function PayrollDashboard() {
         onMarkExported={setExportTarget}
         onDownloadTimestamps={handleDownloadTimestamps}
         onDownloadPayrollInfo={handleDownloadPayrollInfo}
+        onDownloadEmpeoTemplate={handleDownloadEmpeoTemplate}
         isLoading={isLoading}
         error={error}
       />

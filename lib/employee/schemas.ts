@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const SENSITIVE_FIELDS = z.object({
+  // Sensitive — only writable when caller passes isSensitiveDataRole at the route boundary.
+  employmentType: z.enum(["MONTHLY", "DAILY", "INTERN"]).optional(),
+  baseSalary: z.coerce.number().nonnegative().max(99999999.99).optional(),
+});
+
 export const EmployeeCreateSchema = z.object({
   employeeCode: z.string().min(1).max(20),
   email: z.string().email(),
@@ -14,7 +20,7 @@ export const EmployeeCreateSchema = z.object({
   managerId: z.string().optional(),
   hireDate: z.string().date(),
   workShift: z.enum(["MORNING", "EVENING"]).default("MORNING"),
-});
+}).merge(SENSITIVE_FIELDS);
 
 export const EmployeeUpdateSchema = z.object({
   firstNameTh: z.string().min(1).max(100).optional(),
@@ -28,7 +34,7 @@ export const EmployeeUpdateSchema = z.object({
   managerId: z.string().optional(),
   employmentStatus: z.enum(["PROBATION", "ACTIVE", "SUSPENDED", "RESIGNED", "TERMINATED", "RETIRED", "CONTRACT_ENDED"]).optional(),
   workShift: z.enum(["MORNING", "EVENING"]).optional(),
-});
+}).merge(SENSITIVE_FIELDS);
 
 export const EmployeeListFiltersSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),

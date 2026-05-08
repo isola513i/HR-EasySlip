@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Mail, Phone, ShieldCheck, User } from "lucide-react";
+import { Calendar, Mail, Phone, ShieldCheck, User, Wallet } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -71,7 +71,22 @@ export function EmployeeDetailSheet({ employee, onClose }: Props) {
             <Field icon={Phone} label={t.profile.phone} value={employee.phone ?? "—"} />
             <Field icon={ShieldCheck} label={t.hr.department} value={employee.department?.name ?? "—"} />
             <Field icon={User} label={t.hr.employees.colPosition} value={employee.position?.name ?? "—"} />
-            <Field icon={User} label={t.hr.employees.colType} value={employee.employmentType ?? "—"} />
+            <Field
+              icon={User}
+              label={t.hr.employees.colType}
+              value={
+                employee.employmentType
+                  ? t.hr.employees.employmentTypes[employee.employmentType]
+                  : "—"
+              }
+            />
+            {employee.baseSalary !== undefined && (
+              <Field
+                icon={Wallet}
+                label={t.hr.employees.baseSalary}
+                value={employee.baseSalary ? fmt.formatTHB(employee.baseSalary) : "—"}
+              />
+            )}
             <Field
               icon={Calendar}
               label={t.hr.start}

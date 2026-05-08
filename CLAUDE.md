@@ -10,7 +10,7 @@ You are a Senior Full-Stack Architect and Lead Vibe Code Developer. Your mission
 - **Architecture:** MACH (Microservices-based, API-first, Cloud-native, Headless) & Single Source of Truth.
 
 # 2. Business Logic & HR Rules (EasySlip Context)
-- **Payroll Boundary:** We use "Empeo". This system MUST NOT calculate salaries. It only captures raw data (attendance, leave) and exports it to Empeo CSV format. Use an Outbox pattern for events.
+- **Payroll Boundary (Hybrid):** We use "Empeo". This system **owns** mechanical conversions where the rule is unambiguous: OT amount in baht (hours × hourly × 1.5 / 3.0 / 1.0), LWP / absent / annual-leave-cashout deductions (days × daily rate), expense reimbursement passthrough. This system **forbids**: tax, social security (SSO), provident fund (PVD), net pay, payslip generation, bank file generation. Severance (เงินชดเชยเลิกจ้าง) is HR-manual in the Empeo template — automated calc is deferred. `Employee.baseSalary` is sensitive PDPA data; reads & writes must check `isSensitiveDataRole()` and emit an audit log. Use an Outbox pattern for events sent to Empeo.
 - **Authentication:** Email + Password (primary) with Magic Link as backup via NextAuth. Initial password auto-generated on employee creation. Force change on first login.
 - **Scale:** ~50 users. Keep database queries straightforward; avoid over-engineering caching for Phase 1.
 - **Cut-off Date:** The 25th of every month. The system MUST freeze/lock records for the past cycle.

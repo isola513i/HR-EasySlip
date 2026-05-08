@@ -13,7 +13,9 @@ export const GET = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
-  const employee = await getEmployeeById(ctx.params.employeeId);
+  const employee = await getEmployeeById(ctx.params.employeeId, {
+    userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles,
+  });
   return apiOk(employee);
 });
 

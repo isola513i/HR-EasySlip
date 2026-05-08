@@ -25,6 +25,7 @@ interface Props {
   onMarkExported: (cycle: PayrollCycle) => void;
   onDownloadTimestamps: (cycle: PayrollCycle) => void;
   onDownloadPayrollInfo: (cycle: PayrollCycle) => void;
+  onDownloadEmpeoTemplate: (cycle: PayrollCycle) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -40,6 +41,7 @@ export function CyclesTable({
   onMarkExported,
   onDownloadTimestamps,
   onDownloadPayrollInfo,
+  onDownloadEmpeoTemplate,
   isLoading,
   error,
 }: Props) {
@@ -50,9 +52,10 @@ export function CyclesTable({
     lock: t.hr.payrollLock,
     timestamps: t.hr.payrollTimestamps,
     export: t.hr.payrollExport,
+    empeoTemplate: t.hr.payrollEmpeoTemplate,
     markExported: t.hr.payrollConfirmMarkExported,
   };
-  const actionProps = { onLock, onMarkExported, onDownloadTimestamps, onDownloadPayrollInfo, labels };
+  const actionProps = { onLock, onMarkExported, onDownloadTimestamps, onDownloadPayrollInfo, onDownloadEmpeoTemplate, labels };
 
   return (
     <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">

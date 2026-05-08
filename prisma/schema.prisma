@@ -46,6 +46,12 @@ enum WorkShift {
   EVENING // จ.-ศ. 17:00-02:00 / ส.-อา. 16:00-00:00
 }
 
+enum EmploymentType {
+  MONTHLY  // รายเดือน — base = monthly salary
+  DAILY    // รายวัน — base = daily wage
+  INTERN   // ฝึกงาน — treated like DAILY for hourly math
+}
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique @db.Citext
@@ -138,7 +144,8 @@ model Employee {
   departmentId     String?
   positionId       String?
   managerId        String?
-  employmentType   String?          // ประเภทการจ้าง (พาร์ทไทม์/ฝึกงาน/รายเดือน/รายวัน)
+  employmentType   EmploymentType?  // รายเดือน / รายวัน / ฝึกงาน
+  baseSalary       Decimal?         @db.Decimal(12, 2) // sensitive — RBAC: SENSITIVE_DATA_ROLES
   hireDate         DateTime         @db.Date
   probationEndDate DateTime?        @db.Date
   employmentStatus EmploymentStatus @default(PROBATION)
@@ -479,6 +486,7 @@ model PayrollCycle {
   attendance   AttendanceRecord[]
   leaves       LeaveRequest[]
   overtime     OvertimeRequest[]
+  expenses     ExpenseClaim[]
   outboxEvents PayrollOutboxEvent[]
 
   @@unique([year, month])
@@ -920,6 +928,7 @@ model ExpenseClaim {
   rejectReason String?        @db.Text
 
   receiptDocumentId String?
+  payrollCycleId  String?
 
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
@@ -927,10 +936,12 @@ model ExpenseClaim {
   employee Employee @relation("ExpenseClaim_employee", fields: [employeeId], references: [id], onDelete: Cascade)
   approver Employee? @relation("ExpenseClaim_approver", fields: [approverId], references: [id])
   receipt  Document? @relation(fields: [receiptDocumentId], references: [id])
+  payrollCycle PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
 
   @@index([employeeId, status])
   @@index([status, createdAt])
   @@index([approverId])
+  @@index([payrollCycleId])
 }
 
 // ────────────────────────────────────────────────────────────────

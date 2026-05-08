@@ -123,9 +123,26 @@ export function usePayroll(initialYear?: number) {
     URL.revokeObjectURL(url);
   }, []);
 
+  const downloadEmpeoTemplate = useCallback(async (id: string) => {
+    const res = await fetch(`/api/v1/payroll/cycles/${id}/export/empeo-template`);
+    if (!res.ok) throw new Error("Failed to download Empeo template");
+    const blob = await res.blob();
+    const cd = res.headers.get("content-disposition") ?? "";
+    const match = /filename="([^"]+)"/.exec(cd);
+    const filename = match?.[1] ?? `empeo-template-${id}.xlsx`;
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, []);
+
   return {
     cycles, isLoading, error, year, setYear,
     lockCycle, markExported, downloadTimestamps, downloadCashout,
-    downloadPayrollInfo, downloadEmployeeData,
+    downloadPayrollInfo, downloadEmployeeData, downloadEmpeoTemplate,
   };
 }

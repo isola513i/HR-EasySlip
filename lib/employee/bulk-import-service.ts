@@ -1,9 +1,12 @@
 import Papa from "papaparse";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { hashPassword, generateInitialPassword } from "@/lib/auth/password-utils";
 import { grantInitialLeaveQuota } from "@/lib/leave/leave-quota-grant-service";
 import { createChecklistForEmployee } from "@/lib/onboarding/checklist-service";
+import { isSensitiveDataRole } from "@/lib/security/role-helpers";
+import { DomainError } from "@/lib/api/errors";
 import { EmployeeCreateSchema } from "./schemas";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
@@ -21,6 +24,8 @@ interface ImportRow {
   departmentCode?: string;
   positionTitle?: string;
   managerEmployeeCode?: string;
+  employmentType?: "MONTHLY" | "DAILY" | "INTERN";
+  baseSalary?: number;
 }
 
 interface BulkImportResult {
@@ -85,6 +90,8 @@ export async function bulkImportEmployees(
       lastNameEn: raw.lastNameEn?.trim() || undefined,
       phone: raw.phone?.trim() || undefined,
       workShift: raw.workShift?.trim() || "MORNING",
+      employmentType: raw.employmentType?.trim() || undefined,
+      baseSalary: raw.baseSalary?.trim() ? Number(raw.baseSalary.trim()) : undefined,
     });
 
     if (!result.success) {
@@ -104,6 +111,11 @@ export async function bulkImportEmployees(
 
   if (errors.length > 0) {
     return { created: [], errors, totalRows: parsed.data.length };
+  }
+
+  const hasSensitive = rows.some((r) => r.baseSalary !== undefined || r.employmentType !== undefined);
+  if (hasSensitive && !isSensitiveDataRole(caller.roles)) {
+    throw new DomainError("INSUFFICIENT_PERMISSIONS", { fields: ["baseSalary", "employmentType"] }, 403);
   }
 
   const lookups = await buildLookupMaps(rows);
@@ -153,6 +165,8 @@ export async function bulkImportEmployees(
           departmentId: row.departmentCode ? lookups.deptByCode.get(row.departmentCode) : undefined,
           positionId: row.positionTitle ? lookups.positionByName.get(row.positionTitle) : undefined,
           managerId: row.managerEmployeeCode ? lookups.employeeByCode.get(row.managerEmployeeCode) : undefined,
+          employmentType: row.employmentType,
+          baseSalary: row.baseSalary !== undefined ? new Prisma.Decimal(row.baseSalary) : null,
         },
       });
 

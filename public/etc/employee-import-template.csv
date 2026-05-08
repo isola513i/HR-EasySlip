@@ -1,2 +1,2 @@
-employeeCode,email,firstNameTh,lastNameTh,hireDate,firstNameEn,lastNameEn,phone,workShift,departmentCode,positionTitle,managerEmployeeCode
-ES0001,name@company.com,ชื่อ,นามสกุล,2026-01-15,FirstName,LastName,0812345678,MORNING,ENG,Software Engineer,
+employeeCode,email,firstNameTh,lastNameTh,hireDate,firstNameEn,lastNameEn,phone,workShift,departmentCode,positionTitle,managerEmployeeCode,employmentType,baseSalary
+ES0001,name@company.com,ชื่อ,นามสกุล,2026-01-15,FirstName,LastName,0812345678,MORNING,ENG,Software Engineer,,MONTHLY,30000.00

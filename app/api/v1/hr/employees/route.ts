@@ -14,7 +14,9 @@ export const GET = withApiHandler(async (req) => {
   if (caller instanceof NextResponse) return caller;
 
   const filters = parseSearchParams(req, EmployeeListFiltersSchema);
-  const result = await listEmployees(filters);
+  const result = await listEmployees(filters, {
+    userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles,
+  });
 
   return apiPaginated(result.items, result.total, result.page, result.perPage);
 });

@@ -14,7 +14,9 @@ export interface Employee {
   phone?: string;
   roles: string[];
   employmentStatus: EmploymentStatus;
-  employmentType?: string | null;
+  employmentType?: "MONTHLY" | "DAILY" | "INTERN" | null;
+  /** Sensitive — present in API responses only when caller has SENSITIVE_DATA_ROLES. */
+  baseSalary?: string | null;
   hireDate: string;
   department?: { id?: string; name: string } | null;
   position?: { name: string } | null;

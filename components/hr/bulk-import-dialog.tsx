@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import Papa from "papaparse";
-import { Upload, Copy, Check, Download } from "lucide-react";
+import { Upload, Copy, Check, Download, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,18 @@ import { useT } from "@/lib/i18n/locale-context";
 interface ParsedRow { employeeCode: string; email: string; firstNameTh: string; lastNameTh: string; hireDate: string; [k: string]: string }
 interface CreatedRow { rowIndex: number; employeeCode: string; initialPassword: string }
 interface ErrorRow { rowIndex: number; field?: string; message: string }
+interface SkippedRow { rowIndex: number; reason: string; message: string }
 
-type Step = "upload" | "preview" | "result";
+interface EmpeoPreview {
+  format: "empeo-xlsx";
+  newDepartments: string[];
+  newPositions: string[];
+  totalRows: number;
+  skipped: SkippedRow[];
+  errors: ErrorRow[];
+}
+
+type Step = "upload" | "preview" | "empeo-preview" | "result";
 
 interface Props { open: boolean; onClose: () => void; onDone: () => void }
 
@@ -22,14 +32,37 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
   const [step, setStep] = useState<Step>("upload");
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [csvText, setCsvText] = useState("");
+  const [xlsxFile, setXlsxFile] = useState<File | null>(null);
+  const [empeoPreview, setEmpeoPreview] = useState<EmpeoPreview | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [created, setCreated] = useState<CreatedRow[]>([]);
   const [errors, setErrors] = useState<ErrorRow[]>([]);
+  const [skipped, setSkipped] = useState<SkippedRow[]>([]);
   const [copied, setCopied] = useState(false);
 
-  const reset = () => { setStep("upload"); setRows([]); setCsvText(""); setCreated([]); setErrors([]); setCopied(false); };
+  const reset = () => {
+    setStep("upload"); setRows([]); setCsvText(""); setXlsxFile(null);
+    setEmpeoPreview(null); setCreated([]); setErrors([]); setSkipped([]); setCopied(false);
+  };
 
-  const handleFile = (file: File) => {
+  const handleFile = async (file: File) => {
+    if (file.name.endsWith(".xlsx")) {
+      setXlsxFile(file);
+      setIsUploading(true);
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("dryRun", "true");
+        const res = await fetch("/api/v1/hr/employees/bulk", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Preview failed");
+        setEmpeoPreview(data.data ?? data);
+        setStep("empeo-preview");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : t.hr.importFailed);
+      } finally { setIsUploading(false); }
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
@@ -45,13 +78,15 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
     setIsUploading(true);
     try {
       const form = new FormData();
-      form.append("file", new Blob([csvText], { type: "text/csv" }), "import.csv");
+      if (xlsxFile) form.append("file", xlsxFile);
+      else form.append("file", new Blob([csvText], { type: "text/csv" }), "import.csv");
       const res = await fetch("/api/v1/hr/employees/bulk", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Import failed");
       const result = data.data ?? data;
       setCreated(result.created ?? []);
       setErrors(result.errors ?? []);
+      setSkipped(result.skipped ?? []);
       setStep("result");
       if (result.created?.length) { toast.success(t.hr.importSuccess); onDone(); }
     } catch (err) { toast.error(err instanceof Error ? err.message : t.hr.importFailed); }
@@ -81,7 +116,7 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
             >
               <Upload className="size-8 opacity-50" />
               <p className="text-sm">{t.hr.uploadCSV}</p>
-              <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
+              <input ref={fileRef} type="file" accept=".csv,.xlsx" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
             </div>
             <a href="/etc/employee-import-template.csv" download className="inline-flex items-center gap-1.5 text-xs text-[var(--es-accent-600)] hover:underline">
               <Download className="size-3" /> {t.hr.downloadTemplate}
@@ -115,6 +150,40 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
           </div>
         )}
 
+        {step === "empeo-preview" && empeoPreview && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 rounded-lg bg-[var(--es-info-50)] p-3 text-sm text-[var(--es-info-700)]">
+              <FileSpreadsheet className="size-4" />
+              {t.hr.empeoFormatDetected}
+            </div>
+            <dl className="grid grid-cols-2 gap-2 text-sm">
+              <dt className="text-muted-foreground">{t.hr.totalRows}</dt>
+              <dd className="text-right tabular-nums">{empeoPreview.totalRows}</dd>
+              <dt className="text-muted-foreground">{t.hr.willImport}</dt>
+              <dd className="text-right tabular-nums">{empeoPreview.totalRows - empeoPreview.skipped.length - empeoPreview.errors.length}</dd>
+              <dt className="text-muted-foreground">{t.hr.willSkip}</dt>
+              <dd className="text-right tabular-nums">{empeoPreview.skipped.length}</dd>
+            </dl>
+            {empeoPreview.newDepartments.length > 0 && (
+              <p className="text-xs text-muted-foreground">{t.hr.autoCreateDepts}: {empeoPreview.newDepartments.join(", ")}</p>
+            )}
+            {empeoPreview.newPositions.length > 0 && (
+              <p className="text-xs text-muted-foreground">{t.hr.autoCreatePositions}: {empeoPreview.newPositions.join(", ")}</p>
+            )}
+            {empeoPreview.errors.length > 0 && (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs">
+                {empeoPreview.errors.slice(0, 5).map((e, i) => <div key={i}>Row {e.rowIndex}: {e.message}</div>)}
+              </div>
+            )}
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setStep("upload")}>{t.common.back}</Button>
+              <Button onClick={handleUpload} disabled={isUploading || empeoPreview.errors.length > 0}>
+                {isUploading ? t.hr.importing : t.hr.bulkImport}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+
         {step === "result" && (
           <div className="space-y-4">
             {errors.length > 0 && (
@@ -122,6 +191,14 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
                 <p className="text-sm font-medium text-destructive">{t.hr.importErrors}</p>
                 <div className="max-h-40 overflow-y-auto rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs">
                   {errors.map((e, i) => <div key={i}>Row {e.rowIndex}: {e.field ? `${e.field} — ` : ""}{e.message}</div>)}
+                </div>
+              </div>
+            )}
+            {skipped.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">{t.hr.importSkipped} ({skipped.length})</p>
+                <div className="max-h-32 overflow-y-auto rounded-lg border bg-muted/40 p-3 text-xs">
+                  {skipped.slice(0, 20).map((e, i) => <div key={i}>Row {e.rowIndex}: {e.message}</div>)}
                 </div>
               </div>
             )}
