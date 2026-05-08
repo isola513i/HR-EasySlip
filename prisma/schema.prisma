@@ -210,6 +210,10 @@ model Employee {
   reviewsAsSubject   Review[] @relation("ReviewSubject")
   reviewsAsAuthor    Review[] @relation("ReviewAuthor")
   offboardingChecklist OffboardingChecklist?
+  expensesSubmitted  ExpenseClaim[] @relation("ExpenseClaim_employee")
+  expensesApproved   ExpenseClaim[] @relation("ExpenseClaim_approver")
+  geofenceOverrideRequests GeofenceOverrideRequest[] @relation("GeofenceOverride_employee")
+  geofenceOverrideDecisions GeofenceOverrideRequest[] @relation("GeofenceOverride_decidedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -272,6 +276,7 @@ model AttendanceRecord {
   employee       Employee      @relation(fields: [employeeId], references: [id])
   payrollCycle   PayrollCycle? @relation(fields: [payrollCycleId], references: [id])
   timeAdjustment TimeAdjustmentRequest? // populated when created from approved adjustment
+  geofenceOverride GeofenceOverrideRequest?
 
   @@index([employeeId, clockedAt])
   @@index([payrollCycleId])
@@ -499,6 +504,24 @@ model PayrollOutboxEvent {
   @@index([payrollCycleId])
 }
 
+// Inbound events from Empeo (e.g. salary changes, payslip ready).
+// Stored verbatim so we can replay or audit later. Apply-step is a
+// separate concern (Phase 4 once Empeo spec is finalized).
+model EmpeoInboundEvent {
+  id             String    @id @default(cuid())
+  eventType      String
+  externalId     String?
+  payload        Json
+  idempotencyKey String    @unique
+  status         String    @default("RECEIVED") // RECEIVED | APPLIED | IGNORED | FAILED
+  receivedAt     DateTime  @default(now())
+  appliedAt      DateTime?
+  lastError      String?   @db.Text
+
+  @@index([status, receivedAt])
+  @@index([eventType])
+}
+
 // ────────────────────────────────────────────────────────────────
 // PDPA & AUDIT
 // ────────────────────────────────────────────────────────────────
@@ -684,6 +707,7 @@ model Document {
 
   owner           Employee @relation(fields: [ownerEmployeeId], references: [id], onDelete: Cascade)
   signatures      DocumentSignature[]
+  expenseReceipts ExpenseClaim[]
 
   @@index([ownerEmployeeId, category])
   @@index([entityType, entityId])
@@ -859,4 +883,85 @@ enum OffboardingStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+// ────────────────────────────────────────────────────────────────
+// EXPENSE / CLAIM
+// ────────────────────────────────────────────────────────────────
+
+enum ExpenseCategory {
+  TRAVEL
+  MEAL
+  EQUIPMENT
+  TRAINING
+  CLIENT
+  OTHER
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ExpenseClaim {
+  id          String          @id @default(cuid())
+  employeeId  String
+  amountTHB   Decimal         @db.Decimal(12, 2)
+  category    ExpenseCategory
+  description String          @db.Text
+  occurredOn  DateTime
+  status      ExpenseStatus   @default(PENDING)
+
+  approverId  String?
+  approvedAt  DateTime?
+  rejectedAt  DateTime?
+  rejectReason String?        @db.Text
+
+  receiptDocumentId String?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  employee Employee @relation("ExpenseClaim_employee", fields: [employeeId], references: [id], onDelete: Cascade)
+  approver Employee? @relation("ExpenseClaim_approver", fields: [approverId], references: [id])
+  receipt  Document? @relation(fields: [receiptDocumentId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([status, createdAt])
+  @@index([approverId])
+}
+
+// ────────────────────────────────────────────────────────────────
+// GEOFENCE OVERRIDE — manager-approved out-of-fence clock-in
+// ────────────────────────────────────────────────────────────────
+
+enum GeofenceOverrideStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model GeofenceOverrideRequest {
+  id              String   @id @default(cuid())
+  employeeId      String
+  attendanceRecordId String? @unique
+  requestedAt     DateTime @default(now())
+  reason          String   @db.Text
+  latitude        Decimal? @db.Decimal(9, 6)
+  longitude       Decimal? @db.Decimal(9, 6)
+  distanceMeters  Int?
+
+  status          GeofenceOverrideStatus @default(PENDING)
+  decidedById     String?
+  decidedAt       DateTime?
+  decisionNote    String?  @db.Text
+
+  employee   Employee @relation("GeofenceOverride_employee", fields: [employeeId], references: [id], onDelete: Cascade)
+  decidedBy  Employee? @relation("GeofenceOverride_decidedBy", fields: [decidedById], references: [id])
+  attendance AttendanceRecord? @relation(fields: [attendanceRecordId], references: [id])
+
+  @@index([status, requestedAt])
+  @@index([employeeId, status])
 }

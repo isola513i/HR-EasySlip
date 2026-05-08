@@ -44,7 +44,8 @@ const DEFAULTS: ConfigEntry[] = [
   // Phase 1 has many WFH employees — breach panel will see frequent
   // "outside" entries by design; HR uses it as a daily roll-up rather
   // than an alert.
-  { key: 'attendance.gps.enforce_geofence', value: true, description: 'เปิดเตือนเมื่อ clock-in นอกพื้นที่ (log-only ไม่บล็อก)' },
+  { key: 'attendance.gps.enforce_geofence', value: true, description: 'ประเมินระยะห่างจาก geofence ตอน clock-in (log + แจ้งเตือน)' },
+  { key: 'attendance.gps.block_out_of_fence', value: false, description: 'บล็อก clock-in นอกพื้นที่ (true = enforce, false = shadow/warn)' },
   { key: 'attendance.geofence.center_lat', value: 16.4431033, description: 'Latitude จุดศูนย์กลางออฟฟิศ (Thunder Solution)' },
   { key: 'attendance.geofence.center_lng', value: 102.7992255, description: 'Longitude จุดศูนย์กลางออฟฟิศ (Thunder Solution)' },
   { key: 'attendance.geofence.radius_meters', value: 500, description: 'รัศมี geofence (เมตร)' },

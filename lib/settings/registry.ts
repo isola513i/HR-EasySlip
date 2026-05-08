@@ -214,6 +214,14 @@ export const SETTINGS_REGISTRY: Record<string, SettingDefinition> = {
     defaultValue: true,
     order: 10,
   },
+  "attendance.gps.block_out_of_fence": {
+    key: "attendance.gps.block_out_of_fence",
+    group: "geofence",
+    inputType: "boolean",
+    validator: z.boolean(),
+    defaultValue: false,
+    order: 11,
+  },
   "attendance.geofence.center_lat": {
     key: "attendance.geofence.center_lat",
     group: "geofence",

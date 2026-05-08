@@ -2,6 +2,7 @@ import { getSettingValues } from "@/lib/settings/settings-service";
 
 export interface GeofenceConfig {
   enforce: boolean;
+  blockOutOfFence: boolean;
   centerLat: number;
   centerLng: number;
   radiusMeters: number;
@@ -16,6 +17,7 @@ export interface GeofenceEvaluation {
 
 const KEYS = [
   "attendance.gps.enforce_geofence",
+  "attendance.gps.block_out_of_fence",
   "attendance.geofence.center_lat",
   "attendance.geofence.center_lng",
   "attendance.geofence.radius_meters",
@@ -25,6 +27,7 @@ export async function loadGeofenceConfig(): Promise<GeofenceConfig> {
   const values = await getSettingValues(KEYS as unknown as string[]);
   return {
     enforce: Boolean(values["attendance.gps.enforce_geofence"]),
+    blockOutOfFence: Boolean(values["attendance.gps.block_out_of_fence"]),
     centerLat: Number(values["attendance.geofence.center_lat"] ?? 0),
     centerLng: Number(values["attendance.geofence.center_lng"] ?? 0),
     radiusMeters: Number(values["attendance.geofence.radius_meters"] ?? 0),
