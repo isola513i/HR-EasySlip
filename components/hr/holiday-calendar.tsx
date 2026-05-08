@@ -1,140 +1,164 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Plus, Calendar as CalendarIcon, Building, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker } from "@/components/ui/date-picker";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHolidays, type Holiday } from "@/hooks/use-holidays";
 import { useT } from "@/lib/i18n/locale-context";
+import { HolidayYearCalendar } from "@/components/hr/holidays/holiday-year-calendar";
+import { HolidayStatCard } from "@/components/hr/holidays/holiday-stat-card";
+import { HolidayList } from "@/components/hr/holidays/holiday-list";
+import { HolidayDialog, type HolidayDialogPayload } from "@/components/hr/holidays/holiday-dialog";
 
 const currentYear = new Date().getFullYear();
 const YEARS = [currentYear - 1, currentYear, currentYear + 1];
 
 export function HolidayCalendar() {
   const t = useT();
-  const { holidays, isLoading, error: fetchError, year, setYear, create, update, remove } = useHolidays(2026);
-  const [editing, setEditing] = useState<Holiday | null>(null);
-  const [isNew, setIsNew] = useState(false);
-  const [form, setForm] = useState({ date: "", name: "", nameEn: "", isSubstituted: false });
-  const [saving, setSaving] = useState(false);
+  const {
+    holidays,
+    isLoading,
+    error: fetchError,
+    year,
+    setYear,
+    create,
+    update,
+    remove,
+  } = useHolidays(currentYear);
 
-  const openNew = () => {
-    setForm({ date: "", name: "", nameEn: "", isSubstituted: false });
+  const [editing, setEditing] = useState<Holiday | null>(null);
+  const [presetDate, setPresetDate] = useState<string | undefined>();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const openNew = (preset?: string) => {
     setEditing(null);
-    setIsNew(true);
+    setPresetDate(preset);
+    setDialogOpen(true);
   };
 
   const openEdit = (h: Holiday) => {
-    setForm({ date: h.date.slice(0, 10), name: h.name, nameEn: h.nameEn ?? "", isSubstituted: h.isSubstituted });
     setEditing(h);
-    setIsNew(false);
+    setPresetDate(undefined);
+    setDialogOpen(true);
   };
 
-  const handleSave = async () => {
-    if (!form.date || !form.name.trim()) return;
-    setSaving(true);
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditing(null);
+    setPresetDate(undefined);
+  };
+
+  const handleSubmit = async (payload: HolidayDialogPayload) => {
     try {
-      if (isNew) {
-        await create({ date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
-        toast.success(t.hr.holidayAdded);
-      } else if (editing) {
-        await update(editing.id, { date: form.date, name: form.name.trim(), nameEn: form.nameEn.trim() || undefined, isSubstituted: form.isSubstituted });
+      if (editing) {
+        await update(editing.id, payload);
         toast.success(t.hr.holidayUpdated);
+      } else {
+        await create(payload);
+        toast.success(t.hr.holidayAdded);
       }
-      setEditing(null);
-      setIsNew(false);
-    } catch { toast.error(t.common.saveFailed); }
-    finally { setSaving(false); }
+    } catch {
+      toast.error(t.common.saveFailed);
+      throw new Error("save_failed");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    try { await remove(id); toast.success(t.hr.holidayDeleted); }
-    catch { toast.error(t.common.deleteFailed); }
+    try {
+      await remove(id);
+      toast.success(t.hr.holidayDeleted);
+    } catch {
+      toast.error(t.common.deleteFailed);
+    }
+  };
+
+  const stats = useMemo(() => {
+    let gov = 0;
+    let company = 0;
+    for (const h of holidays) {
+      if (h.isSubstituted) company++;
+      else gov++;
+    }
+    return { total: holidays.length, gov, company };
+  }, [holidays]);
+
+  const sortedHolidays = useMemo(
+    () => [...holidays].sort((a, b) => a.date.localeCompare(b.date)),
+    [holidays],
+  );
+
+  const handleCalendarSelect = (iso: string) => {
+    const match = holidays.find((h) => h.date.slice(0, 10) === iso);
+    if (match) openEdit(match);
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2">
-          {YEARS.map((y) => (
-            <Button key={y} variant={year === y ? "default" : "outline"} size="sm" onClick={() => setYear(y)}>
-              {y}
-            </Button>
-          ))}
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-bold tracking-tight">{t.hr.holidaysPageTitle}</h1>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">{t.hr.holidaysPageSubtitle}</p>
         </div>
-        <Button size="sm" onClick={openNew}><Plus className="mr-1.5 size-4" /> {t.hr.addHoliday}</Button>
+        <Button size="sm" onClick={() => openNew()} className="gap-1.5">
+          <Plus className="size-4" /> {t.hr.addHoliday}
+        </Button>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
-      ) : fetchError ? (
-        <div className="py-16 text-center text-[var(--es-error-500)]">{fetchError}</div>
-      ) : holidays.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">{t.hr.noHolidays.replace("{year}", String(year))}</div>
-      ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[120px]">{t.hr.holidayDate}</TableHead>
-                <TableHead>{t.hr.holidayNameTh}</TableHead>
-                <TableHead>{t.hr.holidayNameEn}</TableHead>
-                <TableHead className="w-[100px]">{t.hr.holidayType}</TableHead>
-                <TableHead className="w-[80px]" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {holidays.map((h) => (
-                <TableRow key={h.id}>
-                  <TableCell className="tabular-nums font-medium">
-                    {new Date(h.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                  </TableCell>
-                  <TableCell>{h.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{h.nameEn ?? "—"}</TableCell>
-                  <TableCell>{h.isSubstituted ? <Badge variant="secondary">{t.hr.substituted}</Badge> : <Badge variant="outline">{t.hr.regular}</Badge>}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <button onClick={() => openEdit(h)} className="rounded p-1 hover:bg-muted"><Pencil className="size-3.5" /></button>
-                      <button onClick={() => handleDelete(h.id)} className="rounded p-1 text-[var(--es-error-500)] hover:bg-[var(--es-error-50)]"><Trash2 className="size-3.5" /></button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <div className="flex justify-center">
+        <Tabs value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+          <TabsList>
+            {YEARS.map((y) => (
+              <TabsTrigger key={y} value={String(y)} className="min-w-[5rem] tabular-nums">
+                {y}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+      </div>
 
-      <Dialog open={isNew || !!editing} onOpenChange={(o) => { if (!o) { setIsNew(false); setEditing(null); } }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>{isNew ? t.hr.addHolidayTitle : t.hr.editHolidayTitle}</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1.5"><Label>{t.hr.holidayDate}</Label><DatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} className="w-full" /></div>
-            <div><Label>{t.hr.holidayNameTh}</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t.hr.holidayNameThPlaceholder} /></div>
-            <div><Label>{t.hr.holidayNameEn}</Label><Input value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} placeholder={t.hr.holidayNameEnPlaceholder} /></div>
-            <label className="flex items-center gap-2 text-sm">
-              <Checkbox checked={form.isSubstituted} onCheckedChange={(v) => setForm({ ...form, isSubstituted: !!v })} />
-              {t.hr.substitutedCheckbox}
-            </label>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setIsNew(false); setEditing(null); }}>{t.common.cancel}</Button>
-            <Button disabled={!form.date || !form.name.trim() || saving} onClick={handleSave}>{saving ? t.common.saving : t.common.save}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <HolidayStatCard icon={CalendarIcon} label={t.hr.holidaysStatTotal} value={stats.total} tone="accent" />
+        <HolidayStatCard icon={Building} label={t.hr.holidaysStatGov} value={stats.gov} tone="neutral" />
+        <HolidayStatCard icon={Briefcase} label={t.hr.holidaysStatCompany} value={stats.company} tone="muted" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className="rounded-2xl bg-card p-5 ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]">
+          <h2 className="mb-4 text-[15px] font-semibold tracking-tight">
+            {t.hr.holidaysCalendarTitle.replace("{year}", String(year))}
+          </h2>
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <Skeleton key={i} className="h-44 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : (
+            <HolidayYearCalendar year={year} holidays={holidays} onSelectDate={handleCalendarSelect} />
+          )}
+        </section>
+
+        <HolidayList
+          holidays={sortedHolidays}
+          total={stats.total}
+          year={year}
+          isLoading={isLoading}
+          error={fetchError}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+        />
+      </div>
+
+      <HolidayDialog
+        open={dialogOpen}
+        editing={editing}
+        presetDate={presetDate}
+        onClose={closeDialog}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 }

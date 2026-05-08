@@ -82,7 +82,7 @@ export function AdminHeader({ user, onMenuClick, inboxHref = "/employee/inbox" }
         <Link
           href={inboxHref}
           aria-label={t.common.inbox}
-          className="grid size-9 shrink-0 place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          className="grid size-9 shrink-0 place-items-center rounded-full bg-card text-muted-foreground ring-1 ring-[var(--border-subtle)] transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <Mail className="size-[18px]" strokeWidth={1.75} />
         </Link>

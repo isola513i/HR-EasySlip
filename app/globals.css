@@ -54,6 +54,7 @@
   --color-warning-foreground: var(--es-warn-700);
   --color-info: var(--es-info-500);
   --color-info-foreground: #ffffff;
+  --color-border-subtle: var(--border-subtle);
 }
 
 :root {
@@ -73,10 +74,12 @@
   --accent: #eef1ff;
   --accent-foreground: #3d46cc;
   --destructive: #dc2626;
-  --border: #e2e7ee;
-  --input: #e2e7ee;
-  --ring: rgba(61, 70, 204, 0.32);
-  --radius: 0.625rem;
+  /* Borders softened to ~rgba(0,0,0,0.06) feel — Linear/Notion calm aesthetic */
+  --border: #ebeef3;
+  --border-subtle: rgba(15, 23, 42, 0.04);
+  --input: #e7eaf0;
+  --ring: rgba(61, 70, 204, 0.28);
+  --radius: 0.75rem;
 
   /* ═══ Sidebar ═══ */
   --sidebar: #ffffff;

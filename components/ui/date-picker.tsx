@@ -64,12 +64,12 @@ export function DatePicker({
       <PopoverTrigger
         disabled={disabled}
         className={cn(
-          "inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] outline-none transition-colors",
+          "inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-input bg-card px-3.5 text-[13px] shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] outline-none transition-[border-color,box-shadow] duration-150",
           "hover:border-[var(--es-neutral-300)]",
-          "focus-visible:border-[var(--es-accent-400)] focus-visible:ring-2 focus-visible:ring-[var(--ring)]",
-          "disabled:cursor-not-allowed disabled:opacity-50",
+          "focus-visible:border-[var(--es-accent-400)] focus-visible:ring-[3px] focus-visible:ring-ring/40",
+          "disabled:cursor-not-allowed disabled:opacity-60",
           "data-popup-open:border-[var(--es-accent-400)]",
-          !value && "text-muted-foreground",
+          !value && "text-muted-foreground/70",
           className,
         )}
       >

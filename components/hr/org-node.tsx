@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronUp, Building2 } from "lucide-react";
 import Image from "next/image";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { cn } from "@/lib/utils";
@@ -20,62 +20,156 @@ export interface OrgChartNode {
   children: OrgChartNode[];
 }
 
-interface Props {
+interface NodeCardProps {
   node: OrgChartNode;
-  depth: number;
-  collapsed: Set<string>;
+  isCollapsed: boolean;
+  isHighlighted: boolean;
   onToggle: (id: string) => void;
 }
 
-export function OrgNode({ node, depth, collapsed, onToggle }: Props) {
+const CONNECTOR_HEIGHT = 24;
+
+function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps) {
   const hasChildren = node.children.length > 0;
-  const isCollapsed = collapsed.has(node.id);
-  const name = `${node.firstNameTh} ${node.lastNameTh}`;
+  const fullName = `${node.firstNameTh} ${node.lastNameTh}`;
   const pictureSrc = node.hasProfilePicture
     ? profilePictureSrc(node.id, node.profilePictureUploadedAt)
     : null;
+  const initials = fullName
+    .split(" ")
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
-    <div className={cn("py-1", depth > 0 && "border-l-2 border-[var(--es-neutral-100)] pl-3 ml-3")}>
-      <div className="flex items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-muted/50">
-        <button
-          onClick={() => hasChildren && onToggle(node.id)}
-          disabled={!hasChildren}
-          className="grid size-6 shrink-0 place-items-center rounded text-muted-foreground transition-colors hover:bg-muted disabled:opacity-0"
-          aria-label={isCollapsed ? "Expand" : "Collapse"}
-        >
-          {hasChildren && (isCollapsed ? <ChevronRight className="size-4" /> : <ChevronDown className="size-4" />)}
-        </button>
-        <div className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-full bg-muted text-xs font-semibold uppercase text-muted-foreground">
-          {pictureSrc ? (
-            <Image src={pictureSrc} alt={name} width={36} height={36} className="size-full object-cover" />
-          ) : (
-            <span>{name.slice(0, 1)}</span>
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-2">
-            <span className="text-sm font-semibold">{name}</span>
-            <span className="font-mono text-[11px] text-muted-foreground">{node.employeeCode}</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-muted-foreground">
-            {node.positionName && <span>{node.positionName}</span>}
-            {node.positionName && node.departmentName && <span>·</span>}
-            {node.departmentName && <span>{node.departmentName}</span>}
-          </div>
-        </div>
-        {hasChildren && (
-          <span className="shrink-0 rounded-full bg-[var(--es-accent-50)] px-2 py-0.5 text-[11px] font-semibold tabular-nums text-[var(--es-accent-700)]">
-            {node.children.length}
-          </span>
+    <div
+      className={cn(
+        "group relative flex w-[208px] flex-col items-center gap-2 rounded-2xl bg-card px-4 pb-3 pt-5 text-center transition-[box-shadow,transform,ring-color] duration-150",
+        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)] ring-1 ring-[var(--border-subtle)]",
+        "hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06),0_12px_24px_rgba(15,23,42,0.08)]",
+        isHighlighted && "ring-2 ring-[var(--es-accent-400)] shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
+      )}
+    >
+      <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--es-accent-50)] text-[15px] font-semibold tracking-wide text-[var(--es-accent-700)] ring-2 ring-card">
+        {pictureSrc ? (
+          <Image src={pictureSrc} alt={fullName} width={56} height={56} className="size-full object-cover" />
+        ) : (
+          <span>{initials || "—"}</span>
         )}
       </div>
-      {hasChildren && !isCollapsed && (
-        <div>
-          {node.children.map((child) => (
-            <OrgNode key={child.id} node={child} depth={depth + 1} collapsed={collapsed} onToggle={onToggle} />
-          ))}
+      <div className="min-w-0 space-y-0.5">
+        <div className="truncate text-[13.5px] font-semibold leading-tight tracking-tight text-foreground">
+          {fullName}
         </div>
+        {node.positionName && (
+          <div className="line-clamp-2 text-[11.5px] leading-tight text-muted-foreground">
+            {node.positionName}
+          </div>
+        )}
+        {node.departmentName && (
+          <div className="flex items-center justify-center gap-1 pt-0.5 text-[10.5px] text-muted-foreground/70">
+            <Building2 className="size-2.5" strokeWidth={2.5} />
+            <span className="truncate">{node.departmentName}</span>
+          </div>
+        )}
+        <div className="pt-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+          {node.employeeCode}
+        </div>
+      </div>
+      {hasChildren && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggle(node.id);
+          }}
+          aria-label={isCollapsed ? "Expand subordinates" : "Collapse subordinates"}
+          className={cn(
+            "absolute -bottom-3 left-1/2 z-10 inline-flex size-7 -translate-x-1/2 items-center justify-center rounded-full bg-card text-[var(--es-accent-700)] ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-sm)] transition-[transform,background-color] duration-150",
+            "hover:bg-[var(--es-accent-50)] active:scale-95",
+          )}
+        >
+          {isCollapsed ? (
+            <ChevronDown className="size-3.5" strokeWidth={2.5} />
+          ) : (
+            <ChevronUp className="size-3.5" strokeWidth={2.5} />
+          )}
+          <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--es-accent-600)] px-1 text-[9.5px] font-bold tabular-nums text-white">
+            {node.children.length}
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+interface Props {
+  node: OrgChartNode;
+  depth?: number;
+  collapsed: Set<string>;
+  onToggle: (id: string) => void;
+  matchedIds?: Set<string>;
+}
+
+export function OrgNode({ node, depth = 0, collapsed, onToggle, matchedIds }: Props) {
+  const hasChildren = node.children.length > 0;
+  const isCollapsed = collapsed.has(node.id);
+  const showChildren = hasChildren && !isCollapsed;
+  const isHighlighted = matchedIds ? matchedIds.has(node.id) : false;
+
+  return (
+    <div className="flex flex-col items-center">
+      <NodeCard
+        node={node}
+        isCollapsed={isCollapsed}
+        isHighlighted={isHighlighted}
+        onToggle={onToggle}
+      />
+
+      {showChildren && (
+        <>
+          <span
+            aria-hidden="true"
+            className="block w-px shrink-0 bg-[var(--es-neutral-200)]"
+            style={{ height: CONNECTOR_HEIGHT }}
+          />
+          <div className="relative flex items-start">
+            {node.children.map((child, idx) => {
+              const isFirst = idx === 0;
+              const isLast = idx === node.children.length - 1;
+              const isOnly = node.children.length === 1;
+
+              return (
+                <div key={child.id} className="relative flex flex-col items-center px-4 pt-0">
+                  {!isOnly && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute top-0 h-px bg-[var(--es-neutral-200)]"
+                      style={{
+                        left: isFirst ? "50%" : 0,
+                        right: isLast ? "50%" : 0,
+                      }}
+                    />
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className="block w-px shrink-0 bg-[var(--es-neutral-200)]"
+                    style={{ height: CONNECTOR_HEIGHT }}
+                  />
+                  <OrgNode
+                    node={child}
+                    depth={depth + 1}
+                    collapsed={collapsed}
+                    onToggle={onToggle}
+                    matchedIds={matchedIds}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </div>
   );

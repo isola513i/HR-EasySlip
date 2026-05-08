@@ -7,8 +7,8 @@ test.describe("HR Holiday Management", () => {
     await page.goto("/hr/holidays");
     await page.waitForLoadState("networkidle");
 
-    // Should show year buttons
-    await expect(page.getByRole("button", { name: "2026" })).toBeVisible({ timeout: 10_000 });
+    // Year selector renders as a tabs role (shadcn Tabs / base-ui Tab role).
+    await expect(page.getByRole("tab", { name: "2026" })).toBeVisible({ timeout: 10_000 });
 
     // Should show Add Holiday button
     await expect(page.getByRole("button", { name: /add holiday/i })).toBeVisible();

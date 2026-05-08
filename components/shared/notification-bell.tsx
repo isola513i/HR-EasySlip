@@ -40,7 +40,7 @@ export function NotificationBell({ userId: _userId }: NotificationBellProps) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label={t.common.notifications}
-        className="relative grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="relative grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card text-muted-foreground ring-1 ring-[var(--border-subtle)] transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         <Bell className="size-[18px]" strokeWidth={1.75} />
         {unreadCount > 0 && (
