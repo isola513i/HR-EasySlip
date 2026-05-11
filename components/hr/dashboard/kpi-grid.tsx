@@ -41,7 +41,7 @@ function DeltaPill({ delta }: { delta: KpiCardProps["delta"] }) {
   return (
     <span
       className={`tabular-nums text-[11px] font-semibold ${
-        positive ? "text-[var(--es-success-600)]" : "text-[var(--es-error-500)]"
+        positive ? "text-success" : "text-(--es-error-500)"
       }`}
     >
       {positive ? "+" : ""}{delta.value}{delta.suffix ?? ""}
@@ -51,7 +51,7 @@ function DeltaPill({ delta }: { delta: KpiCardProps["delta"] }) {
 
 function KpiCard({ label, value, delta, icon: Icon, tone }: KpiCardProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="flex items-start justify-between">
         <div className={`grid size-10 place-items-center rounded-xl ${ICON_BG[tone]}`}>
           <Icon className="size-5" />

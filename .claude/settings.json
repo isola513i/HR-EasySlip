@@ -32,7 +32,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node D:\\EasySlip\\.claude\\hooks\\pre-tool-security.js",
+            "command": "node D:/EasySlip/.claude/hooks/pre-tool-security.js",
             "description": "Block commands that overwrite .env files"
           }
         ]
@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash D:\\EasySlip\\.claude\\hooks\\stop-verify.sh",
+            "command": "bash D:/EasySlip/.claude/hooks/stop-verify.sh",
             "description": "Warn if .env files are staged for commit at session end"
           }
         ]

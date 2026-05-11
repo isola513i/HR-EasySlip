@@ -27,7 +27,7 @@ function Tile({ tile }: { tile: ActionTile }) {
   return (
     <Link
       href={tile.href}
-      className="group/tile flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 text-center shadow-[var(--es-shadow-sm)] transition-all hover:-translate-y-0.5 hover:border-[var(--es-accent-300)] hover:shadow-[var(--es-shadow-md)]"
+      className="group/tile flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-border bg-card p-4 text-center shadow-(--es-shadow-sm) transition-all hover:-translate-y-0.5 hover:border-(--es-accent-300) hover:shadow-(--es-shadow-md)"
     >
       <div className={`grid size-11 place-items-center rounded-xl ${filled ? filledBg : ghostIcon}`}>
         <tile.icon className="size-5" />
@@ -49,7 +49,7 @@ export function QuickActions() {
   ];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4 text-base font-semibold">{t.hr.dashboard.quickActionsTitle}</div>
       <div className="grid grid-cols-2 gap-3">
         {tiles.map((tile) => <Tile key={tile.href} tile={tile} />)}
