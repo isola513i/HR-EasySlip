@@ -29,14 +29,25 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "command": "node D:\\EasySlip\\.claude\\hooks\\pre-tool-security.js",
-        "description": "Block commands that overwrite .env files"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node D:\\EasySlip\\.claude\\hooks\\pre-tool-security.js",
+            "description": "Block commands that overwrite .env files"
+          }
+        ]
       }
     ],
     "Stop": [
       {
-        "command": "bash D:\\EasySlip\\.claude\\hooks\\stop-verify.sh",
-        "description": "Warn if .env files are staged for commit at session end"
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash D:\\EasySlip\\.claude\\hooks\\stop-verify.sh",
+            "description": "Warn if .env files are staged for commit at session end"
+          }
+        ]
       }
     ]
   }

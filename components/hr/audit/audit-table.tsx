@@ -48,7 +48,7 @@ function actionIcon(action: string): { Icon: LucideIcon; isDelete: boolean } {
 }
 
 function actorName(entry: AuditEntry): string {
-  return entry.actor?.email?.split("@")[0] ?? entry.actorId;
+  return entry.actor?.email?.split("@")[0] ?? entry.actorId ?? "—";
 }
 
 function actorInitials(entry: AuditEntry): string {
@@ -117,7 +117,7 @@ export function AuditTable({ rows, isLoading, error }: Props) {
           return (
             <div key={r.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] last:border-b-0 hover:bg-muted/40`}>
               <div className="flex min-w-0 items-center gap-2.5">
-                <EmployeeAvatar seed={r.actorId} initials={initials} />
+                <EmployeeAvatar seed={r.actorId ?? ""} initials={initials} />
                 <span className="truncate font-medium">{name}</span>
               </div>
               <div className="flex min-w-0 items-center gap-2">

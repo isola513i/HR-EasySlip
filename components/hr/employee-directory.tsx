@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { cn } from "@/lib/utils";
+import { apiFetch } from "@/lib/api/client";
 import { useEmployees, type Employee } from "@/hooks/use-employees";
 import { useMissingSalaryCount } from "@/hooks/use-missing-salary-count";
 import { downloadBlob } from "@/lib/export/csv-download";
@@ -85,10 +86,10 @@ export function EmployeeDirectory() {
 
   const handleResetPassword = async (emp: Employee) => {
     try {
-      const res = await fetch(`/api/v1/hr/employees/${emp.id}/reset-password`, { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Reset failed");
-      const d = data.data ?? data;
+      const d = await apiFetch<{ tempPassword: string; employeeCode: string }>(
+        `/api/v1/hr/employees/${emp.id}/reset-password`,
+        { method: "POST" },
+      );
       setResetResult({ tempPassword: d.tempPassword, employeeCode: d.employeeCode });
       toast.success(t.password.resetSuccess);
     } catch (err) {

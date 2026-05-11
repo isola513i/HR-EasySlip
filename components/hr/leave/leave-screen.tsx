@@ -13,7 +13,7 @@ export function LeaveScreen() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{t.hr.leave.title}</h1>
+        <h1 className="text-[22px] font-bold tracking-tight">{t.hr.leave.title}</h1>
         <p className="mt-0.5 text-sm text-muted-foreground">{t.hr.leave.subtitle}</p>
       </div>
 

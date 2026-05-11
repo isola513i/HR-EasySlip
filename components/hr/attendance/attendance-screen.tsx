@@ -12,14 +12,7 @@ import { GeofenceBreachPanel } from "@/components/hr/attendance/geofence-breach-
 import { downloadBlob } from "@/lib/download";
 import { useT } from "@/lib/i18n/locale-context";
 import { todayISO } from "@/lib/format";
-
-function getMondayOfWeek(iso: string): string {
-  const d = new Date(iso + "T00:00:00Z");
-  const day = d.getUTCDay();
-  const diff = (day === 0 ? -6 : 1) - day;
-  d.setUTCDate(d.getUTCDate() + diff);
-  return d.toISOString().slice(0, 10);
-}
+import { getMondayOfWeek } from "@/lib/datetime/week";
 
 export function AttendanceScreen() {
   const t = useT();
@@ -54,7 +47,7 @@ export function AttendanceScreen() {
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t.hr.attendance.title}</h1>
+          <h1 className="text-[22px] font-bold tracking-tight">{t.hr.attendance.title}</h1>
           <p className="mt-0.5 text-sm text-muted-foreground">{t.hr.attendance.subtitle}</p>
         </div>
         <div className="flex items-center gap-2">

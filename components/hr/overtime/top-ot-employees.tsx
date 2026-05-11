@@ -3,11 +3,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
 
-export interface TopOTRow {
-  employeeCode: string;
-  name: string;
-  hours: number;
-}
+import type { TopOTRow } from "@/lib/overtime/overtime-utils";
+export type { TopOTRow };
 
 interface Props {
   rows: TopOTRow[];

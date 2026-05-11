@@ -5,10 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 
-export interface TrendPoint {
-  monthKey: string;
-  hours: number;
-}
+import type { TrendPoint } from "@/lib/overtime/overtime-utils";
+export type { TrendPoint };
 
 interface Props {
   data: TrendPoint[];

@@ -37,7 +37,7 @@ function DeltaPill({ delta }: { delta: KpiCardProps["delta"] }) {
   if ("text" in delta) {
     return <span className="text-[11px] font-semibold tabular-nums text-muted-foreground">{delta.text}</span>;
   }
-  const positive = delta.value >= 0;
+  const positive = delta.value > 0;
   return (
     <span
       className={`tabular-nums text-[11px] font-semibold ${

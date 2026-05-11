@@ -6,7 +6,7 @@ import type { AuditModule } from "@/lib/audit/categories";
 
 export interface AuditEntry {
   id: string;
-  actorId: string;
+  actorId: string | null;
   action: string;
   entityType: string;
   entityId: string;
@@ -16,7 +16,7 @@ export interface AuditEntry {
   userAgent: string | null;
   reason: string | null;
   createdAt: string;
-  actor: { id: string; email: string };
+  actor: { id: string; email: string } | null;
 }
 
 export type AuditDateRange = "7d" | "30d" | "90d" | "all";

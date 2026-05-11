@@ -17,10 +17,10 @@ interface Department { id: string; name: string; code: string }
 const ALL_DEPARTMENTS = "__ALL__";
 
 const REPORT_TYPES = [
-  { value: "ATTENDANCE_SUMMARY", icon: "clock" },
-  { value: "LEAVE_SUMMARY", icon: "calendar" },
-  { value: "EMPLOYEE_DIRECTORY", icon: "users" },
-  { value: "OT_SUMMARY", icon: "timer" },
+  { value: "ATTENDANCE_SUMMARY" },
+  { value: "LEAVE_SUMMARY" },
+  { value: "EMPLOYEE_DIRECTORY" },
+  { value: "OT_SUMMARY" },
 ] as const;
 
 function getDefaultDates() {
@@ -109,13 +109,13 @@ export function ReportBuilder() {
       {/* Filters */}
       <div className="rounded-xl border bg-card p-5 shadow-[var(--es-shadow-sm)]">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-1.5">
-            <Label>{t.hr.dateRange}</Label>
+          <fieldset className="space-y-1.5">
+            <legend className="text-sm font-medium leading-none">{t.hr.dateRange}</legend>
             <div className="flex gap-2">
               <DatePicker value={dateFrom} onChange={setDateFrom} max={dateTo || undefined} className="flex-1" />
               <DatePicker value={dateTo} onChange={setDateTo} min={dateFrom || undefined} className="flex-1" />
             </div>
-          </div>
+          </fieldset>
           <div className="space-y-1.5">
             <Label>{t.hr.department}</Label>
             <Select value={departmentId} onValueChange={(v) => { if (v) setDepartmentId(v); }}>

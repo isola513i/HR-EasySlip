@@ -116,24 +116,26 @@ export function PayrollDashboard() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-[22px] font-bold tracking-tight">{t.hr.payroll.pageTitle}</h1>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">{t.hr.payroll.pageSubtitle}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={handleDownloadEmployeeData} className="gap-1.5">
-            <Users className="size-4" />
-            {t.hr.payrollEmployeeData}
-          </Button>
-          <Button variant="outline" onClick={handleDownloadCashout} className="gap-1.5">
-            <Download className="size-4" />
-            {t.hr.payrollCashout} ({year})
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-[22px] font-bold tracking-tight">{t.hr.payroll.pageTitle}</h1>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">{t.hr.payroll.pageSubtitle}</p>
       </div>
 
       <PayrollKpis cycles={cycles} year={year} isLoading={isLoading} />
+
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-[var(--es-shadow-sm)]">
+        <span className="mr-auto text-[13px] font-medium text-muted-foreground tabular-nums">
+          {t.hr.payroll.pageTitle} · {year}
+        </span>
+        <Button variant="outline" size="sm" onClick={handleDownloadEmployeeData} className="gap-1.5">
+          <Users className="size-4" />
+          {t.hr.payrollEmployeeData}
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleDownloadCashout} className="gap-1.5">
+          <Download className="size-4" />
+          {t.hr.payrollCashout}
+        </Button>
+      </div>
 
       <CyclesTable
         cycles={cycles}

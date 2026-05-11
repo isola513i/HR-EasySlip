@@ -59,7 +59,7 @@ export function PdpaScreen() {
     <div className="flex flex-col gap-5">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t.hr.pdpa.pageTitle}</h1>
+          <h1 className="text-[22px] font-bold tracking-tight">{t.hr.pdpa.pageTitle}</h1>
           <p className="mt-1 text-[13px] text-muted-foreground">{t.hr.pdpa.pageSubtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -82,7 +82,7 @@ export function PdpaScreen() {
 
       <PdpaKpis
         totals={data?.totals ?? { totalEmployees: 0, consented: 0, pending: 0, withdrawn: 0, partial: 0, consentRate: 0, complianceGrade: "D" }}
-        isLoading={isLoading}
+        isLoading={isLoading || !data}
       />
 
       {isLoading || !data ? (

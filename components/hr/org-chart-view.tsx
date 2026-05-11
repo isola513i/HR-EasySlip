@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Users, ZoomIn, ZoomOut, Maximize2, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
+import { Users, ZoomIn, ZoomOut, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/shared/search-input";
@@ -166,10 +166,6 @@ export function OrgChartView() {
           </button>
           <Button variant="ghost" size="icon-sm" onClick={zoomIn} disabled={zoomIdx === ZOOM_LEVELS.length - 1} aria-label={t.hr.orgChart.zoomIn}>
             <ZoomIn />
-          </Button>
-          <span aria-hidden="true" className="mx-0.5 h-5 w-px bg-[var(--border-subtle)]" />
-          <Button variant="ghost" size="icon-sm" onClick={resetZoom} aria-label={t.hr.orgChart.resetZoom}>
-            <Maximize2 />
           </Button>
         </div>
       </div>

@@ -45,7 +45,7 @@ export function QuickActions() {
     { href: "/hr/employees", label: k.addEmployee, icon: UserPlus, filled: true },
     { href: "/hr/reports", label: k.viewReports, icon: FileText },
     { href: "/hr/leave", label: k.approveLeave, icon: Calendar },
-    { href: "/hr/payroll", label: k.runPayroll, icon: DollarSign, filled: true, tone: "error" },
+    { href: "/hr/payroll", label: k.runPayroll, icon: DollarSign, filled: true },
   ];
 
   return (
