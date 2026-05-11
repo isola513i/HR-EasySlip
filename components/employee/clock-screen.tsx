@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { Clock, MapPin, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { StatusPill } from "@/components/shared/status-pill";
@@ -62,20 +63,39 @@ export function ClockScreen() {
 
       <div className="flex flex-col gap-4 p-4">
 <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-          <div className="relative grid h-[140px] place-items-center border-b border-border bg-gradient-to-br from-[var(--es-neutral-50)] to-[var(--es-neutral-200)]">
-            <svg className="absolute inset-0 opacity-50" width="100%" height="100%" viewBox="0 0 340 140">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <line key={`h${i}`} x1="0" y1={i * 14} x2="340" y2={i * 14} stroke="#cbd3dd" strokeWidth="0.6" />
-              ))}
-              {Array.from({ length: 14 }).map((_, i) => (
-                <line key={`v${i}`} x1={i * 26} y1="0" x2={i * 26} y2="140" stroke="#cbd3dd" strokeWidth="0.6" />
-              ))}
+          <div className="relative grid h-[140px] place-items-center overflow-hidden border-b border-border bg-gradient-to-br from-[var(--es-neutral-50)] to-[var(--es-neutral-100)]">
+            {/* dot-grid background */}
+            <svg className="absolute inset-0 opacity-30" width="100%" height="100%">
+              <defs>
+                <pattern id="dot-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <circle cx="10" cy="10" r="0.8" fill="var(--es-neutral-400)" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#dot-grid)" />
             </svg>
-            <div className="relative">
-              <div className="grid size-9 place-items-center rounded-full bg-[var(--es-accent-600)] shadow-[0_0_0_8px_rgba(61,70,204,0.18)]">
-                <MapPin className="size-[18px] text-white" />
+            {gpsStatus === "loading" && (
+              <div className="relative flex items-center justify-center">
+                <span className="absolute inline-flex size-16 animate-ping rounded-full bg-[var(--es-accent-400)] opacity-20" style={{ animationDuration: "2s" }} />
+                <span className="absolute inline-flex size-10 animate-ping rounded-full bg-[var(--es-accent-400)] opacity-30" style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
+                <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-neutral-300)]">
+                  <MapPin className="size-[18px] text-[var(--es-neutral-500)]" />
+                </div>
               </div>
-            </div>
+            )}
+            {gpsStatus === "ready" && coords && (
+              <div className="relative flex items-center justify-center">
+                <span className="absolute size-[72px] rounded-full border-2 border-[var(--es-accent-400)] bg-[var(--es-accent-400)] opacity-10" />
+                <span className="absolute size-[72px] rounded-full border-2 border-[var(--es-accent-400)] opacity-30" />
+                <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-accent-600)] shadow-[0_0_0_6px_rgba(61,70,204,0.15)]">
+                  <MapPin className="size-[18px] text-white" />
+                </div>
+              </div>
+            )}
+            {(gpsStatus === "denied" || (gpsStatus === "ready" && !coords)) && (
+              <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-warn-100)] shadow-[0_0_0_6px_rgba(234,179,8,0.12)]">
+                <MapPin className="size-[18px] text-[var(--es-warn-600)]" />
+              </div>
+            )}
           </div>
           <div className="flex items-center justify-between px-4 py-3.5">
             {gpsStatus === "loading" ? (
@@ -123,6 +143,12 @@ export function ClockScreen() {
             <button onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
               {t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockOutLabel : t.clock.clockInLabel)}
             </button>
+            <Link
+              href="/employee/today"
+              className="mt-1 block text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {t.clock.backToToday}
+            </Link>
           </div>
         ) : (
           <button

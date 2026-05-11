@@ -6,6 +6,7 @@ import { InstallPrompt } from "@/components/shared/install-prompt";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { HeroClockCard } from "@/components/employee/home/hero-clock-card";
 import { QuickActions } from "@/components/employee/home/quick-actions";
+import { PendingRequestsCard } from "@/components/employee/home/pending-requests-card";
 import { LeaveQuotaCard } from "@/components/employee/home/leave-quota-card";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
@@ -44,6 +45,7 @@ export function EmployeeHome({ user, dict }: Props) {
       <div className="flex flex-col gap-4 px-4 pb-4">
         <InstallPrompt />
         <HeroClockCard dict={dict} shiftStartLabel={shiftStartLabel} />
+        <PendingRequestsCard dict={dict} />
         <QuickActions dict={dict} />
         <LeaveQuotaCard dict={dict} />
       </div>

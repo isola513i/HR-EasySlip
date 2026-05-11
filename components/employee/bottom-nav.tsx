@@ -13,19 +13,21 @@ import { cn } from "@/lib/utils";
 import { hapticSelection } from "@/lib/haptics";
 import { useT } from "@/lib/i18n/locale-context";
 import { useEmployeeInboxUnread } from "@/hooks/use-employee-inbox-unread";
+import { useMyPendingBadge } from "@/hooks/use-my-pending-badge";
 
 export function BottomNav() {
   const pathname = usePathname();
   const t = useT();
   const nav = t.employee.bottomNav;
   const inboxUnread = useEmployeeInboxUnread();
+  const hasPending = useMyPendingBadge();
   const items = [
-    { href: "/employee/today", icon: Home, label: nav.home, badge: false },
-    { href: "/employee/clock", icon: Clock, label: nav.clock, badge: false },
-    { href: "/employee/leave", icon: CalendarDays, label: nav.leave, badge: false },
-    { href: "/employee/inbox", icon: Inbox, label: nav.inbox, badge: inboxUnread },
-    { href: "/employee/me", icon: User, label: nav.me, badge: false },
-  ] as const;
+    { href: "/employee/today", icon: Home, label: nav.home, badge: hasPending, badgeTone: "accent" as const },
+    { href: "/employee/clock", icon: Clock, label: nav.clock, badge: false, badgeTone: "error" as const },
+    { href: "/employee/leave", icon: CalendarDays, label: nav.leave, badge: false, badgeTone: "error" as const },
+    { href: "/employee/inbox", icon: Inbox, label: nav.inbox, badge: inboxUnread, badgeTone: "error" as const },
+    { href: "/employee/me", icon: User, label: nav.me, badge: false, badgeTone: "error" as const },
+  ];
 
   return (
     <nav
@@ -61,8 +63,8 @@ export function BottomNav() {
                     aria-hidden="true"
                     className="absolute -right-0.5 -top-0.5 grid place-items-center"
                   >
-                    <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
-                    <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
+                    <span className={`absolute inline-flex size-2.5 animate-ping rounded-full opacity-60 ${item.badgeTone === "accent" ? "bg-[var(--es-accent-500)]" : "bg-[var(--es-error-500)]"}`} />
+                    <span className={`relative inline-flex size-1.5 rounded-full ${item.badgeTone === "accent" ? "bg-[var(--es-accent-500)]" : "bg-[var(--es-error-500)]"}`} />
                   </span>
                 )}
               </span>

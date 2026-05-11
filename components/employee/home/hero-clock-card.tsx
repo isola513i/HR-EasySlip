@@ -1,11 +1,35 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Clock as ClockIcon, FileText, type LucideIcon } from "lucide-react";
 import { ClockDisplay } from "@/components/employee/home/clock-display";
 import { useClockStatus } from "@/hooks/use-clock-status";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
+
+function useElapsedTime(inTime: string | null): string | null {
+  const [elapsed, setElapsed] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!inTime) { setElapsed(null); return; }
+    const compute = () => {
+      const [h, m] = inTime.split(":").map(Number);
+      const now = new Date();
+      const clockIn = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+      const diffMs = now.getTime() - clockIn.getTime();
+      if (diffMs < 0) { setElapsed(null); return; }
+      const totalMin = Math.floor(diffMs / 60000);
+      const hrs = Math.floor(totalMin / 60);
+      const mins = totalMin % 60;
+      setElapsed(hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`);
+    };
+    compute();
+    const id = setInterval(compute, 60000);
+    return () => clearInterval(id);
+  }, [inTime]);
+
+  return elapsed;
+}
 
 interface HeroClockCardProps {
   dict: Dictionary;
@@ -28,6 +52,7 @@ const ACTION_TONE_CLASS: Record<"primary" | "outline" | "ghost", string> = {
 
 export function HeroClockCard({ dict, shiftStartLabel }: HeroClockCardProps) {
   const { state, inTime, outTime } = useClockStatus();
+  const elapsed = useElapsedTime(state === "in" ? inTime : null);
   const e = dict.employee;
 
   const STATUS_LABEL: Record<ActiveState, string> = {
@@ -42,9 +67,18 @@ export function HeroClockCard({ dict, shiftStartLabel }: HeroClockCardProps) {
     out: { href: "/employee/timesheet", tone: "ghost", icon: FileText, label: e.viewTimesheet },
   };
 
-  const META: Record<ActiveState, string> = {
+  const META: Record<ActiveState, ReactNode> = {
     idle: shiftStartLabel,
-    in: e.clockedInAt.replace("{time}", inTime ?? "—"),
+    in: (
+      <span className="flex items-center gap-2">
+        <span>{e.clockedInAt.replace("{time}", inTime ?? "—")}</span>
+        {elapsed && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.10] px-2 py-0.5 text-[10px] font-semibold tabular-nums text-white/70">
+            {elapsed} · {e.workedToday}
+          </span>
+        )}
+      </span>
+    ),
     out: `${e.clockedInAt.replace("{time}", inTime ?? "—")} · ${e.clockedOutAt.replace("{time}", outTime ?? "—")}`,
   };
 
