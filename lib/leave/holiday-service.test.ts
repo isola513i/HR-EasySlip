@@ -54,7 +54,7 @@ describe("listHolidays", () => {
 describe("createHoliday", () => {
   test("creates record + writes audit log", async () => {
     const result = await createHoliday(
-      { date: "2026-01-01", name: "วันขึ้นปีใหม่", isSubstituted: false },
+      { date: "2026-01-01", name: "วันขึ้นปีใหม่", isSubstituted: false, color: "red" as const },
       "user-1",
     );
     expect(result.id).toBe("h-1");

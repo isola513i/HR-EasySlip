@@ -10,6 +10,7 @@ import { useT } from "@/lib/i18n/locale-context";
 interface AdminHeaderProps {
   user: { id: string; name: string; role: string; initials: string };
   onMenuClick?: () => void;
+  inboxHref?: string;
 }
 
 const SCROLL_THRESHOLD = 8;

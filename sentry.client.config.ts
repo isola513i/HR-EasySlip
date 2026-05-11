@@ -16,3 +16,16 @@ if (dsn) {
     sendDefaultPii: false,
   });
 }
+
+// Fallback global handlers for environments where Sentry is not configured.
+// Sentry.init() registers these automatically when a DSN is present;
+// these ensure uncaught errors are always visible in the console.
+if (!dsn && typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    console.error("[Unhandled Error]", event.error ?? event.message);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    console.error("[Unhandled Promise Rejection]", event.reason);
+  });
+}

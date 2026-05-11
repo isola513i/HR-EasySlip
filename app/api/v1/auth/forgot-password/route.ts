@@ -53,7 +53,7 @@ export const POST = withApiHandler(async (req, ctx) => {
   );
 
   if (!sent) {
-    console.log(`[forgot-password] Email delivery failed. Reset URL: /signin/reset-password?token=${token}&email=${encodeURIComponent(emailLower)}`);
+    console.error(`[forgot-password] Email delivery failed. Reset URL: /signin/reset-password?token=${token}&email=${encodeURIComponent(emailLower)}`);
   }
 
   return successResponse;

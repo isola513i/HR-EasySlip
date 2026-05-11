@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+// unsafe-eval is only required for Next.js HMR in development; not needed in production.
+const isDev = process.env.NODE_ENV !== "production";
+
 const securityHeaders = [
   {
     key: "X-Frame-Options",
@@ -30,15 +33,24 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
       "connect-src 'self'",
+      "object-src 'none'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
+      "report-uri /api/v1/csp-report",
     ].join("; "),
+  },
+  {
+    // Report-only Trusted Types enforcement — identifies violations without breaking the app.
+    // Promote to Content-Security-Policy once all violations are resolved.
+    key: "Content-Security-Policy-Report-Only",
+    value: "require-trusted-types-for 'script'; report-uri /api/v1/csp-report",
   },
 ];
 
@@ -49,14 +61,17 @@ const docsSecurityHeaders = securityHeaders.map((h) => {
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.jsdelivr.net`,
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
       "img-src 'self' data: blob:",
       "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
       "connect-src 'self'",
+      "object-src 'none'",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
+      "report-uri /api/v1/csp-report",
     ].join("; "),
   };
 });

@@ -85,6 +85,11 @@ const th = {
     appErrorTitle: "Application Error",
     criticalMessage: "เกิดข้อผิดพลาดร้ายแรง",
   },
+  notFoundPage: {
+    title: "ไม่พบหน้าที่ต้องการ",
+    message: "หน้าที่คุณค้นหาไม่มีอยู่ หรืออาจถูกย้ายไปแล้ว",
+    goHome: "กลับหน้าหลัก",
+  },
   validation: {
     valueMissing: "กรุณากรอกข้อมูลในฟิลด์นี้",
     typeMismatch: "กรุณากรอกข้อมูลให้ถูกต้อง",

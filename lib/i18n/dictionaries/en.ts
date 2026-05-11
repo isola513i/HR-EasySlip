@@ -83,6 +83,11 @@ const en = {
     appErrorTitle: "Application Error",
     criticalMessage: "A critical error occurred.",
   },
+  notFoundPage: {
+    title: "Page Not Found",
+    message: "The page you're looking for doesn't exist or has been moved.",
+    goHome: "Go Home",
+  },
   validation: {
     valueMissing: "This field is required.",
     typeMismatch: "Please enter a valid value.",

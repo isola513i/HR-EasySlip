@@ -8,6 +8,7 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { calculateWeekdayOT, calculateHolidayOT, getOTRate, isHolidayOrWeekend, checkOTLimits, getWorkEndHour } from "./ot-calculation";
+import { getBangkokDayBounds } from "@/lib/attendance/clock-validation";
 import { notifyOTSubmitted } from "@/lib/email/ot-notification-sender";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { OTSubmitWeekdayInput, OTSubmitHolidayInput, OTFilters } from "./schemas";
@@ -29,8 +30,9 @@ export async function submitWeekdayOT(
   }
 
   // Find today's clock-out
+  const { todayStart, todayEnd } = getBangkokDayBounds(date);
   const clockOut = await prisma.attendanceRecord.findFirst({
-    where: { employeeId: caller.employeeId, date, clockType: "OUT" },
+    where: { employeeId: caller.employeeId, clockedAt: { gte: todayStart, lte: todayEnd }, clockType: "OUT" },
   });
   if (!clockOut) {
     throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {
@@ -103,12 +105,13 @@ export async function submitHolidayOT(
   }
 
   // Find actual attendance IN/OUT for that date
+  const { todayStart, todayEnd } = getBangkokDayBounds(date);
   const [clockIn, clockOut] = await Promise.all([
     prisma.attendanceRecord.findFirst({
-      where: { employeeId: caller.employeeId, date, clockType: "IN" },
+      where: { employeeId: caller.employeeId, clockedAt: { gte: todayStart, lte: todayEnd }, clockType: "IN" },
     }),
     prisma.attendanceRecord.findFirst({
-      where: { employeeId: caller.employeeId, date, clockType: "OUT" },
+      where: { employeeId: caller.employeeId, clockedAt: { gte: todayStart, lte: todayEnd }, clockType: "OUT" },
     }),
   ]);
 
