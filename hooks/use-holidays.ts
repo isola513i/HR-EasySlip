@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { apiFetch } from "@/lib/api/client";
 
+export type HolidayColor = "red" | "orange" | "amber" | "green" | "blue";
+
 export interface Holiday {
   id: string;
   year: number;
@@ -10,6 +12,7 @@ export interface Holiday {
   name: string;
   nameEn: string | null;
   isSubstituted: boolean;
+  color: HolidayColor;
 }
 
 export function useHolidays(initialYear?: number) {
@@ -34,12 +37,12 @@ export function useHolidays(initialYear?: number) {
 
   useEffect(() => { fetch(year); }, [year, fetch]);
 
-  const create = useCallback(async (input: { date: string; name: string; nameEn?: string; isSubstituted?: boolean }) => {
+  const create = useCallback(async (input: { date: string; name: string; nameEn?: string; isSubstituted?: boolean; color?: HolidayColor }) => {
     await apiFetch("/api/v1/hr/holidays", { method: "POST", body: JSON.stringify(input) });
     await fetch(year);
   }, [year, fetch]);
 
-  const update = useCallback(async (id: string, input: { date?: string; name?: string; nameEn?: string; isSubstituted?: boolean }) => {
+  const update = useCallback(async (id: string, input: { date?: string; name?: string; nameEn?: string; isSubstituted?: boolean; color?: HolidayColor }) => {
     await apiFetch(`/api/v1/hr/holidays/${id}`, { method: "PUT", body: JSON.stringify(input) });
     await fetch(year);
   }, [year, fetch]);

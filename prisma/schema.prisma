@@ -455,6 +455,7 @@ model PublicHoliday {
   name          String
   nameEn        String?
   isSubstituted Boolean  @default(false) // วันหยุดชดเชย
+  color         String   @default("red")  // swatch: red|orange|amber|green|blue
   createdBy     String // userId ของ HRMG
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -7,6 +7,7 @@ import { StatusPill } from "@/components/shared/status-pill";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import type { Holiday } from "@/hooks/use-holidays";
+import { HOLIDAY_COLOR_HEX } from "@/lib/leave/holiday-color";
 
 interface Props {
   holidays: Holiday[];
@@ -53,13 +54,16 @@ export function HolidayList({
           <p className="text-sm">{t.hr.noHolidays.replace("{year}", String(year))}</p>
         </div>
       ) : (
-        <ul className="divide-y divide-[var(--border-subtle)]">
+        <ul className="divide-y divide-[var(--border-subtle)] overflow-y-auto max-h-[calc(100vh-280px)] [scrollbar-width:thin]">
           {holidays.map((h) => (
             <li
               key={h.id}
               className="group flex items-start gap-3 px-5 py-3 transition-colors hover:bg-muted/30"
             >
-              <div className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl bg-[var(--es-accent-50)] text-[var(--es-accent-700)]">
+              <div
+                className="flex size-10 shrink-0 flex-col items-center justify-center rounded-xl text-white"
+                style={{ backgroundColor: HOLIDAY_COLOR_HEX[h.color ?? "red"] }}
+              >
                 <span className="text-[14px] font-bold leading-none tabular-nums">
                   {new Date(h.date).getDate()}
                 </span>

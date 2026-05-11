@@ -21,6 +21,7 @@ export async function createHoliday(input: HolidayCreateInput, userId: string) {
       name: input.name,
       nameEn: input.nameEn,
       isSubstituted: input.isSubstituted ?? false,
+      color: input.color ?? "red",
       createdBy: userId,
     },
   });
@@ -53,6 +54,7 @@ export async function updateHoliday(
   if (input.name !== undefined) data.name = input.name;
   if (input.nameEn !== undefined) data.nameEn = input.nameEn;
   if (input.isSubstituted !== undefined) data.isSubstituted = input.isSubstituted;
+  if (input.color !== undefined) data.color = input.color;
 
   const updated = await prisma.publicHoliday.update({ where: { id }, data });
 

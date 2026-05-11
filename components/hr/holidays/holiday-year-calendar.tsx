@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/hooks/use-locale";
 import type { Holiday } from "@/hooks/use-holidays";
+import { HOLIDAY_COLOR_HEX } from "@/lib/leave/holiday-color";
 
 interface Props {
   year: number;
@@ -76,6 +77,7 @@ export function HolidayYearCalendar({ year, holidays, onSelectDate }: Props) {
               const iso = isoFor(year, m, d);
               const holiday = holidaySet.get(iso);
               const isHoliday = !!holiday;
+              const holidayColor = holiday ? HOLIDAY_COLOR_HEX[holiday.color ?? "red"] : undefined;
               const Component = onSelectDate && isHoliday ? "button" : "div";
               return (
                 <Component
@@ -83,10 +85,11 @@ export function HolidayYearCalendar({ year, holidays, onSelectDate }: Props) {
                   type={Component === "button" ? "button" : undefined}
                   onClick={Component === "button" ? () => onSelectDate?.(iso) : undefined}
                   title={isHoliday ? holiday.name : undefined}
+                  style={isHoliday ? { backgroundColor: holidayColor } : undefined}
                   className={cn(
-                    "mx-auto grid size-6 place-items-center rounded-full transition-colors",
+                    "mx-auto grid size-6 place-items-center rounded-full transition-[opacity,transform]",
                     isHoliday
-                      ? "bg-[var(--es-accent-600)] font-semibold text-white shadow-[var(--es-shadow-xs)] hover:bg-[var(--es-accent-700)]"
+                      ? "font-semibold text-white shadow-[var(--es-shadow-xs)] hover:opacity-90"
                       : "text-foreground/80",
                   )}
                 >

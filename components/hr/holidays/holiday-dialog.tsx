@@ -15,13 +15,16 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/lib/i18n/locale-context";
-import type { Holiday } from "@/hooks/use-holidays";
+import { cn } from "@/lib/utils";
+import type { Holiday, HolidayColor } from "@/hooks/use-holidays";
+import { HOLIDAY_COLOR_HEX, ALL_HOLIDAY_COLORS } from "@/lib/leave/holiday-color";
 
 export interface HolidayDialogPayload {
   date: string;
   name: string;
   nameEn?: string;
   isSubstituted: boolean;
+  color: HolidayColor;
 }
 
 interface Props {
@@ -39,9 +42,10 @@ interface FormState {
   name: string;
   nameEn: string;
   isSubstituted: boolean;
+  color: HolidayColor;
 }
 
-const EMPTY: FormState = { date: "", name: "", nameEn: "", isSubstituted: false };
+const EMPTY: FormState = { date: "", name: "", nameEn: "", isSubstituted: false, color: "red" };
 
 function fromHoliday(h: Holiday): FormState {
   return {
@@ -49,6 +53,7 @@ function fromHoliday(h: Holiday): FormState {
     name: h.name,
     nameEn: h.nameEn ?? "",
     isSubstituted: h.isSubstituted,
+    color: h.color ?? "red",
   };
 }
 
@@ -73,6 +78,7 @@ export function HolidayDialog({ open, editing, presetDate, onClose, onSubmit }: 
         name: form.name.trim(),
         nameEn: form.nameEn.trim() || undefined,
         isSubstituted: form.isSubstituted,
+        color: form.color,
       });
       onClose();
     } finally {
@@ -111,6 +117,26 @@ export function HolidayDialog({ open, editing, presetDate, onClose, onSubmit }: 
               onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
               placeholder={t.hr.holidayNameEnPlaceholder}
             />
+          </div>
+          <div className="space-y-1.5">
+            <Label>{t.hr.holidayColor}</Label>
+            <div className="flex items-center gap-2">
+              {ALL_HOLIDAY_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setForm({ ...form, color: c })}
+                  style={{ backgroundColor: HOLIDAY_COLOR_HEX[c] }}
+                  className={cn(
+                    "size-7 rounded-full transition-[transform,box-shadow]",
+                    form.color === c
+                      ? "scale-110 ring-2 ring-offset-2 ring-current"
+                      : "opacity-60 hover:opacity-90",
+                  )}
+                  aria-label={c}
+                />
+              ))}
+            </div>
           </div>
           <label className="flex items-center gap-2 text-[13px]">
             <Checkbox
