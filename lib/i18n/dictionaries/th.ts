@@ -269,6 +269,8 @@ const th = {
     pendingNone: "ไม่มีคำขอที่รอดำเนินการ",
     pendingViewAll: "ดูทั้งหมด",
     workedToday: "ทำงานวันนี้",
+    approvalsTitle: "รายการอนุมัติ",
+    approvalsTeamAriaLabel: "ทีมวันนี้",
     bottomNav: {
       home: "หน้าแรก",
       clock: "ลงเวลา",

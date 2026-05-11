@@ -1,5 +1,17 @@
 import { test, expect } from "./helpers/fixtures";
 
+test.describe("Approvals access control — employee blocked", () => {
+  test.use({ role: "employee" });
+
+  test("plain employee is redirected away from /employee/approvals", async ({ page }) => {
+    await page.goto("/employee/approvals");
+    await page.waitForLoadState("networkidle");
+    // Should land on /forbidden (or be redirected) — never render the approval inbox
+    await expect(page).not.toHaveURL(/\/employee\/approvals/);
+    await expect(page.getByRole("tab", { name: /leave/i })).not.toBeVisible();
+  });
+});
+
 test.describe("Manager Approval Inbox", () => {
   test.use({ role: "manager" });
 

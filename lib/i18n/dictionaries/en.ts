@@ -267,6 +267,8 @@ const en = {
     pendingNone: "No pending requests",
     pendingViewAll: "View all",
     workedToday: "Worked today",
+    approvalsTitle: "Approvals",
+    approvalsTeamAriaLabel: "Team today",
     bottomNav: {
       home: "Home",
       clock: "Clock",
