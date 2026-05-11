@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { type ReactNode, useState } from "react";
 import { ChevronDown } from "lucide-react";
@@ -30,7 +30,7 @@ export function AccordionItem({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--es-shadow-xs)]",
+        "overflow-hidden rounded-2xl border border-border bg-card shadow-(--es-shadow-xs)",
         className,
       )}
     >
@@ -48,7 +48,7 @@ export function AccordionItem({
           )}
         />
       </button>
-      {open && <div className="border-t border-[var(--es-neutral-100)] px-4 py-4">{children}</div>}
+      {open && <div className="border-t border-(--es-neutral-100) px-4 py-4">{children}</div>}
     </div>
   );
 }

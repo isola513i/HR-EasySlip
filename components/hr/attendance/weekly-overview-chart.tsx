@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,7 +27,7 @@ export function WeeklyOverviewChart({ weekStart }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4 text-base font-semibold">{t.hr.attendance.weeklyOverview}</div>
       {isLoading ? (
         <Skeleton className="h-[260px] w-full rounded-md" />

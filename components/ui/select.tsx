@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import * as React from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
@@ -42,9 +42,9 @@ function SelectTrigger({
       data-size={size}
       className={cn(
         "flex w-fit items-center justify-between gap-1.5 rounded-xl border border-input bg-card px-3.5 text-[13px] whitespace-nowrap shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] transition-[border-color,box-shadow] duration-150 outline-none select-none",
-        "hover:border-[var(--es-neutral-300)]",
-        "focus-visible:border-[var(--es-accent-400)] focus-visible:ring-[3px] focus-visible:ring-ring/40",
-        "data-popup-open:border-[var(--es-accent-400)]",
+        "hover:border-(--es-neutral-300)",
+        "focus-visible:border-(--es-accent-400) focus-visible:ring-[3px] focus-visible:ring-ring/40",
+        "data-popup-open:border-(--es-accent-400)",
         "disabled:cursor-not-allowed disabled:opacity-60",
         "aria-invalid:border-destructive/60 aria-invalid:ring-[3px] aria-invalid:ring-destructive/15",
         "data-placeholder:text-muted-foreground/70",
@@ -94,8 +94,8 @@ function SelectContent({
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           className={cn(
-            "relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl bg-popover text-popover-foreground shadow-[var(--es-shadow-lg)] ring-1 ring-[var(--border-subtle)]",
-            "duration-150 ease-[var(--es-ease-out)]",
+            "relative isolate z-50 max-h-(--available-height) w-(--anchor-width) min-w-36 origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-xl bg-popover text-popover-foreground shadow-(--es-shadow-lg) ring-1 ring-(--border-subtle)",
+            "duration-150 ease-(--es-ease-out)",
             "data-[align-trigger=true]:animate-none data-[side=bottom]:slide-in-from-top-1 data-[side=inline-end]:slide-in-from-left-1 data-[side=inline-start]:slide-in-from-right-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1",
             "data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97]",
             className,
@@ -134,8 +134,8 @@ function SelectItem({
       data-slot="select-item"
       className={cn(
         "relative flex w-full cursor-pointer items-center gap-2 rounded-lg py-2 pr-9 pl-3 text-[13px] outline-hidden select-none transition-colors",
-        "focus:bg-[var(--es-accent-50)] focus:text-[var(--es-accent-700)]",
-        "not-data-[variant=destructive]:focus:**:text-[var(--es-accent-700)]",
+        "focus:bg-(--es-accent-50) focus:text-(--es-accent-700)",
+        "not-data-[variant=destructive]:focus:**:text-(--es-accent-700)",
         "data-selected:font-medium",
         "data-disabled:pointer-events-none data-disabled:opacity-50",
         "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
@@ -149,7 +149,7 @@ function SelectItem({
       </SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator
         render={
-          <span className="pointer-events-none absolute right-2.5 flex size-4 items-center justify-center text-[var(--es-accent-600)]" />
+          <span className="pointer-events-none absolute right-2.5 flex size-4 items-center justify-center text-(--es-accent-600)" />
         }
       >
         <CheckIcon className="pointer-events-none" />

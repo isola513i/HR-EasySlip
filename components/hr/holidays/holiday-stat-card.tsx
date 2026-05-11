@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+﻿import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -10,12 +10,12 @@ interface Props {
 
 const TONE_CLASSES: Record<NonNullable<Props["tone"]>, { bg: string; fg: string }> = {
   neutral: {
-    bg: "bg-[var(--es-neutral-100)]",
+    bg: "bg-(--es-neutral-100)",
     fg: "text-foreground",
   },
   accent: {
-    bg: "bg-[var(--es-accent-50)]",
-    fg: "text-[var(--es-accent-700)]",
+    bg: "bg-(--es-accent-50)",
+    fg: "text-(--es-accent-700)",
   },
   muted: {
     bg: "bg-muted/60",
@@ -26,7 +26,7 @@ const TONE_CLASSES: Record<NonNullable<Props["tone"]>, { bg: string; fg: string 
 export function HolidayStatCard({ icon: Icon, label, value, tone = "neutral" }: Props) {
   const styles = TONE_CLASSES[tone];
   return (
-    <div className="flex items-center gap-3.5 rounded-2xl bg-card p-4 ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]">
+    <div className="flex items-center gap-3.5 rounded-2xl bg-card p-4 ring-1 ring-(--border-subtle) shadow-(--es-shadow-xs)">
       <div className={cn("grid size-11 shrink-0 place-items-center rounded-xl", styles.bg, styles.fg)}>
         <Icon className="size-5" strokeWidth={2} />
       </div>

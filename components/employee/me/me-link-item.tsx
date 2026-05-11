@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -19,7 +19,7 @@ export function MeLinkItem({ label, href, onClick, className }: MeLinkItemProps)
     </>
   );
   const sharedClass = cn(
-    "flex w-full items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-[var(--es-shadow-xs)] transition-colors hover:bg-muted/40",
+    "flex w-full items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-left shadow-(--es-shadow-xs) transition-colors hover:bg-muted/40",
     className,
   );
 

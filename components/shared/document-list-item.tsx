@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { FileText, Image as ImageIcon, ExternalLink, Trash2, PenLine, CheckCircle2 } from "lucide-react";
@@ -58,8 +58,8 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
 
   return (
     <>
-      <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-3 shadow-[var(--es-shadow-xs)]">
-        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--es-accent-50)] text-[var(--es-accent-600)]">
+      <div className="flex items-start gap-3 rounded-2xl border border-border bg-card p-3 shadow-(--es-shadow-xs)">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--es-accent-50) text-(--es-accent-600)">
           <Icon className="size-5" />
         </div>
         <div className="min-w-0 flex-1">
@@ -72,7 +72,7 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
             {formatSize(document.size, t)}
           </div>
           {showSignedBadge && (
-            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-[var(--es-success-700)]">
+            <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-(--es-success-700)">
               <CheckCircle2 className="size-3" />
               {t.documents.signature.signedBadge}
             </div>
@@ -87,7 +87,7 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
           <button
             type="button"
             onClick={() => setSignOpen(true)}
-            className="grid size-11 shrink-0 place-items-center rounded-full text-[var(--es-accent-600)] transition-colors hover:bg-[var(--es-accent-50)]"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-(--es-accent-600) transition-colors hover:bg-(--es-accent-50)"
             aria-label={t.documents.signature.signAction}
             title={t.documents.signature.signAction}
           >
@@ -98,7 +98,7 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
           href={documentFileHref(document.id)}
           target="_blank"
           rel="noopener noreferrer"
-          className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-accent-600)]"
+          className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-(--es-accent-600)"
           aria-label={t.documents.view}
         >
           <ExternalLink className="size-4" />
@@ -108,7 +108,7 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
             type="button"
             onClick={() => setConfirmOpen(true)}
             disabled={deleting}
-            className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-[var(--es-error-600)] disabled:opacity-50"
+            className="grid size-11 shrink-0 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-(--es-error-600) disabled:opacity-50"
             aria-label={t.documents.delete}
           >
             <Trash2 className="size-4" />
@@ -131,7 +131,7 @@ export function DocumentListItem({ document, canDelete, canSign = false, onDelet
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-[var(--es-error-600)] text-white hover:bg-[var(--es-error-700)]"
+              className="bg-(--es-error-600) text-white hover:bg-(--es-error-700)"
             >
               {t.documents.delete}
             </AlertDialogAction>

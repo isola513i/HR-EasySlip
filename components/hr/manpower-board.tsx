@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -17,9 +17,9 @@ import type { LeaveType } from "@prisma/client";
 type Filter = "ALL" | ManpowerStatus;
 
 const dotBg: Record<ManpowerStatus, string> = {
-  WORKING: "bg-[var(--es-success-500)]",
-  ON_LEAVE: "bg-[var(--es-warn-500)]",
-  OFF: "bg-[var(--es-neutral-400)]",
+  WORKING: "bg-(--es-success-500)",
+  ON_LEAVE: "bg-(--es-warn-500)",
+  OFF: "bg-(--es-neutral-400)",
 };
 
 const statusTone: Record<ManpowerStatus, "success" | "warn" | "neutral"> = {
@@ -87,7 +87,7 @@ export function ManpowerBoard() {
   ];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <div className="text-[15px] font-semibold tracking-tight">{m.title}</div>
@@ -190,7 +190,7 @@ function DatePicker({ date, dateLabel, isToday, onPrev, onNext, onChange, onToda
       </button>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
-          className="cursor-pointer rounded-md px-2 py-1 text-xs tabular-nums text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-[var(--ring)] data-popup-open:bg-muted data-popup-open:text-foreground"
+          className="cursor-pointer rounded-md px-2 py-1 text-xs tabular-nums text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-(--ring) data-popup-open:bg-muted data-popup-open:text-foreground"
         >
           {dateLabel}
         </PopoverTrigger>

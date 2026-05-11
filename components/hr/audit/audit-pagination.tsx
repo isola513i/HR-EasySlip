@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,7 @@ export function AuditPagination({ page, totalPages, total, perPage, onPageChange
             className={cn(
               "size-8 rounded-md text-[12px] font-medium tabular-nums transition-colors",
               p === page
-                ? "bg-[var(--es-accent-600)] text-white"
+                ? "bg-(--es-accent-600) text-white"
                 : "border border-border bg-card text-muted-foreground hover:bg-muted",
             )}
           >

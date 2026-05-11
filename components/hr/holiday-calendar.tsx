@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Plus, Calendar as CalendarIcon, Building, Briefcase } from "lucide-react";
@@ -124,7 +124,7 @@ export function HolidayCalendar() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section className="rounded-2xl bg-card p-5 ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]">
+        <section className="rounded-2xl bg-card p-5 ring-1 ring-(--border-subtle) shadow-(--es-shadow-xs)">
           <h2 className="mb-4 text-[15px] font-semibold tracking-tight">
             {t.hr.holidaysCalendarTitle.replace("{year}", String(year))}
           </h2>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { FileBarChart, Download } from "lucide-react";
@@ -96,18 +96,18 @@ export function ReportBuilder() {
             onClick={() => setType(rt.value)}
             className={`flex flex-col items-center gap-2 rounded-xl border p-5 transition-colors ${
               type === rt.value
-                ? "border-[var(--es-accent-400)] bg-[var(--es-accent-50)] shadow-sm"
+                ? "border-(--es-accent-400) bg-(--es-accent-50) shadow-sm"
                 : "border-border bg-card hover:bg-muted"
             }`}
           >
-            <FileBarChart className={`size-6 ${type === rt.value ? "text-[var(--es-accent-600)]" : "text-muted-foreground"}`} />
+            <FileBarChart className={`size-6 ${type === rt.value ? "text-(--es-accent-600)" : "text-muted-foreground"}`} />
             <span className="text-xs font-medium text-center">{typeLabels[rt.value]}</span>
           </button>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="rounded-xl border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+      <div className="rounded-xl border bg-card p-5 shadow-(--es-shadow-sm)">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium leading-none">{t.hr.dateRange}</legend>

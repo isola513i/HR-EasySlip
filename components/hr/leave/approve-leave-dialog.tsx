@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Calendar, CheckCircle2, Clock, Info } from "lucide-react";
@@ -53,14 +53,14 @@ export function ApproveLeaveDialog({ row, onClose, onConfirm }: Props) {
           <DialogDescription>{t.hr.leave.approveDialogSubtitle}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-[var(--es-neutral-50)] p-3">
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-(--es-neutral-50) p-3">
           <EmployeeAvatar seed={row.employee.employeeCode} initials={initials} size="lg" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-[14px] font-semibold">{name}</div>
             <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-muted-foreground">
               <span className="font-mono">{row.employee.employeeCode}</span>
               <span>·</span>
-              <span className="rounded-full bg-[var(--es-accent-50)] px-2 py-0.5 text-[11px] font-medium text-[var(--es-accent-700)]">
+              <span className="rounded-full bg-(--es-accent-50) px-2 py-0.5 text-[11px] font-medium text-(--es-accent-700)">
                 {typeLabel}
               </span>
             </div>
@@ -95,7 +95,7 @@ export function ApproveLeaveDialog({ row, onClose, onConfirm }: Props) {
           )}
         </dl>
 
-        <div className="flex items-start gap-2.5 rounded-lg border border-[var(--es-success-200,#bbf7d0)] bg-[var(--es-success-50)] p-3 text-[12px] text-[var(--es-success-700)]">
+        <div className="flex items-start gap-2.5 rounded-lg border border-(--es-success-200,#bbf7d0) bg-(--es-success-50) p-3 text-[12px] text-(--es-success-700)">
           <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
           <span>
             {t.hr.leave.approveDialogPolicy

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -251,7 +251,7 @@ export function EmployeeDirectory() {
               <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
                 <code className="flex-1 text-sm font-mono font-semibold">{resetResult.tempPassword}</code>
                 <Button variant="ghost" size="icon" className="size-8 shrink-0" onClick={handleCopyPassword}>
-                  {copied ? <Check className="size-4 text-[var(--es-success-600)]" /> : <Copy className="size-4" />}
+                  {copied ? <Check className="size-4 text-(--es-success-600)" /> : <Copy className="size-4" />}
                 </Button>
               </div>
               <p className="text-xs text-destructive">{t.password.tempPasswordWarn}</p>

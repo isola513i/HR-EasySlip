@@ -1,15 +1,15 @@
-import type { LucideIcon } from "lucide-react";
+﻿import type { LucideIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export type KpiTone = "accent" | "info" | "success" | "warn" | "error" | "neutral";
 
 const ICON_TONE: Record<KpiTone, string> = {
-  accent: "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]",
-  info: "bg-[var(--es-info-50)] text-[var(--es-info-600)]",
-  success: "bg-[var(--es-success-50)] text-[var(--es-success-600)]",
-  warn: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]",
-  error: "bg-[var(--es-error-50)] text-[var(--es-error-600)]",
-  neutral: "bg-[var(--es-neutral-100)] text-[var(--es-neutral-700)]",
+  accent: "bg-(--es-accent-50) text-(--es-accent-600)",
+  info: "bg-(--es-info-50) text-(--es-info-600)",
+  success: "bg-(--es-success-50) text-(--es-success-600)",
+  warn: "bg-(--es-warn-50) text-(--es-warn-600)",
+  error: "bg-(--es-error-50) text-(--es-error-600)",
+  neutral: "bg-(--es-neutral-100) text-(--es-neutral-700)",
 };
 
 interface KpiCardProps {
@@ -22,7 +22,7 @@ interface KpiCardProps {
 
 export function KpiCard({ Icon, label, value, sub, tone = "accent" }: KpiCardProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="flex items-center gap-2.5">
         <span className={`grid size-8 place-items-center rounded-lg ${ICON_TONE[tone]}`}>
           <Icon className="size-4" strokeWidth={2} />

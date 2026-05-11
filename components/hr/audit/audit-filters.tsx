@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Search } from "lucide-react";
 import {
@@ -42,7 +42,7 @@ export function AuditFilters({
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t.hr.auditSearch}
           aria-label={t.hr.auditSearch}
-          className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-300)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)] placeholder:text-muted-foreground/70"
+          className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-[13px] outline-none transition-colors hover:border-(--es-neutral-300) focus:border-(--es-accent-400) focus:ring-2 focus:ring-(--ring) placeholder:text-muted-foreground/70"
         />
       </label>
 

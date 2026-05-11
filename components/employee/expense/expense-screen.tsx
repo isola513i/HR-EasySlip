@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Plus, Receipt } from "lucide-react";
@@ -57,7 +57,7 @@ export function ExpenseScreen() {
           {items.map((it) => (
             <li
               key={it.id}
-              className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]"
+              className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
@@ -74,7 +74,7 @@ export function ExpenseScreen() {
                 {it.description}
               </p>
               {it.rejectReason && (
-                <p className="mt-2 rounded-lg bg-[var(--es-error-50)] px-3 py-2 text-[12px] text-[var(--es-error-700)]">
+                <p className="mt-2 rounded-lg bg-(--es-error-50) px-3 py-2 text-[12px] text-(--es-error-700)">
                   {it.rejectReason}
                 </p>
               )}

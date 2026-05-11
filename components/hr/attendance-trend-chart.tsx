@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useT } from "@/lib/i18n/locale-context";
@@ -13,7 +13,7 @@ export function AttendanceTrendChart({ data }: Props) {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4">
         <div className="text-sm font-semibold">{t.hr.attendanceTrend}</div>
         <div className="text-xs text-muted-foreground">{t.hr.attendanceTrendSub}</div>

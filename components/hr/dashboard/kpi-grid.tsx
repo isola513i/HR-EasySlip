@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Users,
@@ -24,12 +24,12 @@ interface KpiCardProps {
 }
 
 const ICON_BG: Record<Tone, string> = {
-  success: "bg-[var(--es-success-50)] text-[var(--es-success-600)]",
-  info: "bg-[var(--es-info-50)] text-[var(--es-info-500)]",
-  warn: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]",
-  accent: "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]",
+  success: "bg-(--es-success-50) text-(--es-success-600)",
+  info: "bg-(--es-info-50) text-(--es-info-500)",
+  warn: "bg-(--es-warn-50) text-(--es-warn-600)",
+  accent: "bg-(--es-accent-50) text-(--es-accent-600)",
   neutral: "bg-muted text-muted-foreground",
-  error: "bg-[var(--es-error-50)] text-[var(--es-error-500)]",
+  error: "bg-(--es-error-50) text-(--es-error-500)",
 };
 
 function DeltaPill({ delta }: { delta: KpiCardProps["delta"] }) {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -64,7 +64,7 @@ export function TodayAttendanceTable({ date }: Props) {
   }, [rows, query, dept]);
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-5 py-3.5">
         <div className="flex-1 text-base font-semibold">{t.hr.attendance.todayAttendance}</div>
         <div className="flex flex-1 flex-wrap items-center justify-end gap-2 sm:flex-none">
@@ -103,7 +103,7 @@ export function TodayAttendanceTable({ date }: Props) {
         <>
           <div className="hidden md:block">
             <ScrollableTable minWidth={900}>
-              <div className={`grid ${GRID} items-center border-b border-border bg-[var(--es-neutral-50)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+              <div className={`grid ${GRID} items-center border-b border-border bg-(--es-neutral-50) px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
                 <span>{t.hr.attendance.colEmployee}</span>
                 <span>{t.hr.attendance.colCheckIn}</span>
                 <span>{t.hr.attendance.colCheckOut}</span>
@@ -112,7 +112,7 @@ export function TodayAttendanceTable({ date }: Props) {
                 <span>{t.hr.attendance.colStatus}</span>
               </div>
               {filtered.map((r) => (
-                <div key={r.employeeId} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3 text-[13px] last:border-b-0`}>
+                <div key={r.employeeId} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3 text-[13px] last:border-b-0`}>
                   <div className="flex min-w-0 items-center gap-2.5">
                     <EmployeeAvatar seed={r.employeeCode} initials={initialsOf(r)} />
                     <div className="min-w-0">
@@ -134,7 +134,7 @@ export function TodayAttendanceTable({ date }: Props) {
             </ScrollableTable>
           </div>
 
-          <div className="flex flex-col divide-y divide-[var(--es-neutral-100)] md:hidden">
+          <div className="flex flex-col divide-y divide-(--es-neutral-100) md:hidden">
             {filtered.map((r) => (
               <div key={r.employeeId} className="flex items-start gap-3 px-4 py-3">
                 <EmployeeAvatar seed={r.employeeCode} initials={initialsOf(r)} size="lg" />

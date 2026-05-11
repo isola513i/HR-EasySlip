@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { MapPin, Home, Building2, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -49,7 +49,7 @@ export function TimesheetRow({ entry, isFirst, fmt, t, onRequestCorrection }: Ti
             {formatHM(entry.workedMinutes, t.hoursAbbr, t.minutesAbbr)}
           </div>
           {entry.lateMinutes > 0 && (
-            <div className="text-[10px] font-medium text-[var(--es-warn-600)] tabular-nums">
+            <div className="text-[10px] font-medium text-(--es-warn-600) tabular-nums">
               {t.late} {formatHM(entry.lateMinutes, t.hoursAbbr, t.minutesAbbr)}
             </div>
           )}

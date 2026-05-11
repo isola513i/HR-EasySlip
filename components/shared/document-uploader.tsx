@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
@@ -62,7 +62,7 @@ export function DocumentUploader({
         disabled={busy}
         className={
           className ??
-          "flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dashed border-[var(--es-accent-300)] bg-[var(--es-accent-50)]/60 px-4 text-sm font-semibold text-[var(--es-accent-700)] transition-colors hover:bg-[var(--es-accent-100)] disabled:opacity-60"
+          "flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dashed border-(--es-accent-300) bg-(--es-accent-50)/60 px-4 text-sm font-semibold text-(--es-accent-700) transition-colors hover:bg-(--es-accent-100) disabled:opacity-60"
         }
       >
         {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}

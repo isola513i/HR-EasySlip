@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
@@ -10,9 +10,9 @@ interface Props {
 }
 
 const TYPE_TONE: Record<string, { bar: string; bg: string }> = {
-  ANNUAL: { bar: "bg-[var(--es-accent-600)]", bg: "bg-[var(--es-accent-100)]" },
-  SICK: { bar: "bg-[var(--es-error-500)]", bg: "bg-[var(--es-error-50)]" },
-  PERSONAL: { bar: "bg-[var(--es-warn-500)]", bg: "bg-[var(--es-warn-50)]" },
+  ANNUAL: { bar: "bg-(--es-accent-600)", bg: "bg-(--es-accent-100)" },
+  SICK: { bar: "bg-(--es-error-500)", bg: "bg-(--es-error-50)" },
+  PERSONAL: { bar: "bg-(--es-warn-500)", bg: "bg-(--es-warn-50)" },
 };
 
 function Card({ stats }: { stats: LeaveTypeStats }) {
@@ -23,7 +23,7 @@ function Card({ stats }: { stats: LeaveTypeStats }) {
   const label = t.leave[stats.type.toLowerCase() as "annual" | "sick" | "personal"];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="text-base font-semibold">{label}</div>
       <div className="mt-4 space-y-1.5">
         <div className="flex items-baseline justify-between text-[13px]">

@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+﻿import { Skeleton } from "@/components/ui/skeleton";
 
 interface SummaryCardProps {
   label: string;
@@ -15,7 +15,7 @@ export function SummaryCard({ label, value, highlight }: SummaryCardProps) {
       ) : (
         <div
           className={`mt-2 text-2xl font-bold tabular-nums ${
-            highlight ? "text-[var(--es-warn-600)]" : "text-foreground"
+            highlight ? "text-(--es-warn-600)" : "text-foreground"
           }`}
         >
           {value}

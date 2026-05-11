@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback } from "react";
 import { Check, X, CheckCircle, Paperclip, LogIn, LogOut } from "lucide-react";
@@ -54,7 +54,7 @@ export function TimeAdjustmentInbox() {
   );
 
   if (error) return (
-    <div className="py-20 text-center text-[var(--es-error-500)]">{error}</div>
+    <div className="py-20 text-center text-(--es-error-500)">{error}</div>
   );
 
   if (rows.length === 0) return (
@@ -71,7 +71,7 @@ export function TimeAdjustmentInbox() {
         const Icon = r.clockType === "IN" ? LogIn : LogOut;
         const expanded = expandedId === r.id;
         return (
-          <div key={r.id} className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+          <div key={r.id} className="rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm)">
             <div className="flex items-start gap-2.5">
               <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-foreground">
                 <Icon className="size-4" />
@@ -91,7 +91,7 @@ export function TimeAdjustmentInbox() {
                   <button
                     type="button"
                     onClick={() => setExpandedId(expanded ? null : r.id)}
-                    className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-[var(--es-accent-600)] hover:text-[var(--es-accent-700)]"
+                    className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-(--es-accent-600) hover:text-(--es-accent-700)"
                   >
                     <Paperclip className="size-3" />
                     {expanded ? t.timesheet.correctionAttachmentDone : t.timesheet.correctionViewAttachments}
@@ -103,7 +103,7 @@ export function TimeAdjustmentInbox() {
                   title={t.manager.approve}
                   aria-label={`${t.manager.approve} ${name}`}
                   onClick={() => handleApprove(r.id)}
-                  className="rounded-md p-2 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]"
+                  className="rounded-md p-2 text-(--es-success-600) transition-colors hover:bg-(--es-success-50)"
                 >
                   <Check className="size-4" />
                 </button>
@@ -111,7 +111,7 @@ export function TimeAdjustmentInbox() {
                   title={t.manager.reject}
                   aria-label={`${t.manager.reject} ${name}`}
                   onClick={() => setRejectTarget(r)}
-                  className="rounded-md p-2 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"
+                  className="rounded-md p-2 text-(--es-error-500) transition-colors hover:bg-(--es-error-50)"
                 >
                   <X className="size-4" />
                 </button>
@@ -144,7 +144,7 @@ function AttachmentList({ requestId }: { requestId: string }) {
   if (isLoading) return null;
   if (documents.length === 0) return null;
   return (
-    <div className="mt-3 space-y-2 border-t border-[var(--es-neutral-100)] pt-3">
+    <div className="mt-3 space-y-2 border-t border-(--es-neutral-100) pt-3">
       {documents.map((doc) => (
         <DocumentListItem key={doc.id} document={doc} canDelete={false} />
       ))}

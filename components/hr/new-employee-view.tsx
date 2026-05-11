@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -62,11 +62,11 @@ export function NewEmployeeView() {
         </Button>
       </div>
 
-      <div className="max-w-2xl rounded-xl border border-[var(--es-info-200)] bg-[var(--es-info-50)] p-3 text-[12px] text-[var(--es-info-700)]">
+      <div className="max-w-2xl rounded-xl border border-(--es-info-200) bg-(--es-info-50) p-3 text-[12px] text-(--es-info-700)">
         {t.hr.empeoImportHint}
       </div>
 
-      <div className="max-w-2xl rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)] sm:p-6">
+      <div className="max-w-2xl rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm) sm:p-6">
         <EmployeeForm
           onCreate={create}
           onSuccess={handleSuccess}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useRef } from "react";
 import Papa from "papaparse";
@@ -118,7 +118,7 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
               <p className="text-sm">{t.hr.uploadCSV}</p>
               <input ref={fileRef} type="file" accept=".csv,.xlsx" className="hidden" onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} />
             </div>
-            <a href="/etc/employee-import-template.csv" download className="inline-flex items-center gap-1.5 text-xs text-[var(--es-accent-600)] hover:underline">
+            <a href="/etc/employee-import-template.csv" download className="inline-flex items-center gap-1.5 text-xs text-(--es-accent-600) hover:underline">
               <Download className="size-3" /> {t.hr.downloadTemplate}
             </a>
           </div>
@@ -152,7 +152,7 @@ export function BulkImportDialog({ open, onClose, onDone }: Props) {
 
         {step === "empeo-preview" && empeoPreview && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2 rounded-lg bg-[var(--es-info-50)] p-3 text-sm text-[var(--es-info-700)]">
+            <div className="flex items-center gap-2 rounded-lg bg-(--es-info-50) p-3 text-sm text-(--es-info-700)">
               <FileSpreadsheet className="size-4" />
               {t.hr.empeoFormatDetected}
             </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Calendar as CalendarIcon, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,8 @@ export function HolidayList({
   const fmt = useFormat();
 
   return (
-    <section className="flex flex-col rounded-2xl bg-card ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]">
-      <div className="border-b border-[var(--border-subtle)] px-5 py-4">
+    <section className="flex flex-col rounded-2xl bg-card ring-1 ring-(--border-subtle) shadow-(--es-shadow-xs)">
+      <div className="border-b border-(--border-subtle) px-5 py-4">
         <h2 className="text-[15px] font-semibold tracking-tight">{t.hr.holidaysListTitle}</h2>
         <p className="mt-0.5 text-[12px] text-muted-foreground">
           {t.hr.holidaysListCountFmt.replace("{count}", String(total))}
@@ -54,7 +54,7 @@ export function HolidayList({
           <p className="text-sm">{t.hr.noHolidays.replace("{year}", String(year))}</p>
         </div>
       ) : (
-        <ul className="divide-y divide-[var(--border-subtle)] overflow-y-auto max-h-[calc(100vh-280px)] [scrollbar-width:thin]">
+        <ul className="divide-y divide-(--border-subtle) overflow-y-auto max-h-[calc(100vh-280px)] [scrollbar-width:thin]">
           {holidays.map((h) => (
             <li
               key={h.id}

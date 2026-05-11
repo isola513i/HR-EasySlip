@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,7 +24,7 @@ export function ApprovalInbox() {
   );
 
   if (s.error) return (
-    <div className="py-20 text-center text-[var(--es-error-500)]">{s.error}</div>
+    <div className="py-20 text-center text-(--es-error-500)">{s.error}</div>
   );
 
   if (s.rows.length === 0) return (
@@ -60,9 +60,9 @@ export function ApprovalInbox() {
         ))}
       </div>
 
-      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)] md:block">
+      <div className="hidden overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm) md:block">
         <ScrollableTable minWidth={820}>
-          <div className="grid grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <div className="grid grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-border bg-(--es-neutral-50) px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             <Checkbox checked={s.allVisibleSelected} onCheckedChange={s.toggleAll} aria-label={t.manager.selectAriaAll} />
             <span>{t.manager.employee}</span><span>{t.manager.type}</span><span>{t.manager.dates}</span><span>{t.manager.daysCol}</span><span>{t.manager.submitted}</span><span />
           </div>

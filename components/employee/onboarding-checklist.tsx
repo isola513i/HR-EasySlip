@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef } from "react";
 import Link from "next/link";
@@ -52,7 +52,7 @@ export function OnboardingChecklist() {
         type="button"
         disabled
         aria-disabled
-        className="w-full rounded-xl bg-[var(--es-accent-600)] px-6 py-4 text-base font-semibold text-white opacity-90 shadow-[var(--es-shadow-md)] disabled:cursor-not-allowed"
+        className="w-full rounded-xl bg-(--es-accent-600) px-6 py-4 text-base font-semibold text-white opacity-90 shadow-(--es-shadow-md) disabled:cursor-not-allowed"
       >
         {t.onboarding.noChecklist}
       </button>
@@ -63,7 +63,7 @@ export function OnboardingChecklist() {
 
   return (
     <div className="space-y-4">
-<div className="rounded-xl border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+<div className="rounded-xl border bg-card p-4 shadow-(--es-shadow-sm)">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-semibold">{t.onboarding.progress}</span>
           <span className="text-xs font-medium tabular-nums text-muted-foreground">
@@ -72,7 +72,7 @@ export function OnboardingChecklist() {
         </div>
         <div className="h-2.5 rounded-full bg-muted">
           <div
-            className="h-2.5 rounded-full bg-[var(--es-accent-600)] transition-all duration-300"
+            className="h-2.5 rounded-full bg-(--es-accent-600) transition-all duration-300"
             style={{ width: `${progress.percent}%` }}
           />
         </div>
@@ -86,12 +86,12 @@ export function OnboardingChecklist() {
               key={item.id}
               onClick={() => toggleItem(item.id, !item.isDone)}
               className={cn(
-                "flex w-full items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors hover:bg-muted/50 shadow-[var(--es-shadow-sm)]",
-                item.isDone && "bg-[var(--es-accent-50)]/50 border-[var(--es-accent-200)]",
+                "flex w-full items-start gap-3 rounded-xl border bg-card p-4 text-left transition-colors hover:bg-muted/50 shadow-(--es-shadow-sm)",
+                item.isDone && "bg-(--es-accent-50)/50 border-(--es-accent-200)",
               )}
             >
               {item.isDone ? (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-[var(--es-accent-600)]" />
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-(--es-accent-600)" />
               ) : (
                 <Circle className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
               )}
@@ -107,7 +107,7 @@ export function OnboardingChecklist() {
                 <Link
                   href={link}
                   onClick={(e) => e.stopPropagation()}
-                  className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-[var(--es-accent-600)]"
+                  className="shrink-0 rounded-md p-1 text-muted-foreground hover:text-(--es-accent-600)"
                 >
                   <ExternalLink className="size-4" />
                 </Link>

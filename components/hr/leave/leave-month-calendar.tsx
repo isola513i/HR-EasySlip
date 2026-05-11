@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -62,7 +62,7 @@ export function LeaveMonthCalendar() {
 
   return (
     <TooltipProvider>
-      <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
         <div className="mb-4 flex items-center justify-between">
           <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
           <div className="flex gap-1">
@@ -91,9 +91,9 @@ export function LeaveMonthCalendar() {
                   <div
                     className={`grid h-9 place-items-center rounded-md text-[13px] tabular-nums transition-colors ${
                       hasLeave
-                        ? "cursor-pointer bg-[var(--es-accent-100)] font-semibold text-[var(--es-accent-700)]"
+                        ? "cursor-pointer bg-(--es-accent-100) font-semibold text-(--es-accent-700)"
                         : "text-foreground"
-                    } ${isToday ? "ring-1 ring-[var(--es-accent-600)]" : ""}`}
+                    } ${isToday ? "ring-1 ring-(--es-accent-600)" : ""}`}
                   >
                     {d}
                   </div>
@@ -114,7 +114,7 @@ export function LeaveMonthCalendar() {
                         const typeLabel = (t.leave[typeKey] as string) ?? e.leaveType;
                         return (
                           <div key={e.id} className="flex items-start gap-1.5">
-                            <span className="mt-[3px] size-1.5 shrink-0 rounded-full bg-[var(--es-accent-400)]" />
+                            <span className="mt-[3px] size-1.5 shrink-0 rounded-full bg-(--es-accent-400)" />
                             <span className="leading-snug">
                               <span className="font-semibold">{name}</span>
                               <span className="ml-1 opacity-70">· {typeLabel}</span>
@@ -129,7 +129,7 @@ export function LeaveMonthCalendar() {
         </div>
 
         <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
-          <span aria-hidden="true" className="inline-block size-3 rounded bg-[var(--es-accent-100)]" />
+          <span aria-hidden="true" className="inline-block size-3 rounded bg-(--es-accent-100)" />
           {t.hr.leave.legendScheduled}
         </div>
       </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Receipt } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,13 +39,13 @@ export function ExpenseDashboard() {
       {!isLoading && !error && items.length > 0 && (
         <>
           {truncated && (
-            <div className="rounded-lg bg-[var(--es-warn-50)] px-3 py-2 text-[12px] text-[var(--es-warn-700)]">
+            <div className="rounded-lg bg-(--es-warn-50) px-3 py-2 text-[12px] text-(--es-warn-700)">
               {t.hr.expense.showingFirstN.replace("{shown}", String(PAGE_LIMIT)).replace("{total}", String(total))}
             </div>
           )}
           <ul className="space-y-3">
             {items.map((it) => (
-              <li key={it.id} className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+              <li key={it.id} className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <div className="text-sm font-semibold">
@@ -64,7 +64,7 @@ export function ExpenseDashboard() {
                 </div>
                 <p className="mt-2 text-[13px] text-foreground/90 whitespace-pre-line">{it.description}</p>
                 {it.rejectReason && (
-                  <p className="mt-2 rounded-lg bg-[var(--es-error-50)] px-3 py-2 text-[12px] text-[var(--es-error-700)]">
+                  <p className="mt-2 rounded-lg bg-(--es-error-50) px-3 py-2 text-[12px] text-(--es-error-700)">
                     {it.rejectReason}
                   </p>
                 )}

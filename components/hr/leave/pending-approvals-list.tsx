@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo, useCallback } from "react";
 import { Calendar, Clock, Check, X, CheckCircle2 } from "lucide-react";
@@ -31,11 +31,11 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
   const [approveTarget, setApproveTarget] = useState<PendingLeaveRow | null>(null);
 
   const FILTER_STYLE: Record<TypeFilter, { active: string; inactive: string }> = {
-    ALL:      { active: "bg-[var(--es-neutral-900)] text-white border-transparent", inactive: "border-[var(--es-neutral-300)] text-muted-foreground hover:bg-muted" },
-    ANNUAL:   { active: "bg-[var(--es-accent-600)] text-white border-transparent", inactive: "border-[var(--es-accent-200)] text-[var(--es-accent-700)] hover:bg-[var(--es-accent-50)]" },
-    SICK:     { active: "bg-[var(--es-error-500)] text-white border-transparent",  inactive: "border-[var(--es-error-200)] text-[var(--es-error-600)] hover:bg-[var(--es-error-50)]" },
-    PERSONAL: { active: "bg-[var(--es-warn-500)] text-white border-transparent",   inactive: "border-[var(--es-warn-200)] text-[var(--es-warn-700)] hover:bg-[var(--es-warn-50)]" },
-    OTHER:    { active: "bg-[var(--es-neutral-500)] text-white border-transparent", inactive: "border-[var(--es-neutral-300)] text-muted-foreground hover:bg-muted" },
+    ALL:      { active: "bg-(--es-neutral-900) text-white border-transparent", inactive: "border-(--es-neutral-300) text-muted-foreground hover:bg-muted" },
+    ANNUAL:   { active: "bg-(--es-accent-600) text-white border-transparent", inactive: "border-(--es-accent-200) text-(--es-accent-700) hover:bg-(--es-accent-50)" },
+    SICK:     { active: "bg-(--es-error-500) text-white border-transparent",  inactive: "border-(--es-error-200) text-(--es-error-600) hover:bg-(--es-error-50)" },
+    PERSONAL: { active: "bg-(--es-warn-500) text-white border-transparent",   inactive: "border-(--es-warn-200) text-(--es-warn-700) hover:bg-(--es-warn-50)" },
+    OTHER:    { active: "bg-(--es-neutral-500) text-white border-transparent", inactive: "border-(--es-neutral-300) text-muted-foreground hover:bg-muted" },
   };
 
   const filters: Array<{ value: TypeFilter; label: string }> = [
@@ -93,7 +93,7 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
   }, [rejectTarget, reject, t.manager.rejected, t.manager.rejectFailed]);
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-base font-semibold">{t.hr.leave.pendingApprovals}</div>
         <div className="flex flex-wrap items-center gap-1.5">

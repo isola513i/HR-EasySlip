@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
@@ -47,7 +47,7 @@ function TooltipContent({
         <TooltipPrimitive.Popup
           data-slot="tooltip-content"
           className={cn(
-            "max-w-xs rounded-md bg-[var(--es-neutral-900)] px-2.5 py-1.5 text-[12px] font-medium leading-tight text-white shadow-[var(--es-shadow-md)]",
+            "max-w-xs rounded-md bg-(--es-neutral-900) px-2.5 py-1.5 text-[12px] font-medium leading-tight text-white shadow-(--es-shadow-md)",
             "data-instant:duration-0 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95",
             "data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
             "duration-150",

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Shield } from "lucide-react";
 import { useT } from "@/lib/i18n/locale-context";
@@ -14,8 +14,8 @@ export function PdpaComplianceBanner({ policy }: Props) {
   const fmt = useFormat();
 
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-[var(--es-info-200)] bg-[var(--es-info-50)] p-4">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-card text-[var(--es-info-600)]">
+    <div className="flex items-start gap-3 rounded-xl border border-(--es-info-200) bg-(--es-info-50) p-4">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-card text-(--es-info-600)">
         <Shield className="size-4" />
       </span>
       <div className="min-w-0 flex-1">

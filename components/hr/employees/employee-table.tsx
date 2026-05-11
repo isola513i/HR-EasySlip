@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,9 +39,9 @@ export function EmployeeTable({
   const allSelected = rows.length > 0 && rows.every((r) => selected.has(r.id));
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <ScrollableTable minWidth={1000}>
-        <div className={`grid ${GRID} items-center border-b border-border bg-[var(--es-neutral-50)] px-4 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+        <div className={`grid ${GRID} items-center border-b border-border bg-(--es-neutral-50) px-4 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
           <span>
             <Checkbox checked={allSelected} onCheckedChange={onToggleAll} aria-label={t.manager.selectAriaAll} />
           </span>
@@ -54,7 +54,7 @@ export function EmployeeTable({
         </div>
 
         {isLoading && Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-4 py-3.5`}>
+          <div key={i} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-4 py-3.5`}>
             <Skeleton className="size-4 rounded" />
             <div className="flex items-center gap-2.5"><Skeleton className="size-9 rounded-full" /><div className="space-y-1"><Skeleton className="h-4 w-28" /><Skeleton className="h-3 w-40" /></div></div>
             <Skeleton className="h-4 w-20" />
@@ -78,7 +78,7 @@ export function EmployeeTable({
           return (
             <div
               key={p.id}
-              className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-4 py-3.5 text-[13px] last:border-b-0 transition-colors hover:bg-muted/40 ${sel ? "bg-[var(--es-accent-50)]/40" : ""}`}
+              className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-4 py-3.5 text-[13px] last:border-b-0 transition-colors hover:bg-muted/40 ${sel ? "bg-(--es-accent-50)/40" : ""}`}
             >
               <span>
                 <Checkbox
@@ -105,7 +105,7 @@ export function EmployeeTable({
 
               <span>
                 {p.employmentType ? (
-                  <span className="inline-flex items-center rounded-md bg-[var(--es-accent-50)] px-2 py-0.5 text-[11px] font-medium text-[var(--es-accent-700)]">
+                  <span className="inline-flex items-center rounded-md bg-(--es-accent-50) px-2 py-0.5 text-[11px] font-medium text-(--es-accent-700)">
                     {p.employmentType}
                   </span>
                 ) : (

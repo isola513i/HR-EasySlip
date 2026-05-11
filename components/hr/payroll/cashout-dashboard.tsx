@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { CheckCheck, Coins, Download } from "lucide-react";
@@ -93,7 +93,7 @@ export function CashoutDashboard() {
         <KpiCard label={t.hr.cashout.kpiTotalDays} value={stats.totalDays.toFixed(1)} tone="accent" className="col-span-2 sm:col-span-1" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         <div className="border-b border-border px-5 py-4">
           <div className="text-base font-semibold">{t.hr.cashout.listTitle}</div>
           <div className="text-[12px] text-muted-foreground">{t.hr.cashout.listSubtitle}</div>
@@ -133,7 +133,7 @@ export function CashoutDashboard() {
             {/* Desktop table */}
             <div className="hidden md:block">
               <ScrollableTable minWidth={760}>
-                <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+                <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
                   <span>{t.hr.cashout.colEmployee}</span>
                   <span>{t.hr.cashout.colYear}</span>
                   <span className="text-right">{t.hr.cashout.colDays}</span>
@@ -142,7 +142,7 @@ export function CashoutDashboard() {
                   <span className="text-right">{t.hr.cashout.colActions}</span>
                 </div>
                 {items.map((c) => (
-                  <div key={c.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] last:border-b-0`}>
+                  <div key={c.id} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0`}>
                     <div>
                       <div className="font-semibold">{c.employee.firstNameTh} {c.employee.lastNameTh}</div>
                       <div className="font-mono text-[11px] text-muted-foreground">{c.employee.employeeCode}</div>
@@ -190,12 +190,12 @@ export function CashoutDashboard() {
 
 function KpiCard({ label, value, tone, className }: { label: string; value: string; tone: "warn" | "success" | "accent"; className?: string }) {
   const ring = tone === "warn"
-    ? "ring-[var(--es-warn-500)]/30 bg-[var(--es-warn-500)]/5"
+    ? "ring-(--es-warn-500)/30 bg-(--es-warn-500)/5"
     : tone === "success"
-    ? "ring-[var(--es-success-500)]/30 bg-[var(--es-success-500)]/5"
-    : "ring-[var(--es-accent-600)]/25 bg-[var(--es-accent-600)]/5";
+    ? "ring-(--es-success-500)/30 bg-(--es-success-500)/5"
+    : "ring-(--es-accent-600)/25 bg-(--es-accent-600)/5";
   return (
-    <div className={`rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)] ring-1 ${ring} ${className ?? ""}`}>
+    <div className={`rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm) ring-1 ${ring} ${className ?? ""}`}>
       <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-bold tabular-nums">{value}</div>
     </div>
@@ -206,7 +206,7 @@ function CashoutCardMobile({ record: c, triggerLabel, onMark }: { record: Cashou
   const t = useT();
   const fmt = useFormat();
   return (
-    <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm)">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{c.employee.firstNameTh} {c.employee.lastNameTh}</div>

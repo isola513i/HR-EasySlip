@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Crosshair, ExternalLink, MapPin } from "lucide-react";
@@ -65,7 +65,7 @@ export function GeofenceLocationHelper({ currentLat, currentLng, onPick }: Props
           href={osmLink(currentLat, currentLng)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-[12px] text-[var(--es-accent-600)] hover:underline"
+          className="inline-flex items-center gap-1 text-[12px] text-(--es-accent-600) hover:underline"
         >
           {dict.viewMap}
           <ExternalLink className="size-3" />

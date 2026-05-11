@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Download, Lock, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ export function CycleSummaryCard({ cycle, year, onLock, onExport, onMarkExported
   const fmt = useFormat();
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4 text-base font-semibold">
         {t.hr.payroll.cycleSummaryTitle}
       </div>
@@ -41,7 +41,7 @@ export function CycleSummaryCard({ cycle, year, onLock, onExport, onMarkExported
         </div>
       ) : (
         <div className="space-y-4 p-5">
-          <div className="rounded-lg bg-[var(--es-neutral-50)] p-4">
+          <div className="rounded-lg bg-(--es-neutral-50) p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <div className="text-[16px] font-semibold">

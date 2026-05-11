@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
@@ -15,7 +15,7 @@ export function TopOtEmployees({ rows, isLoading }: Props) {
   const t = useT();
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4 text-base font-semibold">
         {t.hr.overtime.topTitle}
       </div>
@@ -33,7 +33,7 @@ export function TopOtEmployees({ rows, isLoading }: Props) {
 
         {!isLoading && rows.map((r, i) => (
           <div key={r.employeeCode} className="flex items-center gap-3 px-1.5 py-1.5">
-            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--es-accent-600)] text-[12px] font-bold text-white tabular-nums">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-(--es-accent-600) text-[12px] font-bold text-white tabular-nums">
               {i + 1}
             </span>
             <div className="min-w-0 flex-1">

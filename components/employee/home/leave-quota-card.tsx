@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -42,11 +42,11 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
   if (isLoading) {
     return (
       <div className="rounded-2xl border border-border bg-card">
-        <div className="border-b border-[var(--es-neutral-100)] px-4 py-3.5">
+        <div className="border-b border-(--es-neutral-100) px-4 py-3.5">
           <Skeleton className="h-4 w-24" />
         </div>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className={i < 2 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
+          <div key={i} className={i < 2 ? "border-b border-(--es-neutral-100) px-4 py-3" : "px-4 py-3"}>
             <Skeleton className="mb-1.5 h-4 w-full" />
             <Skeleton className="h-1 w-full rounded-full" />
           </div>
@@ -58,14 +58,14 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
   if (error) {
     return (
       <div className="rounded-2xl border border-border bg-card">
-        <div className="border-b border-[var(--es-neutral-100)] px-4 py-3.5">
+        <div className="border-b border-(--es-neutral-100) px-4 py-3.5">
           <div className="text-sm font-semibold">{dict.employee.leaveQuota}</div>
         </div>
         <div className="flex flex-col items-center gap-3 px-4 py-6 text-center">
           <p className="text-sm text-muted-foreground">{dict.common.loadFailed}</p>
           <button
             onClick={refetch}
-            className="text-xs font-medium text-[var(--es-accent-600)] hover:underline"
+            className="text-xs font-medium text-(--es-accent-600) hover:underline"
           >
             {dict.common.retry}
           </button>
@@ -77,9 +77,9 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
   return (
     <Link
       href="/employee/leave"
-      className="block overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-[var(--es-neutral-300)]"
+      className="block overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-(--es-neutral-300)"
     >
-      <div className="flex items-center justify-between border-b border-[var(--es-neutral-100)] px-4 py-3.5">
+      <div className="flex items-center justify-between border-b border-(--es-neutral-100) px-4 py-3.5">
         <div>
           <div className="text-sm font-semibold">{dict.employee.leaveQuota}</div>
           <div className="text-[11px] text-muted-foreground">FY {bangkokYear()}</div>
@@ -95,7 +95,7 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
           const palette = LEAVE_PALETTE[q.leaveType] ?? FALLBACK_PALETTE;
           const label = LEAVE_TYPE_LABEL[q.leaveType] ?? q.leaveType;
           return (
-            <div key={q.leaveType} className={i < items.length - 1 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
+            <div key={q.leaveType} className={i < items.length - 1 ? "border-b border-(--es-neutral-100) px-4 py-3" : "px-4 py-3"}>
               <div className="mb-1.5 flex justify-between text-[13px]">
                 <span className="font-medium">{label}</span>
                 <span className="tabular-nums text-muted-foreground">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,7 +51,7 @@ export function EmployeeGrid({ rows, selected, onToggle, onView, onResetPassword
         return (
           <div
             key={p.id}
-            className={`relative rounded-xl border bg-card p-4 shadow-[var(--es-shadow-sm)] transition-colors ${sel ? "border-[var(--es-accent-400)]" : "border-border"}`}
+            className={`relative rounded-xl border bg-card p-4 shadow-(--es-shadow-sm) transition-colors ${sel ? "border-(--es-accent-400)" : "border-border"}`}
           >
             <span className="absolute right-3 top-3">
               <Checkbox
@@ -70,7 +70,7 @@ export function EmployeeGrid({ rows, selected, onToggle, onView, onResetPassword
               <div className="truncate text-[12px] text-muted-foreground">{p.position?.name ?? p.department?.name ?? "—"}</div>
               <div className="flex items-center gap-1.5 text-[11px]">
                 {p.employmentType && (
-                  <span className="inline-flex items-center rounded-md bg-[var(--es-accent-50)] px-1.5 py-0.5 font-medium text-[var(--es-accent-700)]">
+                  <span className="inline-flex items-center rounded-md bg-(--es-accent-50) px-1.5 py-0.5 font-medium text-(--es-accent-700)">
                     {p.employmentType}
                   </span>
                 )}
@@ -80,7 +80,7 @@ export function EmployeeGrid({ rows, selected, onToggle, onView, onResetPassword
               </div>
             </div>
 
-            <div className="mt-3 flex items-center justify-center gap-1 border-t border-[var(--es-neutral-100)] pt-2">
+            <div className="mt-3 flex items-center justify-center gap-1 border-t border-(--es-neutral-100) pt-2">
               <EmployeeRowActions
                 employee={p}
                 name={name}

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useCallback } from "react";
 import { Check, X, CheckCircle, Clock, Loader2 } from "lucide-react";
@@ -57,7 +57,7 @@ export function OvertimeInbox() {
   );
 
   if (error) return (
-    <div className="py-20 text-center text-[var(--es-error-500)]">{error}</div>
+    <div className="py-20 text-center text-(--es-error-500)">{error}</div>
   );
 
   if (rows.length === 0) return (
@@ -80,7 +80,7 @@ export function OvertimeInbox() {
           : null;
         const hours = r.hoursApproved;
         return (
-          <div key={r.id} className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+          <div key={r.id} className="rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm)">
             <div className="flex items-start gap-2.5">
               <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted text-foreground">
                 <Clock className="size-4" />
@@ -113,7 +113,7 @@ export function OvertimeInbox() {
                   aria-label={`${t.manager.approve} ${name}`}
                   onClick={() => handleApprove(r.id)}
                   disabled={pendingId === r.id}
-                  className="rounded-md p-2 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md p-2 text-(--es-success-600) transition-colors hover:bg-(--es-success-50) disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pendingId === r.id ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
                 </button>
@@ -122,7 +122,7 @@ export function OvertimeInbox() {
                   aria-label={`${t.manager.reject} ${name}`}
                   onClick={() => setRejectTarget(r)}
                   disabled={pendingId === r.id}
-                  className="rounded-md p-2 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-md p-2 text-(--es-error-500) transition-colors hover:bg-(--es-error-50) disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <X className="size-4" />
                 </button>

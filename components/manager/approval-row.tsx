@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { MouseEvent } from "react";
 import { Check, X } from "lucide-react";
@@ -33,9 +33,9 @@ export function ApprovalRowMobile({ row: r, selected, exiting, onSelect, onToggl
       onClick={() => !exiting && onSelect()}
       data-exiting={exiting || undefined}
       className={cn(
-        "cursor-pointer rounded-xl border border-border bg-card p-3 shadow-[var(--es-shadow-sm)] transition-colors",
+        "cursor-pointer rounded-xl border border-border bg-card p-3 shadow-(--es-shadow-sm) transition-colors",
         exitClasses,
-        selected && "bg-[var(--es-accent-50)]",
+        selected && "bg-(--es-accent-50)",
       )}
     >
       <div className="flex items-start gap-2">
@@ -47,10 +47,10 @@ export function ApprovalRowMobile({ row: r, selected, exiting, onSelect, onToggl
           <div className="font-mono text-[11px] text-muted-foreground">{r.employee.employeeCode}</div>
         </div>
         <div className="flex shrink-0 gap-0.5">
-          <button title={t.manager.approve} aria-label={`${t.manager.approve} ${name}`} onClick={(e) => { stop(e); onApprove(); }} className="rounded-md p-2 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]">
+          <button title={t.manager.approve} aria-label={`${t.manager.approve} ${name}`} onClick={(e) => { stop(e); onApprove(); }} className="rounded-md p-2 text-(--es-success-600) transition-colors hover:bg-(--es-success-50)">
             <Check className="size-4" />
           </button>
-          <button title={t.manager.reject} aria-label={`${t.manager.reject} ${name}`} onClick={(e) => { stop(e); onReject(); }} className="rounded-md p-2 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]">
+          <button title={t.manager.reject} aria-label={`${t.manager.reject} ${name}`} onClick={(e) => { stop(e); onReject(); }} className="rounded-md p-2 text-(--es-error-500) transition-colors hover:bg-(--es-error-50)">
             <X className="size-4" />
           </button>
         </div>
@@ -79,9 +79,9 @@ export function ApprovalRowDesktop({ row: r, selected, exiting, onSelect, onTogg
       onClick={() => !exiting && onSelect()}
       data-exiting={exiting || undefined}
       className={cn(
-        "grid cursor-pointer grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-[var(--es-neutral-100)] px-4 py-3.5 text-[13px] transition-colors hover:bg-muted/50",
+        "grid cursor-pointer grid-cols-[40px_1fr_140px_170px_80px_100px_90px] items-center border-b border-(--es-neutral-100) px-4 py-3.5 text-[13px] transition-colors hover:bg-muted/50",
         exitClasses,
-        selected && "bg-[var(--es-accent-50)]",
+        selected && "bg-(--es-accent-50)",
       )}
     >
       <span onClick={stop}><Checkbox checked={selected} onCheckedChange={onToggle} aria-label={t.manager.selectAriaOne.replace("{name}", name)} /></span>
@@ -100,8 +100,8 @@ export function ApprovalRowDesktop({ row: r, selected, exiting, onSelect, onTogg
       <div className="tabular-nums font-semibold">{r.daysRequested}</div>
       <div className="text-xs text-muted-foreground">{fmt.formatShortDate(r.createdAt)}</div>
       <div className="flex justify-end gap-0.5">
-        <button title={t.manager.approve} aria-label={`${t.manager.approve} ${name}`} onClick={(e) => { stop(e); onApprove(); }} className="rounded-md p-1.5 text-[var(--es-success-600)] transition-colors hover:bg-[var(--es-success-50)]"><Check className="size-4" /></button>
-        <button title={t.manager.reject} aria-label={`${t.manager.reject} ${name}`} onClick={(e) => { stop(e); onReject(); }} className="rounded-md p-1.5 text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]"><X className="size-4" /></button>
+        <button title={t.manager.approve} aria-label={`${t.manager.approve} ${name}`} onClick={(e) => { stop(e); onApprove(); }} className="rounded-md p-1.5 text-(--es-success-600) transition-colors hover:bg-(--es-success-50)"><Check className="size-4" /></button>
+        <button title={t.manager.reject} aria-label={`${t.manager.reject} ${name}`} onClick={(e) => { stop(e); onReject(); }} className="rounded-md p-1.5 text-(--es-error-500) transition-colors hover:bg-(--es-error-50)"><X className="size-4" /></button>
       </div>
     </div>
   );

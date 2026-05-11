@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { MapPin, ExternalLink, AlertTriangle } from "lucide-react";
@@ -118,7 +118,7 @@ export function GeofenceBreachPanel({ from, to }: Props) {
                           href={osmLink(b.latitude, b.longitude)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[12px] text-[var(--es-accent-600)] hover:underline"
+                          className="inline-flex items-center gap-1 text-[12px] text-(--es-accent-600) hover:underline"
                         >
                           <MapPin className="size-3.5" />
                           {dict.viewMap}

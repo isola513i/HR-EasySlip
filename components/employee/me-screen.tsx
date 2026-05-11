@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { ProfileHeader } from "@/components/shared/profile-header";
@@ -51,7 +51,7 @@ export function MeScreen({ user }: Props) {
 
   return (
     <>
-      <header className="flex h-14 items-center border-b border-[var(--es-neutral-100)] px-4">
+      <header className="flex h-14 items-center border-b border-(--es-neutral-100) px-4">
         <span className="text-base font-semibold">{t.profile.title}</span>
       </header>
 
@@ -71,26 +71,26 @@ export function MeScreen({ user }: Props) {
         {pendingOnboarding && (
           <Link
             href="/employee/onboarding"
-            className="flex items-center gap-3 overflow-hidden rounded-2xl border border-[var(--es-accent-200)] bg-[var(--es-accent-50)] px-4 py-3.5 transition-colors active:bg-[var(--es-accent-100)]"
+            className="flex items-center gap-3 overflow-hidden rounded-2xl border border-(--es-accent-200) bg-(--es-accent-50) px-4 py-3.5 transition-colors active:bg-(--es-accent-100)"
           >
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--es-accent-100)]">
-              <ClipboardList className="size-5 text-[var(--es-accent-700)]" strokeWidth={2} />
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-(--es-accent-100)">
+              <ClipboardList className="size-5 text-(--es-accent-700)" strokeWidth={2} />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-[var(--es-accent-800)]">
+              <div className="text-sm font-semibold text-(--es-accent-800)">
                 {t.onboarding.checklistTitle}
               </div>
-              <div className="text-[11px] text-[var(--es-accent-600)]">
+              <div className="text-[11px] text-(--es-accent-600)">
                 {t.onboarding.bannerMessage.replace("{count}", String(pendingOnboarding.progress.total - pendingOnboarding.progress.done))}
               </div>
             </div>
             <div className="shrink-0 text-right">
-              <div className="text-[11px] font-semibold tabular-nums text-[var(--es-accent-700)]">
+              <div className="text-[11px] font-semibold tabular-nums text-(--es-accent-700)">
                 {pendingOnboarding.progress.done}/{pendingOnboarding.progress.total}
               </div>
-              <div className="mt-0.5 h-1 w-12 overflow-hidden rounded-full bg-[var(--es-accent-200)]">
+              <div className="mt-0.5 h-1 w-12 overflow-hidden rounded-full bg-(--es-accent-200)">
                 <div
-                  className="h-full rounded-full bg-[var(--es-accent-600)] transition-all"
+                  className="h-full rounded-full bg-(--es-accent-600) transition-all"
                   style={{ width: `${pendingOnboarding.progress.percent}%` }}
                 />
               </div>
@@ -142,7 +142,7 @@ export function MeScreen({ user }: Props) {
           </AccordionItem>
         </Accordion>
 
-<div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-[var(--es-shadow-xs)]">
+<div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3 shadow-(--es-shadow-xs)">
           <span className="text-sm font-semibold text-foreground">{t.common.language}</span>
           <div className="w-28">
             <LocaleToggle />

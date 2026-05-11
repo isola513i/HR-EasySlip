@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Plus, Pencil, Trash2, Star } from "lucide-react";
@@ -37,9 +37,9 @@ export function OnboardingTemplateList() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         <ScrollableTable minWidth={480}>
-        <div className="grid grid-cols-[1fr_100px_100px_80px] border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="grid grid-cols-[1fr_100px_100px_80px] border-b border-border bg-(--es-neutral-50) px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>{t.onboarding.templateName}</span>
           <span>{t.onboarding.items}</span>
           <span>{t.onboarding.defaultLabel}</span>
@@ -47,7 +47,7 @@ export function OnboardingTemplateList() {
         </div>
 
         {isLoading && Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="grid grid-cols-[1fr_100px_100px_80px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3">
+          <div key={i} className="grid grid-cols-[1fr_100px_100px_80px] items-center border-t border-(--es-neutral-100) px-4 py-3">
             <Skeleton className="h-4 w-40" />
             <Skeleton className="h-4 w-8" />
             <Skeleton className="h-4 w-12" />
@@ -56,7 +56,7 @@ export function OnboardingTemplateList() {
         ))}
 
         {!isLoading && templates.map((tpl) => (
-          <div key={tpl.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-sm">
+          <div key={tpl.id} className="grid grid-cols-[1fr_100px_100px_80px] items-center border-t border-(--es-neutral-100) px-4 py-3 text-sm">
             <span className="font-medium">{tpl.name}</span>
             <span className="text-muted-foreground">{tpl._count?.items ?? 0} {t.onboarding.items}</span>
             <span>

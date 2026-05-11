@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -48,7 +48,7 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
       className={cn(
         "flex h-full shrink-0 flex-col overflow-hidden border-r border-border bg-card",
         "transition-[width] duration-200 ease-out [will-change:width]",
-        collapsed ? "w-[64px]" : "w-[var(--es-sidebar-width)]",
+        collapsed ? "w-[64px]" : "w-(--es-sidebar-width)",
       )}
     >
       <div className={cn(
@@ -90,14 +90,14 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
       <nav
         className={cn(
           "flex flex-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden",
-          "[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:hover:bg-[var(--es-neutral-300)]",
+          "[scrollbar-width:thin] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:hover:bg-(--es-neutral-300)",
           collapsed ? "px-2" : "px-3",
         )}
       >
         {items.map((item, i) => {
           if (isGroup(item)) {
             if (collapsed) {
-              return <div key={`g-${i}`} className="mx-2 my-3 h-px bg-[var(--border-subtle)]" aria-hidden="true" />;
+              return <div key={`g-${i}`} className="mx-2 my-3 h-px bg-(--border-subtle)" aria-hidden="true" />;
             }
             return (
               <div
@@ -119,11 +119,11 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
                 "relative flex items-center rounded-lg text-[13.5px] font-medium transition-[background-color,color] duration-150",
                 collapsed ? "size-10 justify-center self-center" : "w-full gap-2.5 px-2.5 py-2",
                 active
-                  ? "bg-[var(--es-accent-50)] font-semibold text-[var(--es-accent-700)]"
-                  : "text-[var(--es-neutral-600)] hover:bg-[var(--es-neutral-100)] hover:text-foreground",
+                  ? "bg-(--es-accent-50) font-semibold text-(--es-accent-700)"
+                  : "text-(--es-neutral-600) hover:bg-(--es-neutral-100) hover:text-foreground",
               )}
             >
-              <item.icon className={cn("size-[18px] shrink-0", active ? "text-[var(--es-accent-600)]" : "text-[var(--es-neutral-500)]")} />
+              <item.icon className={cn("size-[18px] shrink-0", active ? "text-(--es-accent-600)" : "text-(--es-neutral-500)")} />
               {!collapsed && (
                 <>
                   <span className="flex-1 truncate">{item.label}</span>
@@ -152,7 +152,7 @@ export function AdminSidebar({ items, role, userName, onNavClick, collapsed = fa
 
       <div
         className={cn(
-          "flex shrink-0 border-t border-[var(--border-subtle)] pb-5 pt-3",
+          "flex shrink-0 border-t border-(--border-subtle) pb-5 pt-3",
           collapsed ? "flex-col items-center gap-2 px-2" : "items-stretch px-3",
         )}
       >

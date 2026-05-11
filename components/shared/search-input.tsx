@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+﻿import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SearchInputProps {
@@ -16,7 +16,7 @@ export function SearchInput({ placeholder, className, value, onChange }: SearchI
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="w-full rounded-md border border-[var(--es-neutral-300)] bg-card py-2 pl-8 pr-3 text-[13px] focus:border-[var(--es-accent-600)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)]"
+        className="w-full rounded-md border border-(--es-neutral-300) bg-card py-2 pl-8 pr-3 text-[13px] focus:border-(--es-accent-600) focus:outline-none focus:ring-2 focus:ring-(--ring)"
       />
     </div>
   );

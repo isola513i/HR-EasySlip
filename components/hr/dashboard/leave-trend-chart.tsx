@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import {
@@ -59,7 +59,7 @@ export function LeaveTrendChart() {
     });
 
   return (
-    <div className="flex h-full min-h-[360px] flex-col rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="flex h-full min-h-[360px] flex-col rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-1 flex items-baseline justify-between gap-3">
         <div className="text-base font-semibold">{t.hr.dashboard.leaveTrendTitle}</div>
         <div className="text-[11px] text-muted-foreground">

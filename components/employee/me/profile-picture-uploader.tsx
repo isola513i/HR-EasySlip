@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRef, useState } from "react";
 import { Camera } from "lucide-react";
@@ -73,7 +73,7 @@ export function ProfilePictureUploader({ hasPicture, onChanged }: ProfilePicture
         onClick={handleSelect}
         disabled={busy || isUploading}
         aria-label={t.profile.profilePictureChange}
-        className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full border-2 border-card bg-[var(--es-accent-600)] text-white shadow-[var(--es-shadow-sm)] transition-colors hover:bg-[var(--es-accent-700)] disabled:opacity-60"
+        className="absolute -bottom-1 -right-1 grid size-9 place-items-center rounded-full border-2 border-card bg-(--es-accent-600) text-white shadow-(--es-shadow-sm) transition-colors hover:bg-(--es-accent-700) disabled:opacity-60"
       >
         <Camera className="size-4" strokeWidth={2} />
       </button>
@@ -92,7 +92,7 @@ export function ProfilePictureUploader({ hasPicture, onChanged }: ProfilePicture
           type="button"
           onClick={() => setConfirmOpen(true)}
           disabled={busy || isUploading}
-          className="mt-3 text-xs font-medium text-muted-foreground hover:text-[var(--es-error-600)] disabled:opacity-60"
+          className="mt-3 text-xs font-medium text-muted-foreground hover:text-(--es-error-600) disabled:opacity-60"
         >
           {t.profile.profilePictureRemove}
         </button>
@@ -110,7 +110,7 @@ export function ProfilePictureUploader({ hasPicture, onChanged }: ProfilePicture
             <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemove}
-              className="bg-[var(--es-error-600)] text-white hover:bg-[var(--es-error-700)]"
+              className="bg-(--es-error-600) text-white hover:bg-(--es-error-700)"
             >
               {t.profile.profilePictureRemove}
             </AlertDialogAction>

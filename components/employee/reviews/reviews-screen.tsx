@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { ChevronRight, ClipboardCheck, FileText } from "lucide-react";
@@ -53,9 +53,9 @@ export function ReviewsScreen() {
             <Link
               key={r.id}
               href={`/employee/reviews/${r.id}`}
-              className="flex items-start gap-3 rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted/40"
+              className="flex items-start gap-3 rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm) transition-colors hover:bg-muted/40"
             >
-              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--es-accent-50)] text-[var(--es-accent-600)]">
+              <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--es-accent-50) text-(--es-accent-600)">
                 <FileText className="size-5" />
               </div>
               <div className="min-w-0 flex-1">

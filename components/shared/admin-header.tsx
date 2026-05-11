@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Menu, Search } from "lucide-react";
@@ -40,9 +40,9 @@ export function AdminHeader({ user, onMenuClick }: AdminHeaderProps) {
       data-stuck={stuck ? "true" : "false"}
       className={cn(
         "safe-area-pt sticky top-0 z-30 flex h-[68px] shrink-0 items-center gap-3 px-4 lg:px-6",
-        "transition-[background-color,border-color,box-shadow,backdrop-filter] duration-[var(--es-dur-base)] ease-[var(--es-ease-out)]",
+        "transition-[background-color,border-color,box-shadow,backdrop-filter] duration-(--es-dur-base) ease-(--es-ease-out)",
         "border-b border-transparent bg-transparent",
-        "data-[stuck=true]:border-border data-[stuck=true]:bg-card/85 data-[stuck=true]:shadow-[var(--es-shadow-sm)] data-[stuck=true]:supports-[backdrop-filter]:bg-card/70 data-[stuck=true]:supports-[backdrop-filter]:backdrop-blur-md",
+        "data-[stuck=true]:border-border data-[stuck=true]:bg-card/85 data-[stuck=true]:shadow-(--es-shadow-sm) data-[stuck=true]:supports-[backdrop-filter]:bg-card/70 data-[stuck=true]:supports-[backdrop-filter]:backdrop-blur-md",
       )}
     >
       {onMenuClick && (
@@ -68,10 +68,10 @@ export function AdminHeader({ user, onMenuClick }: AdminHeaderProps) {
           placeholder={t.common.headerSearchPlaceholder}
           className={cn(
             "h-11 w-full rounded-full border border-border bg-card pl-11 pr-4 text-[13px] outline-none",
-            "transition-[border-color,box-shadow,background-color] duration-[var(--es-dur-base)]",
+            "transition-[border-color,box-shadow,background-color] duration-(--es-dur-base)",
             "placeholder:text-muted-foreground/70",
-            "hover:border-[var(--es-neutral-300)]",
-            "focus:border-[var(--es-accent-400)] focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
+            "hover:border-(--es-neutral-300)",
+            "focus:border-(--es-accent-400) focus:shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
           )}
           aria-label={t.common.headerSearchPlaceholder}
         />

@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+﻿import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 interface ProfileHeaderProps {
@@ -16,7 +16,7 @@ export function ProfileHeader({ name, initial, meta, pictureSrc, avatarOverlay, 
   return (
     <div className={cn("flex flex-col items-center text-center", className)}>
       <div className="relative">
-        <div className="grid size-20 place-items-center overflow-hidden rounded-full bg-[var(--es-accent-600)] text-3xl font-bold text-white shadow-[var(--es-shadow-md)]">
+        <div className="grid size-20 place-items-center overflow-hidden rounded-full bg-(--es-accent-600) text-3xl font-bold text-white shadow-(--es-shadow-md)">
           {pictureSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={pictureSrc} alt={name || "avatar"} className="size-full object-cover" />

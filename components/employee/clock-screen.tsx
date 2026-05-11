@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
@@ -63,8 +63,8 @@ export function ClockScreen() {
       <MobileTopbar title={t.clock.title} />
 
       <div className="flex flex-col gap-4 p-4">
-<div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
-          <div className="relative grid h-[140px] place-items-center overflow-hidden border-b border-border bg-gradient-to-br from-[var(--es-neutral-50)] to-[var(--es-neutral-100)]">
+<div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
+          <div className="relative grid h-[140px] place-items-center overflow-hidden border-b border-border bg-gradient-to-br from-(--es-neutral-50) to-(--es-neutral-100)">
             {/* dot-grid background */}
             <svg className="absolute inset-0 opacity-30" width="100%" height="100%">
               <defs>
@@ -76,25 +76,25 @@ export function ClockScreen() {
             </svg>
             {gpsStatus === "loading" && (
               <div className="relative flex items-center justify-center">
-                <span className="absolute inline-flex size-16 animate-ping rounded-full bg-[var(--es-accent-400)] opacity-20" style={{ animationDuration: "2s" }} />
-                <span className="absolute inline-flex size-10 animate-ping rounded-full bg-[var(--es-accent-400)] opacity-30" style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
-                <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-neutral-300)]">
-                  <MapPin className="size-[18px] text-[var(--es-neutral-500)]" />
+                <span className="absolute inline-flex size-16 animate-ping rounded-full bg-(--es-accent-400) opacity-20" style={{ animationDuration: "2s" }} />
+                <span className="absolute inline-flex size-10 animate-ping rounded-full bg-(--es-accent-400) opacity-30" style={{ animationDuration: "2s", animationDelay: "0.5s" }} />
+                <div className="relative grid size-9 place-items-center rounded-full bg-(--es-neutral-300)">
+                  <MapPin className="size-[18px] text-(--es-neutral-500)" />
                 </div>
               </div>
             )}
             {gpsStatus === "ready" && coords && (
               <div className="relative flex items-center justify-center">
-                <span className="absolute size-[72px] rounded-full border-2 border-[var(--es-accent-400)] bg-[var(--es-accent-400)] opacity-10" />
-                <span className="absolute size-[72px] rounded-full border-2 border-[var(--es-accent-400)] opacity-30" />
-                <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-accent-600)] shadow-[0_0_0_6px_rgba(61,70,204,0.15)]">
+                <span className="absolute size-[72px] rounded-full border-2 border-(--es-accent-400) bg-(--es-accent-400) opacity-10" />
+                <span className="absolute size-[72px] rounded-full border-2 border-(--es-accent-400) opacity-30" />
+                <div className="relative grid size-9 place-items-center rounded-full bg-(--es-accent-600) shadow-[0_0_0_6px_rgba(61,70,204,0.15)]">
                   <MapPin className="size-[18px] text-white" />
                 </div>
               </div>
             )}
             {(gpsStatus === "denied" || (gpsStatus === "ready" && !coords)) && (
-              <div className="relative grid size-9 place-items-center rounded-full bg-[var(--es-warn-100)] shadow-[0_0_0_6px_rgba(234,179,8,0.12)]">
-                <MapPin className="size-[18px] text-[var(--es-warn-600)]" />
+              <div className="relative grid size-9 place-items-center rounded-full bg-(--es-warn-100) shadow-[0_0_0_6px_rgba(234,179,8,0.12)]">
+                <MapPin className="size-[18px] text-(--es-warn-600)" />
               </div>
             )}
           </div>
@@ -102,7 +102,7 @@ export function ClockScreen() {
             {gpsStatus === "loading" ? (
               <div className="text-[13px] text-muted-foreground">{t.clock.acquiringGPS}</div>
             ) : gpsStatus === "denied" ? (
-              <div className="flex items-center gap-1.5 text-[13px] text-[var(--es-warn-600)]">
+              <div className="flex items-center gap-1.5 text-[13px] text-(--es-warn-600)">
                 <AlertTriangle className="size-3.5" /> {t.clock.gpsUnavailable}
               </div>
             ) : coords ? (
@@ -130,18 +130,18 @@ export function ClockScreen() {
         </div>
 
 {clockState === "done" ? (
-          <div className="animate-in fade-in zoom-in-95 duration-300 rounded-xl border border-[var(--es-success-500)] bg-[var(--es-success-50)] p-5 text-center shadow-[var(--es-shadow-sm)]">
-            <div className="animate-in zoom-in-50 duration-300 delay-100 fill-mode-backwards mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-[var(--es-success-600)]">
+          <div className="animate-in fade-in zoom-in-95 duration-300 rounded-xl border border-(--es-success-500) bg-(--es-success-50) p-5 text-center shadow-(--es-shadow-sm)">
+            <div className="animate-in zoom-in-50 duration-300 delay-100 fill-mode-backwards mx-auto mb-2.5 grid size-12 place-items-center rounded-full bg-(--es-success-600)">
               <Check className="size-[26px] text-white" />
             </div>
-            <div className="text-lg font-bold text-[var(--es-success-700)]">
+            <div className="text-lg font-bold text-(--es-success-700)">
               {t.clock.clockRecorded.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel)}
             </div>
             <div className="tabular-nums mt-1 text-[28px] font-bold">{clockedTime}</div>
             <div className="mt-1 text-xs text-muted-foreground">
               {t.clock.clockedAt.replace("{location}", locationLabel)}{coords ? ` · GPS ±${Math.round(coords.accuracy)} m` : ""}
             </div>
-            <button type="button" onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
+            <button type="button" onClick={reset} className="mt-3 text-sm font-medium text-(--es-accent-600)">
               {t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockOutLabel : t.clock.clockInLabel)}
             </button>
             <Link
@@ -160,8 +160,8 @@ export function ClockScreen() {
             className={cn(
               "flex min-h-[110px] flex-col items-center justify-center gap-1.5 rounded-[20px] text-[22px] font-bold text-white shadow-[0_8px_24px_rgba(61,70,204,0.35)] transition-colors",
               clockState === "clocking" || clockState === "loading"
-                ? "bg-[var(--es-accent-700)]"
-                : "bg-[var(--es-accent-600)] hover:bg-[var(--es-accent-700)]",
+                ? "bg-(--es-accent-700)"
+                : "bg-(--es-accent-600) hover:bg-(--es-accent-700)",
             )}
           >
             <Clock className="size-7" aria-hidden />

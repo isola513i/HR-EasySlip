@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 
@@ -22,13 +22,13 @@ interface PillToggleGroupProps<T extends string> {
 
 const VARIANT_SELECTED: Record<Variant, string> = {
   outline:
-    "border-[1.5px] border-[var(--es-accent-600)] bg-card text-[var(--es-accent-700)]",
+    "border-[1.5px] border-(--es-accent-600) bg-card text-(--es-accent-700)",
   filled:
-    "border border-[var(--es-accent-600)] bg-[var(--es-accent-600)] text-white",
+    "border border-(--es-accent-600) bg-(--es-accent-600) text-white",
 };
 
 const UNSELECTED =
-  "border border-[var(--es-neutral-300)] bg-card text-foreground hover:border-[var(--es-neutral-400)]";
+  "border border-(--es-neutral-300) bg-card text-foreground hover:border-(--es-neutral-400)";
 
 export function PillToggleGroup<T extends string>({
   options,

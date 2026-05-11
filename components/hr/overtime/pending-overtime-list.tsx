@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Calendar, Check, Clock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,7 @@ export function PendingOvertimeList({ rows, isLoading, onApprove, onReject }: Pr
   const u = t.hr.overtime.hoursUnit;
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4 text-base font-semibold">
         {t.hr.overtime.pendingTitle}
       </div>
@@ -54,7 +54,7 @@ export function PendingOvertimeList({ rows, isLoading, onApprove, onReject }: Pr
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-[14px] font-semibold">{name}</span>
-                    <span className="inline-flex items-center rounded-md bg-[var(--es-info-50)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--es-info-600)] tabular-nums">
+                    <span className="inline-flex items-center rounded-md bg-(--es-info-50) px-1.5 py-0.5 text-[11px] font-semibold text-(--es-info-600) tabular-nums">
                       {hours}{u}
                     </span>
                   </div>

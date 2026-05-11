@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { getDict } from "@/lib/i18n/get-dict";
 import { AuthLayout } from "@/components/shared/auth-layout";
 import { SignInForm } from "./signin-form";
@@ -32,7 +32,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       {errorMessage ? (
         <div
           role="alert"
-          className="space-y-1 rounded-lg border border-destructive/40 bg-[var(--es-error-50)] p-4 text-sm text-destructive"
+          className="space-y-1 rounded-lg border border-destructive/40 bg-(--es-error-50) p-4 text-sm text-destructive"
         >
           <p className="font-medium">{t.signin.errorTitle}</p>
           <p className="text-xs leading-relaxed opacity-90">{errorMessage}</p>

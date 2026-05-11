@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -68,7 +68,7 @@ export function EmployeeDocumentsCard({ employeeId }: Props) {
               className={
                 "flex-1 min-w-[80px] rounded-full border px-3 py-2 text-xs font-semibold transition-colors " +
                 (category === cat
-                  ? "border-[var(--es-accent-600)] bg-[var(--es-accent-50)] text-[var(--es-accent-700)]"
+                  ? "border-(--es-accent-600) bg-(--es-accent-50) text-(--es-accent-700)"
                   : "border-border bg-card text-muted-foreground hover:bg-muted/40")
               }
             >

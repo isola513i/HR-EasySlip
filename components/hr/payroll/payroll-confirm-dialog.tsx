@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type { ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
@@ -35,7 +35,7 @@ export function PayrollConfirmDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {destructive && (
-              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--es-warn-500)]/15 text-[var(--es-warn-700)]">
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-(--es-warn-500)/15 text-(--es-warn-700)">
                 <AlertTriangle className="size-4" />
               </span>
             )}
@@ -49,7 +49,7 @@ export function PayrollConfirmDialog({
             disabled={loading}
             onClick={onConfirm}
             className={destructive
-              ? "bg-[var(--es-warn-500)] text-white hover:bg-[var(--es-warn-500)]/90 focus-visible:ring-[var(--es-warn-500)]/30"
+              ? "bg-(--es-warn-500) text-white hover:bg-(--es-warn-500)/90 focus-visible:ring-(--es-warn-500)/30"
               : undefined}
           >
             {loading ? loadingLabel : confirmLabel}

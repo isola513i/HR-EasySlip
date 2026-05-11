@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Check, X } from "lucide-react";
 import { useT } from "@/lib/i18n/locale-context";
@@ -21,13 +21,13 @@ export function BulkActionBar({ count, onCancel, onApproveAll, onRejectAll }: Pr
           <span className="text-muted-foreground"> {t.manager.selected}</span>
         </div>
         <div className="hidden h-5 w-px bg-border sm:block" />
-        <button onClick={onCancel} className="rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-[13px] font-medium transition-colors hover:bg-muted">
+        <button onClick={onCancel} className="rounded-md border border-(--es-neutral-300) bg-card px-3 py-[7px] text-[13px] font-medium transition-colors hover:bg-muted">
           {t.common.cancel}
         </button>
-        <button onClick={onRejectAll} className="flex items-center gap-1.5 rounded-md border border-[var(--es-error-500)] bg-card px-3 py-[7px] text-[13px] font-semibold text-[var(--es-error-500)] transition-colors hover:bg-[var(--es-error-50)]">
+        <button onClick={onRejectAll} className="flex items-center gap-1.5 rounded-md border border-(--es-error-500) bg-card px-3 py-[7px] text-[13px] font-semibold text-(--es-error-500) transition-colors hover:bg-(--es-error-50)">
           <X className="size-3.5" /> {t.manager.rejectAll}
         </button>
-        <button onClick={onApproveAll} className="flex items-center gap-1.5 rounded-md bg-[var(--es-success-600)] px-3.5 py-[7px] text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(22,163,74,0.2)] transition-colors hover:bg-[var(--es-success-700)]">
+        <button onClick={onApproveAll} className="flex items-center gap-1.5 rounded-md bg-(--es-success-600) px-3.5 py-[7px] text-[13px] font-semibold text-white shadow-[0_1px_2px_rgba(22,163,74,0.2)] transition-colors hover:bg-(--es-success-700)">
           <Check className="size-3.5" /> {t.manager.approveAll}
         </button>
       </div>

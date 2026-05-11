@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ export default function HROnboardingPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex gap-1 rounded-lg border border-border bg-[var(--es-neutral-50)] p-1">
+      <div className="flex gap-1 rounded-lg border border-border bg-(--es-neutral-50) p-1">
         {tabs.map((t) => (
           <button
             key={t.key}

@@ -1,15 +1,15 @@
-import type { LucideIcon } from "lucide-react";
+﻿import type { LucideIcon } from "lucide-react";
 import { StatusPill } from "@/components/shared/status-pill";
 
 type Tone = "success" | "warn" | "error" | "info" | "neutral" | "accent";
 
 const ICON_BG: Record<Tone, string> = {
-  success: "bg-[var(--es-success-50)] text-[var(--es-success-600)]",
-  warn: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]",
-  error: "bg-[var(--es-error-50)] text-[var(--es-error-500)]",
-  info: "bg-[var(--es-info-50)] text-[var(--es-info-500)]",
+  success: "bg-(--es-success-50) text-(--es-success-600)",
+  warn: "bg-(--es-warn-50) text-(--es-warn-600)",
+  error: "bg-(--es-error-50) text-(--es-error-500)",
+  info: "bg-(--es-info-50) text-(--es-info-500)",
   neutral: "bg-muted text-muted-foreground",
-  accent: "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]",
+  accent: "bg-(--es-accent-50) text-(--es-accent-600)",
 };
 
 interface StatCardProps {
@@ -22,7 +22,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, sub, tone, icon: Icon }: StatCardProps) {
   return (
-    <div className="rounded-xl border border-border bg-card p-[18px] shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-[18px] shadow-(--es-shadow-sm)">
       <div className="flex items-start gap-3">
         {Icon && (
           <div className={`grid size-10 shrink-0 place-items-center rounded-xl ${ICON_BG[tone]}`}>

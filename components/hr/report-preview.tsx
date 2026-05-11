@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
@@ -30,7 +30,7 @@ export function ReportPreview({ type, dateFrom, dateTo, departmentId }: Props) {
   const { data, loading, error } = useReportPreview({ type, dateFrom, dateTo, departmentId });
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold">{hr.previewTitle}</h3>
         {loading && <span className="text-[11px] text-muted-foreground">{hr.previewLoading}</span>}
@@ -93,7 +93,7 @@ function BarChart({ data }: { data: BucketDatum[] }) {
             <span className="w-32 truncate text-[11px] text-muted-foreground">{d.label}</span>
             <div className="relative h-5 flex-1 overflow-hidden rounded-full bg-muted">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-[var(--es-accent-500)]"
+                className="absolute inset-y-0 left-0 rounded-full bg-(--es-accent-500)"
                 style={{ width: `${pct}%` }}
               />
             </div>

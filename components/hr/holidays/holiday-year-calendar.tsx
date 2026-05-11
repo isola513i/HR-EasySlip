@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -61,7 +61,7 @@ export function HolidayYearCalendar({ year, holidays, onSelectDate }: Props) {
       {Array.from({ length: 12 }, (_, m) => (
         <div
           key={m}
-          className="rounded-2xl bg-card p-4 ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]"
+          className="rounded-2xl bg-card p-4 ring-1 ring-(--border-subtle) shadow-(--es-shadow-xs)"
         >
           <div className="mb-2.5 text-center text-[12px] font-semibold tracking-wide text-foreground">
             {monthLabels[m]}
@@ -89,7 +89,7 @@ export function HolidayYearCalendar({ year, holidays, onSelectDate }: Props) {
                   className={cn(
                     "mx-auto grid size-6 place-items-center rounded-full transition-[opacity,transform]",
                     isHoliday
-                      ? "font-semibold text-white shadow-[var(--es-shadow-xs)] hover:opacity-90"
+                      ? "font-semibold text-white shadow-(--es-shadow-xs) hover:opacity-90"
                       : "text-foreground/80",
                   )}
                 >

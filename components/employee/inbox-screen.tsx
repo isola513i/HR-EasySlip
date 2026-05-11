@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import {
@@ -65,10 +65,10 @@ const ACTION_MAP: Record<string, { tone: Tone; Icon: LucideIcon }> = {
 };
 
 const TONE_CLASSES: Record<Tone, { bg: string; fg: string }> = {
-  info: { bg: "bg-[var(--es-accent-50)]", fg: "text-[var(--es-accent-600)]" },
-  success: { bg: "bg-[var(--es-success-50)]", fg: "text-[var(--es-success-600)]" },
-  warn: { bg: "bg-[var(--es-warn-50)]", fg: "text-[var(--es-warn-600)]" },
-  neutral: { bg: "bg-[var(--es-neutral-100)]", fg: "text-[var(--es-neutral-600)]" },
+  info: { bg: "bg-(--es-accent-50)", fg: "text-(--es-accent-600)" },
+  success: { bg: "bg-(--es-success-50)", fg: "text-(--es-success-600)" },
+  warn: { bg: "bg-(--es-warn-50)", fg: "text-(--es-warn-600)" },
+  neutral: { bg: "bg-(--es-neutral-100)", fg: "text-(--es-neutral-600)" },
 };
 
 function mapAuditToNotification(entry: AuditLogEntry, locale: Locale): Notification {
@@ -114,7 +114,7 @@ export function InboxScreen() {
 
   return (
     <>
-      <header className="flex h-14 items-center border-b border-[var(--es-neutral-100)] px-4">
+      <header className="flex h-14 items-center border-b border-(--es-neutral-100) px-4">
         <span className="text-base font-semibold">{t.employee.inbox}</span>
       </header>
 

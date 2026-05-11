@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+﻿import { cn } from "@/lib/utils";
 
 type RoleKey =
   | "EMPLOYEE"
@@ -12,14 +12,14 @@ type RoleKey =
 
 const roleStyles: Record<string, string> = {
   EMPLOYEE:
-    "bg-[var(--es-role-employee-bg)] text-[var(--es-role-employee-fg)]",
-  MANAGER: "bg-[var(--es-role-manager-bg)] text-[var(--es-role-manager-fg)]",
-  HRMG: "bg-[var(--es-role-hrmg-bg)] text-[var(--es-role-hrmg-fg)]",
-  HR_AUTHORIZED: "bg-[var(--es-role-hr-bg)] text-[var(--es-role-hr-fg)]",
-  CEO: "bg-[var(--es-role-admin-bg)] text-[var(--es-role-admin-fg)]",
-  CTO: "bg-[var(--es-role-admin-bg)] text-[var(--es-role-admin-fg)]",
-  COO: "bg-[var(--es-role-admin-bg)] text-[var(--es-role-admin-fg)]",
-  ADMIN: "bg-[var(--es-role-admin-bg)] text-[var(--es-role-admin-fg)]",
+    "bg-(--es-role-employee-bg) text-(--es-role-employee-fg)",
+  MANAGER: "bg-(--es-role-manager-bg) text-(--es-role-manager-fg)",
+  HRMG: "bg-(--es-role-hrmg-bg) text-(--es-role-hrmg-fg)",
+  HR_AUTHORIZED: "bg-(--es-role-hr-bg) text-(--es-role-hr-fg)",
+  CEO: "bg-(--es-role-admin-bg) text-(--es-role-admin-fg)",
+  CTO: "bg-(--es-role-admin-bg) text-(--es-role-admin-fg)",
+  COO: "bg-(--es-role-admin-bg) text-(--es-role-admin-fg)",
+  ADMIN: "bg-(--es-role-admin-bg) text-(--es-role-admin-fg)",
 };
 
 interface RoleBadgeProps {

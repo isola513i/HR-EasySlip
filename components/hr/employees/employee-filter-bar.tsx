@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Download, LayoutGrid, List, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export function EmployeeFilterBar({
   const statusLabel = (s: string) => statusLabels[s as EmploymentStatus] ?? s;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-3 shadow-(--es-shadow-sm)">
       <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
         <label className="relative flex flex-1 items-center">
           <Search className="pointer-events-none absolute left-3.5 size-4 text-muted-foreground/70" aria-hidden="true" />
@@ -73,7 +73,7 @@ export function EmployeeFilterBar({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={t.hr.employees.searchPlaceholder}
             aria-label={t.hr.employees.searchPlaceholder}
-            className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-[13px] outline-none transition-colors hover:border-[var(--es-neutral-300)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)] placeholder:text-muted-foreground/70"
+            className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-3 text-[13px] outline-none transition-colors hover:border-(--es-neutral-300) focus:border-(--es-accent-400) focus:ring-2 focus:ring-(--ring) placeholder:text-muted-foreground/70"
           />
         </label>
 
@@ -131,7 +131,7 @@ export function EmployeeFilterBar({
             aria-pressed={view === "list"}
             className={cn(
               "grid size-9 place-items-center rounded-md transition-colors",
-              view === "list" ? "bg-[var(--es-accent-50)] text-[var(--es-accent-700)]" : "text-muted-foreground hover:bg-muted",
+              view === "list" ? "bg-(--es-accent-50) text-(--es-accent-700)" : "text-muted-foreground hover:bg-muted",
             )}
           >
             <List className="size-4" />
@@ -143,7 +143,7 @@ export function EmployeeFilterBar({
             aria-pressed={view === "grid"}
             className={cn(
               "grid size-9 place-items-center rounded-md transition-colors",
-              view === "grid" ? "bg-[var(--es-accent-50)] text-[var(--es-accent-700)]" : "text-muted-foreground hover:bg-muted",
+              view === "grid" ? "bg-(--es-accent-50) text-(--es-accent-700)" : "text-muted-foreground hover:bg-muted",
             )}
           >
             <LayoutGrid className="size-4" />

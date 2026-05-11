@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { useT } from "@/lib/i18n/locale-context";
@@ -27,7 +27,7 @@ export function PdpaOverviewChart({ totals }: Props) {
   const chartData = segments.length > 0 ? segments : [{ key: "empty", label: "", value: 1, color: "var(--es-neutral-200)" }];
 
   return (
-    <div className="flex h-full min-h-[360px] flex-col rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="flex h-full min-h-[360px] flex-col rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="text-base font-semibold">{t.hr.pdpa.overviewTitle}</div>
 
       <div className="mt-2 min-h-[200px] flex-1">

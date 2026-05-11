@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { Calendar, Mail, Phone, ShieldCheck, User, Wallet } from "lucide-react";
@@ -51,7 +51,7 @@ export function EmployeeDetailSheet({ employee, onClose, onUpdated }: Props) {
         </SheetHeader>
 
         <div className="flex-1 overflow-auto px-5 pb-5">
-          <div className="flex flex-col items-center gap-2 border-b border-[var(--es-neutral-100)] py-4 text-center">
+          <div className="flex flex-col items-center gap-2 border-b border-(--es-neutral-100) py-4 text-center">
             <EmployeeAvatar
               seed={employee.employeeCode}
               initials={getInitials(employee)}
@@ -102,14 +102,14 @@ export function EmployeeDetailSheet({ employee, onClose, onUpdated }: Props) {
           </dl>
 
           {canViewSalary && (
-            <div className="border-t border-[var(--es-neutral-100)] pt-4">
+            <div className="border-t border-(--es-neutral-100) pt-4">
               <Button variant="outline" onClick={() => setSalaryOpen(true)} className="w-full gap-1.5">
                 <Wallet className="size-4" /> {t.hr.employees.salaryInfoBtn}
               </Button>
             </div>
           )}
 
-          <div className="border-t border-[var(--es-neutral-100)] pt-4">
+          <div className="border-t border-(--es-neutral-100) pt-4">
             <EmployeeDocumentsCard employeeId={employee.id} />
           </div>
         </div>

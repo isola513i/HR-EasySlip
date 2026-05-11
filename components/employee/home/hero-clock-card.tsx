@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { type ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
@@ -39,13 +39,13 @@ interface HeroClockCardProps {
 type ActiveState = "idle" | "in" | "out";
 
 const DOT_TONE: Record<ActiveState, string> = {
-  idle: "bg-[var(--es-neutral-400)]",
-  in: "bg-[var(--es-success-500)]",
-  out: "bg-[var(--es-accent-400)]",
+  idle: "bg-(--es-neutral-400)",
+  in: "bg-(--es-success-500)",
+  out: "bg-(--es-accent-400)",
 };
 
 const ACTION_TONE_CLASS: Record<"primary" | "outline" | "ghost", string> = {
-  primary: "bg-[var(--es-accent-600)] text-white hover:bg-[var(--es-accent-700)]",
+  primary: "bg-(--es-accent-600) text-white hover:bg-(--es-accent-700)",
   outline: "border border-white/20 bg-white/[0.04] text-white hover:bg-white/[0.08]",
   ghost: "border border-white/10 bg-transparent text-white/85 hover:bg-white/[0.04]",
 };
@@ -83,7 +83,7 @@ export function HeroClockCard({ dict, shiftStartLabel }: HeroClockCardProps) {
   };
 
   return (
-    <div className="rounded-3xl border border-white/[0.06] bg-[var(--es-neutral-900)] p-5 text-white">
+    <div className="rounded-3xl border border-white/[0.06] bg-(--es-neutral-900) p-5 text-white">
       <div className="flex items-start justify-between">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50">

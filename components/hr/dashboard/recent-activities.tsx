@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { UserPlus, Calendar, DollarSign, FileText, Briefcase, Activity, type LucideIcon } from "lucide-react";
@@ -18,11 +18,11 @@ interface ActivityItem {
 }
 
 const ACTION_ICON: Record<string, { icon: LucideIcon; tone: string }> = {
-  employee: { icon: UserPlus, tone: "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]" },
-  leave: { icon: Calendar, tone: "bg-[var(--es-info-50)] text-[var(--es-info-500)]" },
-  payroll: { icon: DollarSign, tone: "bg-[var(--es-success-50)] text-[var(--es-success-600)]" },
-  attendance: { icon: Activity, tone: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]" },
-  overtime: { icon: Briefcase, tone: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]" },
+  employee: { icon: UserPlus, tone: "bg-(--es-accent-50) text-(--es-accent-600)" },
+  leave: { icon: Calendar, tone: "bg-(--es-info-50) text-(--es-info-500)" },
+  payroll: { icon: DollarSign, tone: "bg-(--es-success-50) text-(--es-success-600)" },
+  attendance: { icon: Activity, tone: "bg-(--es-warn-50) text-(--es-warn-600)" },
+  overtime: { icon: Briefcase, tone: "bg-(--es-warn-50) text-(--es-warn-600)" },
   export: { icon: FileText, tone: "bg-muted text-muted-foreground" },
 };
 
@@ -45,7 +45,7 @@ export function RecentActivities() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4 text-base font-semibold">
         {t.hr.dashboard.recentActivities}
       </div>
@@ -63,7 +63,7 @@ export function RecentActivities() {
           return (
             <div
               key={item.id}
-              className={`flex items-center gap-3 px-5 py-3.5 ${idx < items.length - 1 ? "border-b border-[var(--es-neutral-100)]" : ""}`}
+              className={`flex items-center gap-3 px-5 py-3.5 ${idx < items.length - 1 ? "border-b border-(--es-neutral-100)" : ""}`}
             >
               <div className={`grid size-9 shrink-0 place-items-center rounded-full ${tone}`}>
                 <Icon className="size-4" />

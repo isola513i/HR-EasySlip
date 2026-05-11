@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Download, Share, X } from "lucide-react";
@@ -77,7 +77,7 @@ export function InstallPrompt() {
   if (hidden) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
       <div className="flex items-start gap-3">
         <div className="es-brand-gradient grid size-10 shrink-0 place-items-center rounded-xl text-white">
           <Download className="size-5" strokeWidth={2} />
@@ -97,7 +97,7 @@ export function InstallPrompt() {
           ) : (
             <button
               onClick={install}
-              className="mt-2.5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--es-accent-600)] px-3 text-xs font-semibold text-white transition-colors hover:bg-[var(--es-accent-700)]"
+              className="mt-2.5 inline-flex h-9 items-center gap-1.5 rounded-lg bg-(--es-accent-600) px-3 text-xs font-semibold text-white transition-colors hover:bg-(--es-accent-700)"
             >
               <Download className="size-3.5" /> {t.pwa.install}
             </button>

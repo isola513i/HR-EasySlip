@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ export function OffboardingCard({ record, onComplete }: Props) {
   const isLocked = record.status !== "IN_PROGRESS";
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <div className="text-base font-semibold">
@@ -47,7 +47,7 @@ export function OffboardingCard({ record, onComplete }: Props) {
       <div className="mt-3 flex items-center gap-2 text-[12px] text-muted-foreground">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-[var(--es-success-500)] transition-all"
+            className="h-full rounded-full bg-(--es-success-500) transition-all"
             style={{ width: `${(doneCount / record.items.length) * 100}%` }}
           />
         </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { CalendarDays } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,10 +12,10 @@ function fmtDate(iso: string): string {
 }
 
 const EVENT_PALETTE = [
-  { bg: "bg-[var(--es-accent-50)]", icon: "text-[var(--es-accent-600)]", strip: "bg-[var(--es-accent-400)]" },
-  { bg: "bg-[var(--es-info-50)]", icon: "text-[var(--es-info-600)]", strip: "bg-[var(--es-info-500)]" },
-  { bg: "bg-[var(--es-success-50)]", icon: "text-[var(--es-success-600)]", strip: "bg-[var(--es-success-500)]" },
-  { bg: "bg-[var(--es-warn-50)]", icon: "text-[var(--es-warn-600)]", strip: "bg-[var(--es-warn-500)]" },
+  { bg: "bg-(--es-accent-50)", icon: "text-(--es-accent-600)", strip: "bg-(--es-accent-400)" },
+  { bg: "bg-(--es-info-50)", icon: "text-(--es-info-600)", strip: "bg-(--es-info-500)" },
+  { bg: "bg-(--es-success-50)", icon: "text-(--es-success-600)", strip: "bg-(--es-success-500)" },
+  { bg: "bg-(--es-warn-50)", icon: "text-(--es-warn-600)", strip: "bg-(--es-warn-500)" },
   { bg: "bg-[#fdf2f8]", icon: "text-[#be185d]", strip: "bg-[#ec4899]" },
   { bg: "bg-[#f3e8ff]", icon: "text-[#7e22ce]", strip: "bg-[#a855f7]" },
 ] as const;
@@ -26,7 +26,7 @@ export function UpcomingEvents() {
   const { data, isLoading } = useUpcomingEvents();
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4 text-base font-semibold">
         {t.hr.dashboard.upcomingEvents}
       </div>

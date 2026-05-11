@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useT } from "@/lib/i18n/locale-context";
 import type { PdpaOverview } from "@/lib/consent/pdpa-overview-service";
@@ -13,7 +13,7 @@ export function PdpaCategories({ categories, totalEmployees }: Props) {
   const t = useT();
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="text-base font-semibold">{t.hr.pdpa.categoriesTitle}</div>
 
       <div className="mt-4 flex flex-col gap-3">
@@ -27,7 +27,7 @@ export function PdpaCategories({ categories, totalEmployees }: Props) {
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-semibold">{t.hr.pdpa.categoryNames[key]}</span>
                     {c.required && (
-                      <span className="rounded-md bg-[var(--es-error-50)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--es-error-600)]">
+                      <span className="rounded-md bg-(--es-error-50) px-1.5 py-0.5 text-[10px] font-medium text-(--es-error-600)">
                         {t.hr.pdpa.categoryRequired}
                       </span>
                     )}
@@ -42,9 +42,9 @@ export function PdpaCategories({ categories, totalEmployees }: Props) {
                 </div>
               </div>
 
-              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--es-neutral-100)]">
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-(--es-neutral-100)">
                 <div
-                  className="h-full rounded-full bg-[var(--es-success-500)] transition-[width] duration-300"
+                  className="h-full rounded-full bg-(--es-success-500) transition-[width] duration-300"
                   style={{ width: `${Math.min(100, pct)}%` }}
                 />
               </div>

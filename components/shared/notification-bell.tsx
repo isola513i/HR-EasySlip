@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -26,9 +26,9 @@ const KIND_ICON: Record<NotificationKind, typeof Calendar> = {
 };
 
 const KIND_TONE: Record<NotificationKind, string> = {
-  PAYROLL_CUTOFF_T3: "text-[var(--es-accent-600)]",
-  PAYROLL_CUTOFF_T1: "text-[var(--es-warn-600)]",
-  PAYROLL_CUTOFF_DDAY: "text-[var(--es-error-500)]",
+  PAYROLL_CUTOFF_T3: "text-(--es-accent-600)",
+  PAYROLL_CUTOFF_T1: "text-(--es-warn-600)",
+  PAYROLL_CUTOFF_DDAY: "text-(--es-error-500)",
 };
 
 export function NotificationBell({ userId: _userId }: NotificationBellProps) {
@@ -40,13 +40,13 @@ export function NotificationBell({ userId: _userId }: NotificationBellProps) {
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         aria-label={t.common.notifications}
-        className="relative grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card text-muted-foreground ring-1 ring-[var(--border-subtle)] transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+        className="relative grid size-9 shrink-0 cursor-pointer place-items-center rounded-full bg-card text-muted-foreground ring-1 ring-(--border-subtle) transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         <Bell className="size-[18px]" strokeWidth={1.75} />
         {unreadCount > 0 && (
           <span className="pointer-events-none absolute right-1 top-1 grid place-items-center">
-            <span aria-hidden="true" className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
-            <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
+            <span aria-hidden="true" className="absolute inline-flex size-2.5 animate-ping rounded-full bg-(--es-error-500) opacity-60" />
+            <span className="relative inline-flex size-1.5 rounded-full bg-(--es-error-500)" />
           </span>
         )}
       </PopoverTrigger>
@@ -61,7 +61,7 @@ export function NotificationBell({ userId: _userId }: NotificationBellProps) {
               "rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
               unreadCount === 0
                 ? "cursor-not-allowed text-muted-foreground/50"
-                : "text-[var(--es-accent-600)] hover:bg-[var(--es-accent-50)]",
+                : "text-(--es-accent-600) hover:bg-(--es-accent-50)",
             )}
           >
             {t.common.markAllAsRead}
@@ -107,13 +107,13 @@ function NotificationRow({ item, onClick }: RowProps) {
           {formatRelativeTime(item.createdAt)}
         </div>
       </div>
-      {isUnread && <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full bg-[var(--es-accent-500)]" />}
+      {isUnread && <span aria-hidden="true" className="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--es-accent-500)" />}
     </div>
   );
 
   const className = cn(
-    "group block w-full border-b border-[var(--es-neutral-100)] px-4 py-2.5 text-left transition-colors last:border-b-0",
-    isUnread ? "bg-[var(--es-accent-50)]/40 hover:bg-[var(--es-accent-50)]" : "hover:bg-muted/60",
+    "group block w-full border-b border-(--es-neutral-100) px-4 py-2.5 text-left transition-colors last:border-b-0",
+    isUnread ? "bg-(--es-accent-50)/40 hover:bg-(--es-accent-50)" : "hover:bg-muted/60",
   );
 
   if (item.link) {

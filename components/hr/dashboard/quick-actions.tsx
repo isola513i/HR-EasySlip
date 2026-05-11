@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { UserPlus, FileText, Calendar, DollarSign, type LucideIcon } from "lucide-react";
@@ -17,12 +17,12 @@ function Tile({ tile }: { tile: ActionTile }) {
   const tone = tile.tone ?? "accent";
   const filledBg =
     tone === "error"
-      ? "bg-[var(--es-error-500)] text-white"
-      : "bg-[var(--es-accent-600)] text-white";
+      ? "bg-(--es-error-500) text-white"
+      : "bg-(--es-accent-600) text-white";
   const ghostIcon =
     tone === "error"
-      ? "bg-[var(--es-error-50)] text-[var(--es-error-500)]"
-      : "bg-[var(--es-accent-50)] text-[var(--es-accent-600)]";
+      ? "bg-(--es-error-50) text-(--es-error-500)"
+      : "bg-(--es-accent-50) text-(--es-accent-600)";
 
   return (
     <Link

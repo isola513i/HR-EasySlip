@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { CalendarDays, Plus } from "lucide-react";
@@ -52,9 +52,9 @@ export function DayDetail({ date, requests, holidays }: Props) {
   const canRequest = !isPast && !hasPendingOrApproved;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
       <div className="flex items-center gap-2">
-        <CalendarDays className="size-4 text-[var(--es-accent-600)]" />
+        <CalendarDays className="size-4 text-(--es-accent-600)" />
         <div className="text-sm font-semibold">{fmt.formatDate(date)}</div>
       </div>
 
@@ -78,7 +78,7 @@ export function DayDetail({ date, requests, holidays }: Props) {
       {canRequest && (
         <Link
           href={`/employee/leave?startDate=${date}&endDate=${date}`}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-[var(--es-accent-400)] bg-[var(--es-accent-50)] px-3 py-2 text-[12px] font-medium text-[var(--es-accent-700)] transition-colors hover:bg-[var(--es-accent-100)] dark:bg-[var(--es-accent-950)] dark:text-[var(--es-accent-300)]"
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-(--es-accent-400) bg-(--es-accent-50) px-3 py-2 text-[12px] font-medium text-(--es-accent-700) transition-colors hover:bg-(--es-accent-100) dark:bg-(--es-accent-950) dark:text-(--es-accent-300)"
         >
           <Plus className="size-3.5" />
           {dict.requestForDay}

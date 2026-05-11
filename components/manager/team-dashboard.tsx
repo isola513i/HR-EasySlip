@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Download, MoreHorizontal } from "lucide-react";
@@ -204,13 +204,13 @@ export function TeamDashboard() {
       </div>
 
       {/* Team table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5 lg:px-5">
           <div className="min-w-0">
             <div className="truncate text-[15px] font-semibold">{t.manager.teamToday}</div>
             <div className="truncate text-xs text-muted-foreground">{dateStr}</div>
           </div>
-          <button className="flex shrink-0 items-center gap-1.5 rounded-md border border-[var(--es-neutral-300)] bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
+          <button className="flex shrink-0 items-center gap-1.5 rounded-md border border-(--es-neutral-300) bg-card px-3 py-[7px] text-xs font-medium text-muted-foreground transition-colors hover:bg-muted">
             <Download className="size-3.5" /> <span className="hidden sm:inline">{t.manager.exportCSV}</span>
           </button>
         </div>
@@ -231,7 +231,7 @@ export function TeamDashboard() {
                 return (
                   <div key={p.code} className="rounded-xl border border-border bg-card p-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-[var(--es-neutral-100)] text-xs font-bold text-muted-foreground">
+                      <div className="grid size-9 shrink-0 place-items-center rounded-full bg-(--es-neutral-100) text-xs font-bold text-muted-foreground">
                         {p.name.charAt(0)}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -252,7 +252,7 @@ export function TeamDashboard() {
 
         <div className="hidden md:block">
           <ScrollableTable minWidth={640}>
-              <div className="grid grid-cols-[1fr_120px_120px_140px_80px] bg-[var(--es-neutral-50)] px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <div className="grid grid-cols-[1fr_120px_120px_140px_80px] bg-(--es-neutral-50) px-5 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 <span>{t.manager.member}</span>
                 <span>{t.manager.status}</span>
                 <span>{t.manager.time}</span>
@@ -268,10 +268,10 @@ export function TeamDashboard() {
                   return (
                     <div
                       key={p.code}
-                      className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-[var(--es-neutral-100)] px-5 py-3 text-[13px]"
+                      className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-(--es-neutral-100) px-5 py-3 text-[13px]"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="grid size-8 place-items-center rounded-full bg-[var(--es-neutral-100)] text-[11px] font-bold text-muted-foreground">
+                        <div className="grid size-8 place-items-center rounded-full bg-(--es-neutral-100) text-[11px] font-bold text-muted-foreground">
                           {p.name.charAt(0)}
                         </div>
                         <div>
@@ -310,7 +310,7 @@ function TeamTableSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-[var(--es-neutral-100)] px-5 py-3"
+          className="grid grid-cols-[1fr_120px_120px_140px_80px] items-center border-t border-(--es-neutral-100) px-5 py-3"
         >
           <div className="flex items-center gap-2.5">
             <Skeleton className="size-8 rounded-full" />

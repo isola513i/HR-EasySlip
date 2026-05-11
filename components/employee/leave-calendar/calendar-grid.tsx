@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -97,9 +97,9 @@ function dayClassName(state: DayState | undefined, isToday: boolean, isSelected:
   else if (state?.status === "REJECTED") color = "bg-rose-100 font-medium text-rose-700 line-through hover:bg-rose-200 dark:bg-rose-900/40 dark:text-rose-300";
   else if (state?.isHoliday) color = "bg-sky-50 font-medium text-sky-700 hover:bg-sky-100 dark:bg-sky-900/40 dark:text-sky-300";
   const ring = isSelected
-    ? " ring-2 ring-[var(--es-accent-600)] ring-offset-1 ring-offset-card"
+    ? " ring-2 ring-(--es-accent-600) ring-offset-1 ring-offset-card"
     : isToday
-      ? " ring-1 ring-[var(--es-accent-600)]"
+      ? " ring-1 ring-(--es-accent-600)"
       : "";
   return `${base} ${color}${ring}`;
 }
@@ -114,7 +114,7 @@ export function CalendarGrid({ month, year, isLoading, requests, holidays, selec
   const dowLabels = [t.hr.leave.dow.s, t.hr.leave.dow.m, t.hr.leave.dow.t, t.hr.leave.dow.w, t.hr.leave.dow.th, t.hr.leave.dow.f, t.hr.leave.dow.sa];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
       <div className="mb-4 flex items-center justify-between">
         <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
         <div className="flex gap-1">

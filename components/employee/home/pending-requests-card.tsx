@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { CalendarDays, Timer, Receipt, ChevronRight } from "lucide-react";
@@ -35,7 +35,7 @@ export function PendingRequestsCard({ dict }: Props) {
   if (isLoading) {
     return (
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="border-b border-[var(--es-neutral-100)] px-4 py-3">
+        <div className="border-b border-(--es-neutral-100) px-4 py-3">
           <Skeleton className="h-4 w-36" />
         </div>
         <div className="flex items-center gap-3 px-4 py-3">
@@ -49,30 +49,30 @@ export function PendingRequestsCard({ dict }: Props) {
   if (total === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--es-warn-200)] bg-[var(--es-warn-50)]">
-      <div className="flex items-center justify-between border-b border-[var(--es-warn-100)] px-4 py-3">
-        <div className="text-sm font-semibold text-[var(--es-warn-800)]">{e.pendingTitle}</div>
-        <span className="grid size-5 place-items-center rounded-full bg-[var(--es-warn-500)] text-[10px] font-bold text-white">
+    <div className="overflow-hidden rounded-2xl border border-(--es-warn-200) bg-(--es-warn-50)">
+      <div className="flex items-center justify-between border-b border-(--es-warn-100) px-4 py-3">
+        <div className="text-sm font-semibold text-(--es-warn-800)">{e.pendingTitle}</div>
+        <span className="grid size-5 place-items-center rounded-full bg-(--es-warn-500) text-[10px] font-bold text-white">
           {total}
         </span>
       </div>
       <ul aria-label={e.pendingTitle}>
         {items.map((it, i) => (
-          <li key={it.key} className={i < items.length - 1 ? "border-b border-[var(--es-warn-100)]" : ""}>
+          <li key={it.key} className={i < items.length - 1 ? "border-b border-(--es-warn-100)" : ""}>
             <Link
               href={it.href}
               aria-label={`${it.label} — ${it.count}`}
-              className="flex items-center justify-between px-4 py-3 transition-colors active:bg-[var(--es-warn-100)]"
+              className="flex items-center justify-between px-4 py-3 transition-colors active:bg-(--es-warn-100)"
             >
               <div className="flex items-center gap-3">
-                <span className="grid size-8 place-items-center rounded-full bg-[var(--es-warn-100)]">
-                  <it.icon className="size-4 text-[var(--es-warn-700)]" strokeWidth={2} />
+                <span className="grid size-8 place-items-center rounded-full bg-(--es-warn-100)">
+                  <it.icon className="size-4 text-(--es-warn-700)" strokeWidth={2} />
                 </span>
-                <span className="text-[13px] font-medium text-[var(--es-warn-900)]">{it.label}</span>
+                <span className="text-[13px] font-medium text-(--es-warn-900)">{it.label}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-semibold tabular-nums text-[var(--es-warn-700)]">{it.count}</span>
-                <ChevronRight className="size-4 text-[var(--es-warn-400)]" />
+                <span className="text-[13px] font-semibold tabular-nums text-(--es-warn-700)">{it.count}</span>
+                <ChevronRight className="size-4 text-(--es-warn-400)" />
               </div>
             </Link>
           </li>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Boxes, Laptop, Smartphone, Monitor, Headphones, Tablet, Package } from "lucide-react";
@@ -66,8 +66,8 @@ export function AssetsSection() {
         const Icon = ICON_BY_TYPE[a.asset.type] ?? Package;
         const label = [a.asset.brand, a.asset.model].filter(Boolean).join(" ") || t.profile.assets.untitled;
         return (
-          <li key={a.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-[var(--es-shadow-xs)]">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-[var(--es-accent-50)] text-[var(--es-accent-600)]">
+          <li key={a.id} className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-(--es-shadow-xs)">
+            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-(--es-accent-50) text-(--es-accent-600)">
               <Icon className="size-5" />
             </div>
             <div className="min-w-0 flex-1">

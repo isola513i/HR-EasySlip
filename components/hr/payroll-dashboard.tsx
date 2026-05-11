@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -123,7 +123,7 @@ export function PayrollDashboard() {
 
       <PayrollKpis cycles={cycles} year={year} isLoading={isLoading} />
 
-      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-[var(--es-shadow-sm)]">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 shadow-(--es-shadow-sm)">
         <span className="mr-auto text-[13px] font-medium text-muted-foreground tabular-nums">
           {t.hr.payroll.pageTitle} · {year}
         </span>

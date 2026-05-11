@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { useT } from "@/lib/i18n/locale-context";
@@ -20,7 +20,7 @@ export function LeaveTrendChart({ data }: Props) {
   if (!data || data.length === 0) return null;
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4">
         <div className="text-sm font-semibold">{t.hr.leaveTrend}</div>
         <div className="text-xs text-muted-foreground">{t.hr.leaveTrendSub}</div>

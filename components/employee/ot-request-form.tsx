@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { toast } from "sonner";
 import { OfflineQueuedError } from "@/lib/api/client";
@@ -89,7 +89,7 @@ export function OTRequestForm() {
                 type="datetime-local"
                 value={assignedStart}
                 onChange={(e) => setAssignedStart(e.target.value)}
-                className="h-11 w-full rounded-xl border border-[var(--es-neutral-300)] bg-card px-3 text-sm outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+                className="h-11 w-full rounded-xl border border-(--es-neutral-300) bg-card px-3 text-sm outline-none transition-colors hover:border-(--es-neutral-400) focus:border-(--es-accent-400) focus:ring-2 focus:ring-(--ring)"
               />
             </div>
             <div>
@@ -100,7 +100,7 @@ export function OTRequestForm() {
                 value={assignedEnd}
                 min={assignedStart}
                 onChange={(e) => setAssignedEnd(e.target.value)}
-                className="h-11 w-full rounded-xl border border-[var(--es-neutral-300)] bg-card px-3 text-sm outline-none transition-colors hover:border-[var(--es-neutral-400)] focus:border-[var(--es-accent-400)] focus:ring-2 focus:ring-[var(--ring)]"
+                className="h-11 w-full rounded-xl border border-(--es-neutral-300) bg-card px-3 text-sm outline-none transition-colors hover:border-(--es-neutral-400) focus:border-(--es-accent-400) focus:ring-2 focus:ring-(--ring)"
               />
             </div>
           </>
@@ -115,7 +115,7 @@ export function OTRequestForm() {
             rows={4}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="bg-[var(--es-neutral-50)]"
+            className="bg-(--es-neutral-50)"
           />
         </div>
 

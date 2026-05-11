@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
 
@@ -14,13 +14,13 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
         "shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] transition-[background-color,border-color,box-shadow] duration-150 outline-none",
         "after:absolute after:-inset-x-3 after:-inset-y-2",
         "group-has-disabled/field:opacity-50",
-        "hover:border-[var(--es-neutral-300)]",
-        "focus-visible:border-[var(--es-accent-400)] focus-visible:ring-[3px] focus-visible:ring-ring/40",
+        "hover:border-(--es-neutral-300)",
+        "focus-visible:border-(--es-accent-400) focus-visible:ring-[3px] focus-visible:ring-ring/40",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "aria-invalid:border-destructive/60 aria-invalid:ring-[3px] aria-invalid:ring-destructive/15",
         "aria-invalid:aria-checked:border-primary",
-        "data-checked:border-[var(--es-accent-600)] data-checked:bg-[var(--es-accent-600)] data-checked:text-primary-foreground",
-        "data-indeterminate:border-[var(--es-accent-600)] data-indeterminate:bg-[var(--es-accent-600)] data-indeterminate:text-primary-foreground",
+        "data-checked:border-(--es-accent-600) data-checked:bg-(--es-accent-600) data-checked:text-primary-foreground",
+        "data-indeterminate:border-(--es-accent-600) data-indeterminate:bg-(--es-accent-600) data-indeterminate:text-primary-foreground",
         "dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 dark:data-checked:bg-primary",
         className,
       )}

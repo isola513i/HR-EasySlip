@@ -1,15 +1,15 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const PALETTE = [
-  "bg-[var(--es-accent-100)] text-[var(--es-accent-700)]",
-  "bg-[var(--es-success-50)] text-[var(--es-success-700)]",
-  "bg-[var(--es-warn-50)] text-[var(--es-warn-700)]",
-  "bg-[var(--es-error-50)] text-[var(--es-error-700)]",
-  "bg-[var(--es-info-50)] text-[var(--es-info-600)]",
-  "bg-[var(--es-neutral-100)] text-[var(--es-neutral-700)]",
+  "bg-(--es-accent-100) text-(--es-accent-700)",
+  "bg-(--es-success-50) text-(--es-success-700)",
+  "bg-(--es-warn-50) text-(--es-warn-700)",
+  "bg-(--es-error-50) text-(--es-error-700)",
+  "bg-(--es-info-50) text-(--es-info-600)",
+  "bg-(--es-neutral-100) text-(--es-neutral-700)",
 ];
 
 function hashToIndex(seed: string, mod: number): number {

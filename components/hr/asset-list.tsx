@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -77,7 +77,7 @@ export function AssetList() {
         <StatusPill tone="neutral" dot={false}>{`${t.common.all} (${visible.length})`}</StatusPill>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         {isLoading && (
           <div className="space-y-2 p-4">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
@@ -108,7 +108,7 @@ export function AssetList() {
 
             <div className="hidden md:block">
               <ScrollableTable minWidth={920}>
-                <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+                <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
                   <span>{t.hr.assets.type}</span>
                   <span>{t.hr.assets.assetCol}</span>
                   <span>{t.hr.assets.colSerial}</span>
@@ -119,7 +119,7 @@ export function AssetList() {
                 {visible.map((a) => {
                   const assignee = a.assignments[0]?.employee;
                   return (
-                    <div key={a.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] last:border-b-0`}>
+                    <div key={a.id} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0`}>
                       <span className="font-medium">{t.hr.assets.types[a.type]}</span>
                       <div>
                         <div className="font-semibold">{assetLabel(a)}</div>
@@ -155,11 +155,11 @@ export function AssetList() {
 
 function KpiCard({ label, value, tone }: { label: string; value: string; tone?: "success" | "info" | "neutral" }) {
   const ring =
-    tone === "success" ? "ring-[var(--es-success-500)]/30 bg-[var(--es-success-500)]/5"
-    : tone === "info" ? "ring-[var(--es-accent-600)]/25 bg-[var(--es-accent-600)]/5"
-    : "ring-[var(--es-neutral-300)]/40 bg-[var(--es-neutral-50)]";
+    tone === "success" ? "ring-(--es-success-500)/30 bg-(--es-success-500)/5"
+    : tone === "info" ? "ring-(--es-accent-600)/25 bg-(--es-accent-600)/5"
+    : "ring-(--es-neutral-300)/40 bg-(--es-neutral-50)";
   return (
-    <div className={`rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)] ring-1 ${ring}`}>
+    <div className={`rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm) ring-1 ${ring}`}>
       <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-bold tabular-nums">{value}</div>
     </div>

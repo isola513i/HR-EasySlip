@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 
@@ -27,15 +27,15 @@ export function LeaveTypeCard({
       className={cn(
         "rounded-xl px-4 py-3 text-left transition-colors",
         selected
-          ? "border-[1.5px] border-[var(--es-accent-600)] bg-[var(--es-accent-50)]"
-          : "border border-[var(--es-neutral-300)] bg-card hover:border-[var(--es-neutral-400)]",
+          ? "border-[1.5px] border-(--es-accent-600) bg-(--es-accent-50)"
+          : "border border-(--es-neutral-300) bg-card hover:border-(--es-neutral-400)",
         disabled && "cursor-not-allowed opacity-50",
       )}
     >
       <div
         className={cn(
           "text-base font-bold",
-          selected ? "text-[var(--es-accent-700)]" : "text-foreground",
+          selected ? "text-(--es-accent-700)" : "text-foreground",
         )}
       >
         {label}
@@ -43,7 +43,7 @@ export function LeaveTypeCard({
       <div
         className={cn(
           "tabular-nums mt-1 text-xs",
-          selected ? "text-[var(--es-accent-700)]/80" : "text-muted-foreground",
+          selected ? "text-(--es-accent-700)/80" : "text-muted-foreground",
         )}
       >
         {balanceText}

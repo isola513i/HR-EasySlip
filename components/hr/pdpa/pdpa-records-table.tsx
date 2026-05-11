@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FileText, Mail } from "lucide-react";
 import { ScrollableTable } from "@/components/shared/scrollable-table";
@@ -44,7 +44,7 @@ export function PdpaRecordsTable({ records }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="border-b border-border px-5 py-4">
         <div className="text-base font-semibold">{t.hr.pdpa.recordsTitle}</div>
       </div>
@@ -53,7 +53,7 @@ export function PdpaRecordsTable({ records }: Props) {
         <div className="px-4 py-12 text-center text-sm text-muted-foreground">{t.hr.pdpa.recordsEmpty}</div>
       ) : (
         <ScrollableTable minWidth={1080}>
-          <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+          <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
             <span>{t.hr.pdpa.recordsEmployee}</span>
             <span>{t.hr.pdpa.recordsEmployeeId}</span>
             <span>{t.hr.pdpa.recordsEmail}</span>
@@ -67,13 +67,13 @@ export function PdpaRecordsTable({ records }: Props) {
             const fullName = `${r.firstNameTh} ${r.lastNameTh}`.trim();
             const showReminder = r.status === "PENDING" || r.status === "WITHDRAWN";
             return (
-              <div key={r.employeeId} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3 text-[13px] last:border-b-0`}>
+              <div key={r.employeeId} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3 text-[13px] last:border-b-0`}>
                 <div className="flex min-w-0 items-center gap-2.5">
                   <EmployeeAvatar seed={r.employeeCode} initials={getInitials(r)} />
                   <span className="truncate font-semibold">{fullName}</span>
                 </div>
                 <span className="font-mono text-[12px] text-muted-foreground">{r.employeeCode}</span>
-                <span className="truncate text-[var(--es-accent-600)]">
+                <span className="truncate text-(--es-accent-600)">
                   {r.email ?? "—"}
                 </span>
                 <span className="text-muted-foreground">{consentTypeLabel(r.consentType)}</span>
@@ -98,7 +98,7 @@ export function PdpaRecordsTable({ records }: Props) {
                       onClick={() => openMailto(r.email!)}
                       aria-label={t.hr.pdpa.actionSendReminder}
                       title={t.hr.pdpa.actionSendReminder}
-                      className="grid size-8 place-items-center rounded-md text-[var(--es-accent-600)] transition-colors hover:bg-[var(--es-accent-50)]"
+                      className="grid size-8 place-items-center rounded-md text-(--es-accent-600) transition-colors hover:bg-(--es-accent-50)"
                     >
                       <Mail className="size-4" />
                     </button>

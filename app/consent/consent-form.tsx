@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -62,7 +62,7 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   return (
     <div className="w-full max-w-xl space-y-6">
       <div className="flex flex-col items-center gap-4 text-center">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-[var(--es-accent-50)] text-[var(--es-accent-600)] ring-1 ring-[var(--es-accent-100)]">
+        <div className="flex size-14 items-center justify-center rounded-2xl bg-(--es-accent-50) text-(--es-accent-600) ring-1 ring-(--es-accent-100)">
           <ShieldCheck className="size-7" aria-hidden />
         </div>
         <div className="space-y-1.5">
@@ -73,7 +73,7 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
 
       <section
         aria-labelledby="data-collected-heading"
-        className="rounded-xl border border-border bg-card p-6 shadow-[var(--es-shadow-sm)]"
+        className="rounded-xl border border-border bg-card p-6 shadow-(--es-shadow-sm)"
       >
         <h2
           id="data-collected-heading"
@@ -114,14 +114,14 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
 
         <Link
           href="/privacy"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--es-accent-600)] underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--es-accent-600) underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
         >
           {t.consent.readFull}
           <ExternalLink className="size-3.5" aria-hidden />
         </Link>
       </section>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)] transition-colors hover:bg-muted/40">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm) transition-colors hover:bg-muted/40">
         <Checkbox
           checked={agreed}
           onCheckedChange={(v) => setAgreed(!!v)}
@@ -136,7 +136,7 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
       {error ? (
         <p
           role="alert"
-          className="rounded-lg border border-destructive/40 bg-[var(--es-error-50)] p-3 text-sm text-destructive"
+          className="rounded-lg border border-destructive/40 bg-(--es-error-50) p-3 text-sm text-destructive"
         >
           {error}
         </p>

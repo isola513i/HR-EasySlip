@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Clock } from "lucide-react";
@@ -61,7 +61,7 @@ function ScrollColumn({
               className={cn(
                 "tabular-nums rounded-lg px-2 py-1.5 text-center text-[13px] font-medium transition-colors",
                 active
-                  ? "bg-[var(--es-accent-50)] text-[var(--es-accent-700)] font-semibold"
+                  ? "bg-(--es-accent-50) text-(--es-accent-700) font-semibold"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
@@ -107,10 +107,10 @@ export function TimePicker({
         disabled={disabled}
         className={cn(
           "inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-input bg-card px-3.5 text-[13px] shadow-[inset_0_1px_0_rgba(15,23,42,0.02)] outline-none transition-[border-color,box-shadow] duration-150",
-          "hover:border-[var(--es-neutral-300)]",
-          "focus-visible:border-[var(--es-accent-400)] focus-visible:ring-[3px] focus-visible:ring-ring/40",
+          "hover:border-(--es-neutral-300)",
+          "focus-visible:border-(--es-accent-400) focus-visible:ring-[3px] focus-visible:ring-ring/40",
           "disabled:cursor-not-allowed disabled:opacity-60",
-          "data-popup-open:border-[var(--es-accent-400)]",
+          "data-popup-open:border-(--es-accent-400)",
           !value && "text-muted-foreground/70",
           className,
         )}

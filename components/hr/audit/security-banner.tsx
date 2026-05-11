@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ShieldCheck } from "lucide-react";
 import { useT } from "@/lib/i18n/locale-context";
@@ -14,9 +14,9 @@ export function SecurityComplianceBanner({ totalEntries }: Props) {
     totalEntries.toLocaleString("en-US"),
   );
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="flex items-start gap-3.5">
-        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--es-accent-50)] text-[var(--es-accent-600)]">
+        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-(--es-accent-50) text-(--es-accent-600)">
           <ShieldCheck className="size-5" strokeWidth={2} />
         </span>
         <div className="min-w-0 flex-1">

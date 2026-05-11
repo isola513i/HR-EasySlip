@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { UserPlus, Undo2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,7 +53,7 @@ export function AssetCardMobile({ asset: a, onAssign, onReturn, onRetire }: Acti
   const t = useT();
   const assignee = a.assignments[0]?.employee;
   return (
-    <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm)">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold">{assetLabel(a)}</div>

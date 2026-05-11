@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
@@ -84,26 +84,26 @@ export function OnboardingProgressTable() {
         {filters.map((f, i) => (
           <button key={f.label} onClick={() => setActiveFilter(i)} className={cn(
             "rounded-lg border px-3 py-[7px] text-xs font-medium transition-colors",
-            i === activeFilter ? "border-transparent bg-[var(--es-neutral-900)] text-white" : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
+            i === activeFilter ? "border-transparent bg-(--es-neutral-900) text-white" : "border-(--es-neutral-300) bg-card text-muted-foreground hover:bg-muted",
           )}>{f.label}</button>
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         <ScrollableTable minWidth={560}>
-        <div className="grid grid-cols-[100px_1fr_120px_100px_80px] border-b border-border bg-[var(--es-neutral-50)] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="grid grid-cols-[100px_1fr_120px_100px_80px] border-b border-border bg-(--es-neutral-50) px-4 py-2.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
           <span>{t.onboarding.code}</span><span>{t.onboarding.employeeName}</span><span>{t.onboarding.hireDate}</span><span>{t.onboarding.progress}</span><span>{t.profile.status}</span>
         </div>
 
         {isLoading && Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="grid grid-cols-[100px_1fr_120px_100px_80px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3">
+          <div key={i} className="grid grid-cols-[100px_1fr_120px_100px_80px] items-center border-t border-(--es-neutral-100) px-4 py-3">
             <Skeleton className="h-4 w-16" /><Skeleton className="h-4 w-32" /><Skeleton className="h-4 w-20" /><Skeleton className="h-5 w-12" /><Skeleton className="h-5 w-16" />
           </div>
         ))}
 
         {!isLoading && checklists.map((c) => (
           <button key={c.id} onClick={() => openDetail(c.employeeId)}
-            className="grid w-full grid-cols-[100px_1fr_120px_100px_80px] items-center border-t border-[var(--es-neutral-100)] px-4 py-3 text-left text-sm hover:bg-muted transition-colors">
+            className="grid w-full grid-cols-[100px_1fr_120px_100px_80px] items-center border-t border-(--es-neutral-100) px-4 py-3 text-left text-sm hover:bg-muted transition-colors">
             <span className="tabular-nums text-xs text-muted-foreground">{c.employee.employeeCode}</span>
             <span className="font-medium">{c.employee.firstNameTh} {c.employee.lastNameTh}</span>
             <span className="tabular-nums text-xs text-muted-foreground">
@@ -132,7 +132,7 @@ export function OnboardingProgressTable() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-2 flex-1 rounded-full bg-muted">
-                  <div className="h-2 rounded-full bg-[var(--es-accent-600)] transition-all" style={{ width: `${detail.progress.percent}%` }} />
+                  <div className="h-2 rounded-full bg-(--es-accent-600) transition-all" style={{ width: `${detail.progress.percent}%` }} />
                 </div>
                 <span className="text-xs font-medium tabular-nums">{detail.progress.done}/{detail.progress.total}</span>
               </div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   CalendarCheck,
@@ -25,14 +25,14 @@ import type { AuditEntry } from "@/hooks/use-audit-logs";
 const GRID = "grid-cols-[180px_minmax(180px,1fr)_minmax(180px,1.2fr)_120px_180px_140px]";
 
 const MODULE_TONE: Record<AuditModule, string> = {
-  EMPLOYEES: "bg-[var(--es-accent-50)] text-[var(--es-accent-700)]",
-  LEAVE: "bg-[var(--es-info-50)] text-[var(--es-info-600)]",
-  ATTENDANCE: "bg-[var(--es-success-50)] text-[var(--es-success-700)]",
-  OVERTIME: "bg-[var(--es-warn-50)] text-[var(--es-warn-600)]",
+  EMPLOYEES: "bg-(--es-accent-50) text-(--es-accent-700)",
+  LEAVE: "bg-(--es-info-50) text-(--es-info-600)",
+  ATTENDANCE: "bg-(--es-success-50) text-(--es-success-700)",
+  OVERTIME: "bg-(--es-warn-50) text-(--es-warn-600)",
   PAYROLL: "bg-[#f3e8ff] text-[#7e22ce]",
-  REPORTS: "bg-[var(--es-info-50)] text-[var(--es-info-600)]",
-  SETTINGS: "bg-[var(--es-neutral-100)] text-[var(--es-neutral-700)]",
-  OTHER: "bg-[var(--es-neutral-100)] text-[var(--es-neutral-700)]",
+  REPORTS: "bg-(--es-info-50) text-(--es-info-600)",
+  SETTINGS: "bg-(--es-neutral-100) text-(--es-neutral-700)",
+  OTHER: "bg-(--es-neutral-100) text-(--es-neutral-700)",
 };
 
 function actionIcon(action: string): { Icon: LucideIcon; isDelete: boolean } {
@@ -75,9 +75,9 @@ export function AuditTable({ rows, isLoading, error }: Props) {
   const { locale } = useLocale();
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <ScrollableTable minWidth={1080}>
-        <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+        <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
           <span>{t.hr.audit.colUser}</span>
           <span>{t.hr.audit.colAction}</span>
           <span>{t.hr.audit.colTarget}</span>
@@ -88,7 +88,7 @@ export function AuditTable({ rows, isLoading, error }: Props) {
 
         {isLoading &&
           Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5`}>
+            <div key={i} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5`}>
               <div className="flex items-center gap-2.5"><Skeleton className="size-9 rounded-full" /><Skeleton className="h-4 w-24" /></div>
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-4 w-44" />
@@ -115,13 +115,13 @@ export function AuditTable({ rows, isLoading, error }: Props) {
           const { Icon, isDelete } = actionIcon(r.action);
           const m = moduleForEntity(r.entityType);
           return (
-            <div key={r.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] last:border-b-0 hover:bg-muted/40`}>
+            <div key={r.id} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0 hover:bg-muted/40`}>
               <div className="flex min-w-0 items-center gap-2.5">
                 <EmployeeAvatar seed={r.actorId ?? ""} initials={initials} />
                 <span className="truncate font-medium">{name}</span>
               </div>
               <div className="flex min-w-0 items-center gap-2">
-                <Icon className={`size-4 shrink-0 ${isDelete ? "text-[var(--es-error-500)]" : "text-muted-foreground"}`} />
+                <Icon className={`size-4 shrink-0 ${isDelete ? "text-(--es-error-500)" : "text-muted-foreground"}`} />
                 <span className="truncate">{getActionLabel(r.action, locale)}</span>
               </div>
               <div className="truncate font-mono text-[12px] text-muted-foreground" title={`${r.entityType}#${r.entityId}`}>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Image from "next/image";
 import { getDict } from "@/lib/i18n/get-dict";
 import { ChangePasswordForm } from "./change-password-form";
@@ -28,7 +28,7 @@ export default async function ChangePasswordPage() {
           </p>
         </div>
 
-        <div className="rounded-xl border bg-card p-6 shadow-[var(--es-shadow-sm)]">
+        <div className="rounded-xl border bg-card p-6 shadow-(--es-shadow-sm)">
           <ChangePasswordForm />
         </div>
       </div>

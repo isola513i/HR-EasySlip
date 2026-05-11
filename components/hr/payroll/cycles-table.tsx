@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -58,7 +58,7 @@ export function CyclesTable({
   const actionProps = { onLock, onMarkExported, onDownloadTimestamps, onDownloadPayrollInfo, onDownloadEmpeoTemplate, labels };
 
   return (
-    <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
       <div className="flex flex-col gap-3 border-b border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="text-base font-semibold">{t.hr.payroll.cyclesTitle}</div>
@@ -99,8 +99,8 @@ export function CyclesTable({
               onClick={() => onSelect(c.id)}
               onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(c.id)}
               className={cn(
-                "w-full rounded-xl border bg-card p-3.5 text-left shadow-[var(--es-shadow-sm)] transition-colors cursor-pointer",
-                isSelected ? "border-[var(--es-accent-300)] bg-[var(--es-accent-50)] ring-1 ring-[var(--es-accent-300)]" : "border-border hover:bg-muted/40",
+                "w-full rounded-xl border bg-card p-3.5 text-left shadow-(--es-shadow-sm) transition-colors cursor-pointer",
+                isSelected ? "border-(--es-accent-300) bg-(--es-accent-50) ring-1 ring-(--es-accent-300)" : "border-border hover:bg-muted/40",
               )}
             >
               <div className="flex items-start justify-between gap-2">
@@ -128,7 +128,7 @@ export function CyclesTable({
       {/* Desktop table */}
       <div className="hidden md:block">
         <ScrollableTable minWidth={920}>
-          <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+          <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
             <span>{t.hr.payrollMonth}</span>
             <span>{t.hr.payrollPeriod}</span>
             <span>{t.profile.status}</span>
@@ -137,7 +137,7 @@ export function CyclesTable({
           </div>
 
           {isLoading && Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5`}>
+            <div key={i} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5`}>
               <Skeleton className="h-4 w-12" />
               <Skeleton className="h-4 w-40" />
               <Skeleton className="h-5 w-16 rounded-full" />
@@ -164,8 +164,8 @@ export function CyclesTable({
                 role="row"
                 onClick={() => onSelect(c.id)}
                 className={cn(
-                  `grid ${GRID} w-full items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] transition-colors last:border-b-0 cursor-pointer`,
-                  isSelected ? "bg-[var(--es-accent-50)]" : "hover:bg-muted/40",
+                  `grid ${GRID} w-full items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] transition-colors last:border-b-0 cursor-pointer`,
+                  isSelected ? "bg-(--es-accent-50)" : "hover:bg-muted/40",
                 )}
               >
                 <span className="font-semibold">{monthName(c.month)}</span>

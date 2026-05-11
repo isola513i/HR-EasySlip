@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -54,7 +54,7 @@ export function ReviewCyclesDashboard() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card shadow-[var(--es-shadow-sm)]">
+      <div className="rounded-xl border border-border bg-card shadow-(--es-shadow-sm)">
         {isLoading && (
           <div className="space-y-2 p-4">
             {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}
@@ -71,7 +71,7 @@ export function ReviewCyclesDashboard() {
         )}
         {!isLoading && !error && items.length > 0 && (
           <ScrollableTable minWidth={920}>
-            <div className={`grid ${GRID} border-b border-border bg-[var(--es-neutral-50)] px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
+            <div className={`grid ${GRID} border-b border-border bg-(--es-neutral-50) px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground`}>
               <span>{t.hr.reviews.colName}</span>
               <span>{t.hr.reviews.colCadence}</span>
               <span>{t.hr.reviews.colDates}</span>
@@ -80,7 +80,7 @@ export function ReviewCyclesDashboard() {
               <span className="text-right">{t.hr.reviews.colActions}</span>
             </div>
             {items.map((c) => (
-              <div key={c.id} className={`grid ${GRID} items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] last:border-b-0`}>
+              <div key={c.id} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0`}>
                 <div>
                   <div className="font-semibold">{c.name}</div>
                   <StatusPill tone={STATUS_TONE[c.status]}>{c.status}</StatusPill>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -38,14 +38,14 @@ function ApprovalsTab({ active }: { active: boolean }) {
     <span
       className={cn(
         "relative grid place-items-center rounded-full transition-[background-color,transform] duration-200",
-        active && "bg-[var(--es-accent-50)] px-3 py-1",
+        active && "bg-(--es-accent-50) px-3 py-1",
       )}
     >
       <CheckSquare className="size-[22px]" strokeWidth={active ? 2 : 1.75} />
       {hasBadge && (
         <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 grid place-items-center">
-          <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-[var(--es-error-500)] opacity-60" />
-          <span className="relative inline-flex size-1.5 rounded-full bg-[var(--es-error-500)]" />
+          <span className="absolute inline-flex size-2.5 animate-ping rounded-full bg-(--es-error-500) opacity-60" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-(--es-error-500)" />
         </span>
       )}
     </span>
@@ -61,20 +61,20 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       aria-label={item.label}
       className={cn(
         "group/nav relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors active:scale-[0.92] active:transition-transform active:duration-100",
-        active ? "text-[var(--es-accent-600)]" : "text-muted-foreground",
+        active ? "text-(--es-accent-600)" : "text-muted-foreground",
       )}
     >
       <span
         className={cn(
           "relative grid place-items-center rounded-full transition-[background-color,transform] duration-200",
-          active && "bg-[var(--es-accent-50)] px-3 py-1",
+          active && "bg-(--es-accent-50) px-3 py-1",
         )}
       >
         <item.icon className="size-[22px]" strokeWidth={active ? 2 : 1.75} />
         {item.badge && (
           <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 grid place-items-center">
-            <span className={`absolute inline-flex size-2.5 animate-ping rounded-full opacity-60 ${item.badgeTone === "accent" ? "bg-[var(--es-accent-500)]" : "bg-[var(--es-error-500)]"}`} />
-            <span className={`relative inline-flex size-1.5 rounded-full ${item.badgeTone === "accent" ? "bg-[var(--es-accent-500)]" : "bg-[var(--es-error-500)]"}`} />
+            <span className={`absolute inline-flex size-2.5 animate-ping rounded-full opacity-60 ${item.badgeTone === "accent" ? "bg-(--es-accent-500)" : "bg-(--es-error-500)"}`} />
+            <span className={`relative inline-flex size-1.5 rounded-full ${item.badgeTone === "accent" ? "bg-(--es-accent-500)" : "bg-(--es-error-500)"}`} />
           </span>
         )}
       </span>
@@ -82,7 +82,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       {active && (
         <span
           aria-hidden="true"
-          className="animate-in zoom-in fade-in duration-200 absolute -top-0.5 h-0.5 w-8 rounded-full bg-[var(--es-accent-600)]"
+          className="animate-in zoom-in fade-in duration-200 absolute -top-0.5 h-0.5 w-8 rounded-full bg-(--es-accent-600)"
         />
       )}
     </Link>
@@ -127,7 +127,7 @@ export function BottomNav({ isManager = false }: BottomNavProps) {
             aria-label={nav.approvals}
             className={cn(
               "group/nav relative flex flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors active:scale-[0.92] active:transition-transform active:duration-100",
-              approvalsActive ? "text-[var(--es-accent-600)]" : "text-muted-foreground",
+              approvalsActive ? "text-(--es-accent-600)" : "text-muted-foreground",
             )}
           >
             <ApprovalsTab active={approvalsActive} />
@@ -135,7 +135,7 @@ export function BottomNav({ isManager = false }: BottomNavProps) {
             {approvalsActive && (
               <span
                 aria-hidden="true"
-                className="animate-in zoom-in fade-in duration-200 absolute -top-0.5 h-0.5 w-8 rounded-full bg-[var(--es-accent-600)]"
+                className="animate-in zoom-in fade-in duration-200 absolute -top-0.5 h-0.5 w-8 rounded-full bg-(--es-accent-600)"
               />
             )}
           </Link>

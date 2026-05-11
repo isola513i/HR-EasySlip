@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Building2 } from "lucide-react";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
@@ -46,9 +46,9 @@ function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps)
     <div
       className={cn(
         "group relative flex w-[208px] flex-col items-center gap-2 rounded-2xl bg-card px-4 pb-3 pt-5 text-center transition-[box-shadow,transform,ring-color] duration-150",
-        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)] ring-1 ring-[var(--border-subtle)]",
+        "shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.04)] ring-1 ring-(--border-subtle)",
         "hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(15,23,42,0.06),0_12px_24px_rgba(15,23,42,0.08)]",
-        isHighlighted && "ring-2 ring-[var(--es-accent-400)] shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
+        isHighlighted && "ring-2 ring-(--es-accent-400) shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
       )}
     >
       {pictureSrc ? (
@@ -57,7 +57,7 @@ function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps)
           <img src={pictureSrc} alt={fullName} className="size-full object-cover" />
         </div>
       ) : (
-        <div className="grid size-14 shrink-0 place-items-center rounded-full bg-[var(--es-accent-50)] text-[15px] font-semibold tracking-wide text-[var(--es-accent-700)] ring-2 ring-card">
+        <div className="grid size-14 shrink-0 place-items-center rounded-full bg-(--es-accent-50) text-[15px] font-semibold tracking-wide text-(--es-accent-700) ring-2 ring-card">
           <span>{initials || "—"}</span>
         </div>
       )}
@@ -111,7 +111,7 @@ export function OrgNode({ node, depth = 0, collapsed, onToggle, matchedIds }: Pr
         <>
           <span
             aria-hidden="true"
-            className="block w-px shrink-0 bg-[var(--es-neutral-200)]"
+            className="block w-px shrink-0 bg-(--es-neutral-200)"
             style={{ height: CONNECTOR_HEIGHT }}
           />
           <div className="relative flex items-start">
@@ -125,7 +125,7 @@ export function OrgNode({ node, depth = 0, collapsed, onToggle, matchedIds }: Pr
                   {!isOnly && (
                     <span
                       aria-hidden="true"
-                      className="absolute top-0 h-px bg-[var(--es-neutral-200)]"
+                      className="absolute top-0 h-px bg-(--es-neutral-200)"
                       style={{
                         left: isFirst ? "50%" : 0,
                         right: isLast ? "50%" : 0,
@@ -134,7 +134,7 @@ export function OrgNode({ node, depth = 0, collapsed, onToggle, matchedIds }: Pr
                   )}
                   <span
                     aria-hidden="true"
-                    className="block w-px shrink-0 bg-[var(--es-neutral-200)]"
+                    className="block w-px shrink-0 bg-(--es-neutral-200)"
                     style={{ height: CONNECTOR_HEIGHT }}
                   />
                   <OrgNode

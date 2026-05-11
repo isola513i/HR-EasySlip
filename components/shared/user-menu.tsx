@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
@@ -28,7 +28,7 @@ export function UserMenu({ name, initials, role }: Props) {
         aria-label={name}
         className="group/user flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full pl-1 pr-3 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 data-popup-open:bg-muted/60"
       >
-        <span className="es-brand-gradient grid size-9 shrink-0 place-items-center rounded-full text-[12px] font-semibold text-white ring-2 ring-card transition-shadow group-hover/user:shadow-[var(--es-shadow-sm)]">
+        <span className="es-brand-gradient grid size-9 shrink-0 place-items-center rounded-full text-[12px] font-semibold text-white ring-2 ring-card transition-shadow group-hover/user:shadow-(--es-shadow-sm)">
           {initials.toUpperCase()}
         </span>
         <span className="hidden text-[13px] font-medium leading-tight text-foreground sm:block">

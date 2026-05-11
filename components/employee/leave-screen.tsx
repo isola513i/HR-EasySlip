@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -213,7 +213,7 @@ export function LeaveScreen() {
             rows={3}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="bg-[var(--es-neutral-50)]"
+            className="bg-(--es-neutral-50)"
           />
         </div>
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export function EntityAttachmentPanel({
   };
 
   return (
-    <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-[var(--es-shadow-sm)]">
+    <div className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-(--es-shadow-sm)">
       <div>
         <div className="text-sm font-semibold">{title}</div>
         {description && <div className="text-xs text-muted-foreground">{description}</div>}

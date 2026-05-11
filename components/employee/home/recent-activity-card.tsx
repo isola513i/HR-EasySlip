@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +48,7 @@ export function RecentActivityCard({ dict }: RecentActivityCardProps) {
       <div className="overflow-hidden rounded-2xl border border-border bg-card">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < 2 ? "border-b border-[var(--es-neutral-100)]" : ""}`}>
+            <div key={i} className={`flex items-center justify-between px-4 py-3 ${i < 2 ? "border-b border-(--es-neutral-100)" : ""}`}>
               <div>
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="mt-1 h-3 w-20" />
@@ -60,7 +60,7 @@ export function RecentActivityCard({ dict }: RecentActivityCardProps) {
           items.map((r, i) => (
             <div
               key={`${r.createdAt}-${i}`}
-              className={`flex items-center justify-between px-4 py-3 ${i < items.length - 1 ? "border-b border-[var(--es-neutral-100)]" : ""}`}
+              className={`flex items-center justify-between px-4 py-3 ${i < items.length - 1 ? "border-b border-(--es-neutral-100)" : ""}`}
             >
               <div className="min-w-0">
                 <div className="truncate text-[13px] font-medium">{getActionLabel(r.action, locale)}</div>

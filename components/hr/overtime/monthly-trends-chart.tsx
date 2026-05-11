@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +19,7 @@ export function MonthlyTrendsChart({ data, isLoading }: Props) {
   const u = t.hr.overtime.hoursUnit;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+    <div className="rounded-xl border border-border bg-card p-5 shadow-(--es-shadow-sm)">
       <div className="mb-4 text-base font-semibold">{t.hr.overtime.trendsTitle}</div>
       {isLoading ? (
         <Skeleton className="h-[280px] w-full rounded-md" />

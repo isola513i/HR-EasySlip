@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Users, ZoomIn, ZoomOut, ChevronsDownUp, ChevronsUpDown } from "lucide-react";
@@ -152,7 +152,7 @@ export function OrgChartView() {
           <h1 className="text-[22px] font-bold tracking-tight">{t.hr.orgChart.pageTitle}</h1>
           <p className="mt-0.5 text-[13px] text-muted-foreground">{t.hr.orgChart.pageSubtitle}</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-xl bg-card p-1 ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-xs)]">
+        <div className="flex items-center gap-1.5 rounded-xl bg-card p-1 ring-1 ring-(--border-subtle) shadow-(--es-shadow-xs)">
           <Button variant="ghost" size="icon-sm" onClick={zoomOut} disabled={zoomIdx === 0} aria-label={t.hr.orgChart.zoomOut}>
             <ZoomOut />
           </Button>
@@ -206,12 +206,12 @@ export function OrgChartView() {
       ) : (
         <div
           className={cn(
-            "relative overflow-auto rounded-2xl bg-[radial-gradient(circle_at_1px_1px,var(--es-neutral-200)_1px,transparent_0)] [background-size:24px_24px] bg-card/40 ring-1 ring-[var(--border-subtle)]",
+            "relative overflow-auto rounded-2xl bg-[radial-gradient(circle_at_1px_1px,var(--es-neutral-200)_1px,transparent_0)] [background-size:24px_24px] bg-card/40 ring-1 ring-(--border-subtle)",
             "min-h-[420px] [scrollbar-width:thin]",
           )}
         >
           <div
-            className="flex w-fit min-w-full items-start justify-center gap-12 p-10 transition-transform duration-200 ease-[var(--es-ease-out)]"
+            className="flex w-fit min-w-full items-start justify-center gap-12 p-10 transition-transform duration-200 ease-(--es-ease-out)"
             style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}
           >
             {tree.map((root) => (

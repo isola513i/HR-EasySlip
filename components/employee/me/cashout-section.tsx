@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { Coins } from "lucide-react";
@@ -62,7 +62,7 @@ export function CashoutSection() {
       {items.map((c) => (
         <li
           key={c.id}
-          className="rounded-xl border border-border bg-card p-3 shadow-[var(--es-shadow-xs)]"
+          className="rounded-xl border border-border bg-card p-3 shadow-(--es-shadow-xs)"
         >
           <div className="flex items-start justify-between gap-2">
             <div>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -108,7 +108,7 @@ export function ReviewFormScreen({ reviewId }: Props) {
     <>
       <MobileTopbar title={review.cycle.name} />
       <div className="flex flex-col gap-5 p-4">
-        <div className="rounded-xl border border-border bg-card p-3.5 shadow-[var(--es-shadow-sm)]">
+        <div className="rounded-xl border border-border bg-card p-3.5 shadow-(--es-shadow-sm)">
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-muted-foreground">{t.reviews.subject}</span>
             <StatusPill tone={isReadOnly ? "neutral" : "info"}>{t.reviews.statuses[review.status]}</StatusPill>
@@ -134,7 +134,7 @@ export function ReviewFormScreen({ reviewId }: Props) {
                 onChange={(e) => setAnswer(q.key, e.target.value)}
                 rows={3}
                 disabled={isReadOnly}
-                className="bg-[var(--es-neutral-50)]"
+                className="bg-(--es-neutral-50)"
               />
             )}
           </div>
@@ -157,7 +157,7 @@ export function ReviewFormScreen({ reviewId }: Props) {
             onChange={(e) => setComments(e.target.value)}
             rows={4}
             disabled={isReadOnly}
-            className="bg-[var(--es-neutral-50)]"
+            className="bg-(--es-neutral-50)"
           />
         </div>
 
@@ -187,7 +187,7 @@ function ScaleInput({ value, onChange, disabled }: { value: number; onChange: (v
           onClick={() => onChange(n)}
           className={`grid size-10 place-items-center rounded-lg border text-sm font-semibold tabular-nums transition-colors ${
             value === n
-              ? "border-[var(--es-accent-600)] bg-[var(--es-accent-50)] text-[var(--es-accent-700)]"
+              ? "border-(--es-accent-600) bg-(--es-accent-50) text-(--es-accent-700)"
               : "border-border bg-card text-muted-foreground hover:bg-muted disabled:opacity-50"
           }`}
         >

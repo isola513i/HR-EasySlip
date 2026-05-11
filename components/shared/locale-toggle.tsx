@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useLocale } from "@/hooks/use-locale";
 import { useT } from "@/lib/i18n/locale-context";
@@ -39,14 +39,14 @@ export function LocaleToggle({ variant = "full", className }: Props) {
       role="group"
       aria-label={t.common.language}
       className={cn(
-        "relative grid h-9 w-full grid-cols-2 items-center rounded-lg border border-border bg-[var(--es-neutral-50)] p-0.5 text-[11px] font-semibold uppercase tracking-wider",
+        "relative grid h-9 w-full grid-cols-2 items-center rounded-lg border border-border bg-(--es-neutral-50) p-0.5 text-[11px] font-semibold uppercase tracking-wider",
         className,
       )}
     >
       <span
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-y-0.5 w-[calc(50%-2px)] rounded-md bg-[var(--es-accent-600)] shadow-[var(--es-shadow-sm)] transition-transform duration-200 ease-out",
+          "pointer-events-none absolute inset-y-0.5 w-[calc(50%-2px)] rounded-md bg-(--es-accent-600) shadow-(--es-shadow-sm) transition-transform duration-200 ease-out",
           locale === "en" ? "translate-x-[calc(100%+0px)]" : "translate-x-0",
         )}
       />
