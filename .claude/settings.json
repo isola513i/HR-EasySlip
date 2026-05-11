@@ -7,5 +7,37 @@
     "chrome-devtools-mcp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true,
     "vercel@claude-plugins-official": true
+  },
+  "permissions": {
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(chmod 777 *)",
+      "Bash(ssh *)",
+      "Bash(* > /dev/*)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(curl * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(dropdb *)",
+      "Bash(psql * DROP *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "command": "node D:\\EasySlip\\.claude\\hooks\\pre-tool-security.js",
+        "description": "Block commands that overwrite .env files"
+      }
+    ],
+    "Stop": [
+      {
+        "command": "bash D:\\EasySlip\\.claude\\hooks\\stop-verify.sh",
+        "description": "Warn if .env files are staged for commit at session end"
+      }
+    ]
   }
 }

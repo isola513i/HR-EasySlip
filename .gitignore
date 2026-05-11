@@ -63,6 +63,9 @@ Thumbs.db
 # ----- IDE / misc — keep .claude/settings.json, exclude local overrides -----
 .claude/settings.local.json
 .claude/worktrees/
+.claude/skills/
+.agents/
+skills-lock.json
 .vscode/
 .idea/
 *.swp
