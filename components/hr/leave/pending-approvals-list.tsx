@@ -30,6 +30,14 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
   const [rejectTarget, setRejectTarget] = useState<PendingLeaveRow | null>(null);
   const [approveTarget, setApproveTarget] = useState<PendingLeaveRow | null>(null);
 
+  const FILTER_STYLE: Record<TypeFilter, { active: string; inactive: string }> = {
+    ALL:      { active: "bg-[var(--es-neutral-900)] text-white border-transparent", inactive: "border-[var(--es-neutral-300)] text-muted-foreground hover:bg-muted" },
+    ANNUAL:   { active: "bg-[var(--es-accent-600)] text-white border-transparent", inactive: "border-[var(--es-accent-200)] text-[var(--es-accent-700)] hover:bg-[var(--es-accent-50)]" },
+    SICK:     { active: "bg-[var(--es-error-500)] text-white border-transparent",  inactive: "border-[var(--es-error-200)] text-[var(--es-error-600)] hover:bg-[var(--es-error-50)]" },
+    PERSONAL: { active: "bg-[var(--es-warn-500)] text-white border-transparent",   inactive: "border-[var(--es-warn-200)] text-[var(--es-warn-700)] hover:bg-[var(--es-warn-50)]" },
+    OTHER:    { active: "bg-[var(--es-neutral-500)] text-white border-transparent", inactive: "border-[var(--es-neutral-300)] text-muted-foreground hover:bg-muted" },
+  };
+
   const filters: Array<{ value: TypeFilter; label: string }> = [
     { value: "ALL", label: t.common.all },
     { value: "ANNUAL", label: t.leave.annual },
@@ -99,16 +107,11 @@ export function PendingApprovalsList({ rows, isLoading, approve, reject }: Props
                 onClick={() => setTypeFilter(f.value)}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-[5px] text-[12px] font-medium transition-colors",
-                  active
-                    ? "border-transparent bg-[var(--es-neutral-900)] text-white"
-                    : "border-[var(--es-neutral-300)] bg-card text-muted-foreground hover:bg-muted",
+                  active ? FILTER_STYLE[f.value].active : `bg-card ${FILTER_STYLE[f.value].inactive}`,
                 )}
               >
                 {f.label}
-                <span className={cn(
-                  "tabular-nums text-[11px]",
-                  active ? "text-white/70" : "text-muted-foreground/70",
-                )}>
+                <span className={cn("tabular-nums text-[11px]", active ? "text-white/70" : "opacity-60")}>
                   {count}
                 </span>
               </button>

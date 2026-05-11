@@ -107,17 +107,15 @@ export function HolidayCalendar() {
         </Button>
       </div>
 
-      <div className="flex justify-center">
-        <Tabs value={String(year)} onValueChange={(v) => setYear(Number(v))}>
-          <TabsList>
-            {YEARS.map((y) => (
-              <TabsTrigger key={y} value={String(y)} className="min-w-[5rem] tabular-nums">
-                {y}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
-      </div>
+      <Tabs value={String(year)} onValueChange={(v) => setYear(Number(v))}>
+        <TabsList>
+          {YEARS.map((y) => (
+            <TabsTrigger key={y} value={String(y)} className="min-w-[5rem] tabular-nums">
+              {y}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <HolidayStatCard icon={CalendarIcon} label={t.hr.holidaysStatTotal} value={stats.total} tone="accent" />

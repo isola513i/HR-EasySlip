@@ -120,7 +120,7 @@ export function KpiGrid() {
       />
       <KpiCard
         label={k.avgHoursToday}
-        value={`${data.avgHoursToday.value.toFixed(1)}h`}
+        value={`${data.avgHoursToday.value.toFixed(1)} h`}
         delta={null}
         icon={TrendingUp}
         tone="info"

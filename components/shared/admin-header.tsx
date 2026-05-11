@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Mail, Menu, Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/shared/notification-bell";
 import { UserMenu } from "@/components/shared/user-menu";
@@ -11,12 +10,11 @@ import { useT } from "@/lib/i18n/locale-context";
 interface AdminHeaderProps {
   user: { id: string; name: string; role: string; initials: string };
   onMenuClick?: () => void;
-  inboxHref?: string;
 }
 
 const SCROLL_THRESHOLD = 8;
 
-export function AdminHeader({ user, onMenuClick, inboxHref = "/employee/inbox" }: AdminHeaderProps) {
+export function AdminHeader({ user, onMenuClick }: AdminHeaderProps) {
   const t = useT();
   const [stuck, setStuck] = useState(false);
   const [query, setQuery] = useState("");
@@ -79,14 +77,6 @@ export function AdminHeader({ user, onMenuClick, inboxHref = "/employee/inbox" }
       </label>
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <Link
-          href={inboxHref}
-          aria-label={t.common.inbox}
-          className="grid size-9 shrink-0 place-items-center rounded-full bg-card text-muted-foreground ring-1 ring-[var(--border-subtle)] transition-colors hover:bg-muted hover:text-foreground active:scale-95 active:transition-transform active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-        >
-          <Mail className="size-[18px]" strokeWidth={1.75} />
-        </Link>
-
         <NotificationBell userId={user.id} />
 
         <span aria-hidden="true" className="mx-1 hidden h-7 w-px bg-border sm:block" />

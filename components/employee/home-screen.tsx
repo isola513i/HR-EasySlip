@@ -7,7 +7,6 @@ import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
 import { HeroClockCard } from "@/components/employee/home/hero-clock-card";
 import { QuickActions } from "@/components/employee/home/quick-actions";
 import { LeaveQuotaCard } from "@/components/employee/home/leave-quota-card";
-import { RecentActivityCard } from "@/components/employee/home/recent-activity-card";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface Props {
@@ -47,7 +46,6 @@ export function EmployeeHome({ user, dict }: Props) {
         <HeroClockCard dict={dict} shiftStartLabel={shiftStartLabel} />
         <QuickActions dict={dict} />
         <LeaveQuotaCard dict={dict} />
-        <RecentActivityCard dict={dict} />
       </div>
     </>
   );

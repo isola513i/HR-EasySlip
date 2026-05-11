@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { SectionLabel } from "@/components/shared/section-label";
 import { useT } from "@/lib/i18n/locale-context";
 import { useMyExpenses, type ExpenseCategory } from "@/hooks/use-expense";
@@ -74,8 +75,8 @@ export function ExpenseSubmitDialog({ open, onClose }: Props) {
             </Select>
           </div>
           <div>
-            <SectionLabel htmlFor="exp-date">{t.hr.expense.occurredOn}</SectionLabel>
-            <Input id="exp-date" type="date" value={occurredOn} onChange={(e) => setOccurredOn(e.target.value)} />
+            <SectionLabel>{t.hr.expense.occurredOn}</SectionLabel>
+            <DatePicker value={occurredOn} onChange={setOccurredOn} className="w-full" />
           </div>
           <div>
             <SectionLabel htmlFor="exp-desc">{t.hr.expense.description}</SectionLabel>

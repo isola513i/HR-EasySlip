@@ -120,7 +120,11 @@ export function ReportBuilder() {
             <Label>{t.hr.department}</Label>
             <Select value={departmentId} onValueChange={(v) => { if (v) setDepartmentId(v); }}>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue>
+                  {departmentId === ALL_DEPARTMENTS
+                    ? t.hr.employees.allDepartments
+                    : (departments.find((d) => d.id === departmentId)?.name ?? "—")}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL_DEPARTMENTS}>{t.hr.employees.allDepartments}</SelectItem>

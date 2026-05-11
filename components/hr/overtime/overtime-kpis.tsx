@@ -34,10 +34,10 @@ export function OvertimeKpis({
 
   return (
     <KpiGrid isLoading={isLoading}>
-      <KpiCard Icon={Clock} label={t.hr.overtime.kpiTotalHours} value={`${totalHours.toFixed(0)}${u}`} sub={t.hr.overtime.kpiTotalHoursSub} tone="accent" />
+      <KpiCard Icon={Clock} label={t.hr.overtime.kpiTotalHours} value={`${totalHours.toFixed(0)} ${u}`} sub={t.hr.overtime.kpiTotalHoursSub} tone="accent" />
       <KpiCard Icon={AlarmClock} label={t.hr.overtime.kpiPending} value={pendingCount} sub={t.hr.overtime.kpiPendingSub} tone="warn" />
       <KpiCard Icon={CheckCircle2} label={t.hr.overtime.kpiApproved} value={approvedCount} sub={approvedSub} tone="success" />
-      <KpiCard Icon={CalendarDays} label={t.hr.overtime.kpiAvg} value={`${avgPerEmployee.toFixed(1)}${u}`} sub={t.hr.overtime.kpiAvgSub} tone="info" />
+      <KpiCard Icon={CalendarDays} label={t.hr.overtime.kpiAvg} value={`${avgPerEmployee.toFixed(1)} ${u}`} sub={t.hr.overtime.kpiAvgSub} tone="info" />
     </KpiGrid>
   );
 }

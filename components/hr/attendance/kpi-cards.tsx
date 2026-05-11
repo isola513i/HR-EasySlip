@@ -42,7 +42,7 @@ export function KpiCards({ date }: Props) {
       />
       <StatCard
         label={t.hr.attendance.avgHours}
-        value={`${data.avgHours.toFixed(1)}h`}
+        value={`${data.avgHours.toFixed(1)} h`}
         tone="info"
         icon={Clock}
       />

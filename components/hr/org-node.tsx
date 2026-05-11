@@ -1,7 +1,6 @@
 "use client";
 
-import { ChevronDown, ChevronUp, Building2 } from "lucide-react";
-import Image from "next/image";
+import { Building2 } from "lucide-react";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { cn } from "@/lib/utils";
 
@@ -52,13 +51,16 @@ function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps)
         isHighlighted && "ring-2 ring-[var(--es-accent-400)] shadow-[0_0_0_4px_color-mix(in_oklch,var(--es-accent-500)_15%,transparent)]",
       )}
     >
-      <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--es-accent-50)] text-[15px] font-semibold tracking-wide text-[var(--es-accent-700)] ring-2 ring-card">
-        {pictureSrc ? (
-          <Image src={pictureSrc} alt={fullName} width={56} height={56} className="size-full object-cover" />
-        ) : (
+      {pictureSrc ? (
+        <div className="size-14 shrink-0 overflow-hidden rounded-full ring-2 ring-card">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={pictureSrc} alt={fullName} className="size-full object-cover" />
+        </div>
+      ) : (
+        <div className="grid size-14 shrink-0 place-items-center rounded-full bg-[var(--es-accent-50)] text-[15px] font-semibold tracking-wide text-[var(--es-accent-700)] ring-2 ring-card">
           <span>{initials || "—"}</span>
-        )}
-      </div>
+        </div>
+      )}
       <div className="min-w-0 space-y-0.5">
         <div className="truncate text-[13.5px] font-semibold leading-tight tracking-tight text-foreground">
           {fullName}
@@ -78,29 +80,6 @@ function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps)
           {node.employeeCode}
         </div>
       </div>
-      {hasChildren && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggle(node.id);
-          }}
-          aria-label={isCollapsed ? "Expand subordinates" : "Collapse subordinates"}
-          className={cn(
-            "absolute -bottom-3 left-1/2 z-10 inline-flex size-7 -translate-x-1/2 items-center justify-center rounded-full bg-card text-[var(--es-accent-700)] ring-1 ring-[var(--border-subtle)] shadow-[var(--es-shadow-sm)] transition-[transform,background-color] duration-150",
-            "hover:bg-[var(--es-accent-50)] active:scale-95",
-          )}
-        >
-          {isCollapsed ? (
-            <ChevronDown className="size-3.5" strokeWidth={2.5} />
-          ) : (
-            <ChevronUp className="size-3.5" strokeWidth={2.5} />
-          )}
-          <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--es-accent-600)] px-1 text-[9.5px] font-bold tabular-nums text-white">
-            {node.children.length}
-          </span>
-        </button>
-      )}
     </div>
   );
 }

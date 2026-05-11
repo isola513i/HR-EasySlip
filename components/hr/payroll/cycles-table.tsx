@@ -92,12 +92,14 @@ export function CyclesTable({
         {!isLoading && !error && cycles.map((c) => {
           const isSelected = c.id === selectedId;
           return (
-            <button
+            <div
               key={c.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(c.id)}
+              onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(c.id)}
               className={cn(
-                "w-full rounded-xl border bg-card p-3.5 text-left shadow-[var(--es-shadow-sm)] transition-colors",
+                "w-full rounded-xl border bg-card p-3.5 text-left shadow-[var(--es-shadow-sm)] transition-colors cursor-pointer",
                 isSelected ? "border-[var(--es-accent-300)] bg-[var(--es-accent-50)] ring-1 ring-[var(--es-accent-300)]" : "border-border hover:bg-muted/40",
               )}
             >
@@ -115,8 +117,10 @@ export function CyclesTable({
                   {t.hr.payrollLockedAt}: {fmt.formatDateTime(c.lockedAt)}
                 </div>
               )}
-              <div className="mt-3"><CycleActions cycle={c} {...actionProps} /></div>
-            </button>
+              <div className="mt-3" onClick={(e) => e.stopPropagation()}>
+                <CycleActions cycle={c} {...actionProps} />
+              </div>
+            </div>
           );
         })}
       </div>
@@ -155,12 +159,12 @@ export function CyclesTable({
           {!isLoading && !error && cycles.map((c) => {
             const isSelected = c.id === selectedId;
             return (
-              <button
+              <div
                 key={c.id}
-                type="button"
+                role="row"
                 onClick={() => onSelect(c.id)}
                 className={cn(
-                  `grid ${GRID} w-full items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-left text-[13px] transition-colors last:border-b-0`,
+                  `grid ${GRID} w-full items-center border-b border-[var(--es-neutral-100)] px-5 py-3.5 text-[13px] transition-colors last:border-b-0 cursor-pointer`,
                   isSelected ? "bg-[var(--es-accent-50)]" : "hover:bg-muted/40",
                 )}
               >
@@ -172,8 +176,10 @@ export function CyclesTable({
                 <span className="tabular-nums text-muted-foreground">
                   {c.lockedAt ? fmt.formatDateTime(c.lockedAt) : "—"}
                 </span>
-                <CycleActions cycle={c} {...actionProps} />
-              </button>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <CycleActions cycle={c} {...actionProps} />
+                </div>
+              </div>
             );
           })}
         </ScrollableTable>

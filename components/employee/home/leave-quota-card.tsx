@@ -50,6 +50,20 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
     return () => ctrl.abort();
   }, []);
 
+  const LEAVE_TYPE_LABEL: Record<string, string> = {
+    SICK:             dict.leave.sick,
+    PERSONAL:         dict.leave.personal,
+    ANNUAL:           dict.leave.annual,
+    LEAVE_WITHOUT_PAY: dict.leave.lwp,
+    MATERNITY:        dict.leave.maternity,
+    PATERNITY:        dict.leave.paternity,
+    CHILD_CARE:       dict.leave.childCare,
+    ORDINATION:       dict.leave.ordination,
+    MILITARY:         dict.leave.military,
+    FUNERAL:          dict.leave.funeral,
+    TRAINING:         dict.leave.training,
+  };
+
   if (loading) {
     return (
       <div className="rounded-2xl border border-border bg-card">
@@ -88,7 +102,7 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
           return (
             <div key={q.leaveType} className={i < items.length - 1 ? "border-b border-[var(--es-neutral-100)] px-4 py-3" : "px-4 py-3"}>
               <div className="mb-1.5 flex justify-between text-[13px]">
-                <span className="font-medium capitalize">{q.leaveType.toLowerCase()}</span>
+                <span className="font-medium">{LEAVE_TYPE_LABEL[q.leaveType] ?? q.leaveType}</span>
                 <span className="tabular-nums text-muted-foreground">
                   <b className="font-semibold text-foreground">{avail}</b> / {allocated} {dict.common.days}
                 </span>
