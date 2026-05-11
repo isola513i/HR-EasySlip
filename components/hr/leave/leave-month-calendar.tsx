@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLeaveCalendar } from "@/hooks/use-leave-calendar";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useLeaveCalendar, type LeaveCalendarEntry } from "@/hooks/use-leave-calendar";
 import { useT } from "@/lib/i18n/locale-context";
-
 
 function buildGrid(year: number, month: number): (number | null)[] {
   const first = new Date(year, month - 1, 1);
@@ -17,30 +17,38 @@ function buildGrid(year: number, month: number): (number | null)[] {
   return cells;
 }
 
+function buildDayMap(
+  entries: LeaveCalendarEntry[],
+  year: number,
+  month: number,
+): Map<number, LeaveCalendarEntry[]> {
+  const map = new Map<number, LeaveCalendarEntry[]>();
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0);
+  for (const e of entries) {
+    const start = new Date(e.startDate);
+    const end = new Date(e.endDate);
+    const from = start > monthStart ? start : new Date(monthStart);
+    const to = end < monthEnd ? end : new Date(monthEnd);
+    const d = new Date(from);
+    while (d <= to) {
+      const day = d.getDate();
+      const list = map.get(day) ?? [];
+      list.push(e);
+      map.set(day, list);
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  return map;
+}
+
 export function LeaveMonthCalendar() {
   const t = useT();
   const { entries, isLoading, month, setMonth, year, setYear } = useLeaveCalendar();
   const today = new Date();
   const [todayY, todayM, todayD] = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
 
-  const scheduled = useMemo(() => {
-    const monthStart = new Date(year, month - 1, 1);
-    const monthEnd = new Date(year, month, 0);
-    const set = new Set<number>();
-    for (const e of entries) {
-      const start = new Date(e.startDate);
-      const end = new Date(e.endDate);
-      const from = start > monthStart ? start : monthStart;
-      const to = end < monthEnd ? end : monthEnd;
-      const d = new Date(from);
-      while (d <= to) {
-        set.add(d.getDate());
-        d.setDate(d.getDate() + 1);
-      }
-    }
-    return set;
-  }, [entries, year, month]);
-
+  const dayMap = useMemo(() => buildDayMap(entries, year, month), [entries, year, month]);
   const cells = useMemo(() => buildGrid(year, month), [year, month]);
 
   const prev = () => {
@@ -53,48 +61,78 @@ export function LeaveMonthCalendar() {
   const dowLabels = [t.hr.leave.dow.s, t.hr.leave.dow.m, t.hr.leave.dow.t, t.hr.leave.dow.w, t.hr.leave.dow.th, t.hr.leave.dow.f, t.hr.leave.dow.sa];
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
-        <div className="flex gap-1">
-          <button onClick={prev} aria-label={t.common.prevMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-            <ChevronLeft className="size-4" />
-          </button>
-          <button onClick={next} aria-label={t.common.nextMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
-            <ChevronRight className="size-4" />
-          </button>
+    <TooltipProvider>
+      <div className="rounded-xl border border-border bg-card p-5 shadow-[var(--es-shadow-sm)]">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="text-base font-semibold">{t.common.monthsLong[month - 1]} {year}</div>
+          <div className="flex gap-1">
+            <button onClick={prev} aria-label={t.common.prevMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+              <ChevronLeft className="size-4" />
+            </button>
+            <button onClick={next} aria-label={t.common.nextMonth} className="grid size-7 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+              <ChevronRight className="size-4" />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1 text-center">
+          {dowLabels.map((label, i) => (
+            <div key={i} className="py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
+          ))}
+          {isLoading
+            ? Array.from({ length: 35 }).map((_, i) => <Skeleton key={i} className="h-9 w-full rounded-md" />)
+            : cells.map((d, i) => {
+                if (d === null) return <div key={i} className="h-9" />;
+                const isToday = d === todayD && month === todayM && year === todayY;
+                const dayEntries = dayMap.get(d);
+                const hasLeave = !!dayEntries?.length;
+
+                const cell = (
+                  <div
+                    className={`grid h-9 place-items-center rounded-md text-[13px] tabular-nums transition-colors ${
+                      hasLeave
+                        ? "cursor-pointer bg-[var(--es-accent-100)] font-semibold text-[var(--es-accent-700)]"
+                        : "text-foreground"
+                    } ${isToday ? "ring-1 ring-[var(--es-accent-600)]" : ""}`}
+                  >
+                    {d}
+                  </div>
+                );
+
+                if (!hasLeave) return <div key={i}>{cell}</div>;
+
+                return (
+                  <Tooltip key={i}>
+                    <TooltipTrigger render={cell} />
+                    <TooltipContent
+                      side="top"
+                      className="max-w-[220px] space-y-1 p-2.5 text-left"
+                    >
+                      {dayEntries.map((e) => {
+                        const name = `${e.employee.firstNameTh} ${e.employee.lastNameTh}`;
+                        const typeKey = e.leaveType.toLowerCase() as keyof typeof t.leave;
+                        const typeLabel = (t.leave[typeKey] as string) ?? e.leaveType;
+                        return (
+                          <div key={e.id} className="flex items-start gap-1.5">
+                            <span className="mt-[3px] size-1.5 shrink-0 rounded-full bg-[var(--es-accent-400)]" />
+                            <span className="leading-snug">
+                              <span className="font-semibold">{name}</span>
+                              <span className="ml-1 opacity-70">· {typeLabel}</span>
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+        </div>
+
+        <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <span aria-hidden="true" className="inline-block size-3 rounded bg-[var(--es-accent-100)]" />
+          {t.hr.leave.legendScheduled}
         </div>
       </div>
-
-      <div className="grid grid-cols-7 gap-1 text-center">
-        {dowLabels.map((label, i) => (
-          <div key={i} className="py-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</div>
-        ))}
-        {isLoading
-          ? Array.from({ length: 35 }).map((_, i) => <Skeleton key={i} className="h-9 w-full rounded-md" />)
-          : cells.map((d, i) => {
-              if (d === null) return <div key={i} className="h-9" />;
-              const isToday = d === todayD && month === todayM && year === todayY;
-              const hasLeave = scheduled.has(d);
-              return (
-                <div
-                  key={i}
-                  className={`grid h-9 place-items-center rounded-md text-[13px] tabular-nums transition-colors ${
-                    hasLeave
-                      ? "bg-[var(--es-accent-100)] font-semibold text-[var(--es-accent-700)]"
-                      : "text-foreground"
-                  } ${isToday ? "ring-1 ring-[var(--es-accent-600)]" : ""}`}
-                >
-                  {d}
-                </div>
-              );
-            })}
-      </div>
-
-      <div className="mt-4 flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span aria-hidden="true" className="inline-block size-3 rounded bg-[var(--es-accent-100)]" />
-        {t.hr.leave.legendScheduled}
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }

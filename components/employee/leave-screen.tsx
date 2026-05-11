@@ -1,21 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { SectionLabel } from "@/components/shared/section-label";
 import { PillToggleGroup } from "@/components/shared/pill-toggle-group";
-import { LeaveTypeGrid } from "@/components/employee/leave/leave-type-grid";
 import { LeavePreviewSummary } from "@/components/employee/leave/leave-preview-summary";
 import { EntityAttachmentPanel } from "@/components/shared/entity-attachment-panel";
+import { CalendarGrid } from "@/components/employee/leave-calendar/calendar-grid";
+import { DayDetail } from "@/components/employee/leave-calendar/day-detail";
 import { useLeaveForm } from "@/hooks/use-leave-form";
+import { useMyLeaveCalendar } from "@/hooks/use-my-leave-calendar";
 import { useAttendancePolicy } from "@/hooks/use-attendance-policy";
-import { bangkokTodayKey, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
+import { bangkokTodayKey, bangkokMonth, bangkokYear, bangkokDay, shiftIsoDays, shiftIsoYears } from "@/lib/datetime/bangkok";
 import { OfflineQueuedError } from "@/lib/api/client";
 import { useT } from "@/lib/i18n/locale-context";
 
@@ -66,6 +68,15 @@ export function LeaveScreen() {
     reason, setReason, preview, isSubmitting,
     isLoadingQuotas, quotaError, submit, getBalance, isTypeIneligible,
   } = useLeaveForm();
+
+  const { month, year, setMonth, setYear, requests, holidays, isLoading: calLoading, refetch: calRefetch } = useMyLeaveCalendar();
+  const [selectedDay, setSelectedDay] = useState<number | null>(
+    bangkokMonth() === month && bangkokYear() === year ? bangkokDay() : null,
+  );
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const selectedIso = selectedDay !== null ? `${year}-${pad(month)}-${pad(selectedDay)}` : null;
+  const prevMonth = () => { if (month === 1) { setMonth(12); setYear(year - 1); } else setMonth(month - 1); setSelectedDay(null); };
+  const nextMonth = () => { if (month === 12) { setMonth(1); setYear(year + 1); } else setMonth(month + 1); setSelectedDay(null); };
 
   // Holds the last successfully created leave id so we can show the
   // attachment panel without forcing a navigation away from this screen.
@@ -119,29 +130,39 @@ export function LeaveScreen() {
     return `${t.leave.balance}: ${getBalance(key)}`;
   };
 
-  const calendarLink = (
-    <Link
-      href="/employee/leave/calendar"
-      className="text-sm font-semibold text-[var(--es-accent-600)] hover:text-[var(--es-accent-700)]"
-    >
-      {t.myLeaveCalendar.title}
-    </Link>
-  );
+  const calLegend = [
+    { color: "bg-emerald-100", label: t.myLeaveCalendar.legendApproved },
+    { color: "bg-amber-100", label: t.myLeaveCalendar.legendPending },
+    { color: "bg-rose-100", label: t.myLeaveCalendar.legendRejected },
+    { color: "bg-sky-50", label: t.myLeaveCalendar.legendHoliday },
+  ];
 
   return (
     <>
-      <MobileTopbar title={t.leave.title} rightAction={calendarLink} />
+      <MobileTopbar title={t.leave.title} />
 
       <div className="flex flex-col gap-5 p-4">
         <div>
           <SectionLabel>{t.leave.type}</SectionLabel>
-          <LeaveTypeGrid
-            options={LEAVE_TYPES}
-            selected={leaveType}
-            onSelect={setLeaveType}
-            getBalanceText={balanceFor}
-            isIneligible={isTypeIneligible}
-          />
+          <Select value={leaveType} onValueChange={(v) => setLeaveType(v as typeof leaveType)}>
+            <SelectTrigger className="h-11 w-full rounded-xl">
+              <SelectValue>
+                {leaveType
+                  ? (LEAVE_TYPES.find((lt) => lt.key === leaveType)?.label ?? leaveType)
+                  : t.leave.type}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {LEAVE_TYPES.map(({ key, label }) => (
+                <SelectItem key={key} value={key} disabled={isTypeIneligible(key)}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {leaveType && (
+            <p className="mt-1.5 text-[12px] text-muted-foreground">{balanceFor(leaveType)}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-3">
@@ -235,6 +256,27 @@ export function LeaveScreen() {
             </Button>
           </>
         )}
+
+        <div className="mt-2 flex flex-col gap-3">
+          <div className="text-sm font-semibold">{t.myLeaveCalendar.title}</div>
+          <CalendarGrid
+            month={month} year={year}
+            isLoading={calLoading}
+            requests={requests} holidays={holidays}
+            selectedDay={selectedDay}
+            onSelectDay={setSelectedDay}
+            onPrev={prevMonth} onNext={nextMonth}
+          />
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
+            {calLegend.map((it) => (
+              <span key={it.label} className="inline-flex items-center gap-1.5">
+                <span aria-hidden className={`inline-block size-3 rounded ${it.color}`} />
+                {it.label}
+              </span>
+            ))}
+          </div>
+          {selectedIso && <DayDetail date={selectedIso} requests={requests} holidays={holidays} />}
+        </div>
       </div>
     </>
   );
