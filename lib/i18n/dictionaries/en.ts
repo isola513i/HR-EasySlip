@@ -271,6 +271,8 @@ const en = {
       home: "Home",
       clock: "Clock",
       leave: "Leave",
+      approvals: "Approvals",
+      team: "Team",
       inbox: "Inbox",
       me: "Me",
       ariaLabel: "Primary",

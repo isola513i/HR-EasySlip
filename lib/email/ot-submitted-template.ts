@@ -33,7 +33,7 @@ export function otSubmittedHtml(p: Params): string {
     </table>
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:20px auto 0;">
       <tr><td style="border-radius:8px;background:${BRAND.accent};">
-        <a href="${p.appUrl}/manager/inbox" target="_blank" style="display:inline-block;padding:12px 32px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;">
+        <a href="${p.appUrl}/employee/approvals" target="_blank" style="display:inline-block;padding:12px 32px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;">
           Review Request
         </a>
       </td></tr>
@@ -57,7 +57,7 @@ export function otSubmittedText(p: Params): string {
     `Hours: ${p.hours} hrs`,
     `Reason: ${p.reason}`,
     "",
-    `Review: ${p.appUrl}/manager/inbox`,
+    `Review: ${p.appUrl}/employee/approvals`,
     unsubscribeFooterText(p.appUrl),
   ].join("\n");
 }

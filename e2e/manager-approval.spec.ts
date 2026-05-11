@@ -4,7 +4,7 @@ test.describe("Manager Approval Inbox", () => {
   test.use({ role: "manager" });
 
   test("can view approval inbox", async ({ page }) => {
-    await page.goto("/manager/inbox");
+    await page.goto("/employee/approvals");
     await page.waitForLoadState("networkidle");
 
     // Three-tab approval surface (Leave / Time Adjustment / Overtime) is
@@ -13,7 +13,7 @@ test.describe("Manager Approval Inbox", () => {
   });
 
   test("search input is visible when there are pending requests", async ({ page }) => {
-    await page.goto("/manager/inbox");
+    await page.goto("/employee/approvals");
     await page.waitForLoadState("networkidle");
 
     // ApprovalInbox renders the SearchInput only when rows exist (the

@@ -273,6 +273,8 @@ const th = {
       home: "หน้าแรก",
       clock: "ลงเวลา",
       leave: "ลางาน",
+      approvals: "อนุมัติ",
+      team: "ทีม",
       inbox: "กล่องข้อความ",
       me: "ฉัน",
       ariaLabel: "เมนูหลัก",

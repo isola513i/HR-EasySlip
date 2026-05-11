@@ -4,8 +4,7 @@
 // - Unauthenticated → redirect to /signin
 // - Authenticated  → redirect to role-appropriate landing:
 //     HRMG | HR_AUTHORIZED | CEO | CTO | COO  → /hr/overview
-//     MANAGER                                 → /manager/inbox
-//     EMPLOYEE (default)                      → /employee/today
+//     MANAGER | EMPLOYEE (default)             → /employee/today
 // ════════════════════════════════════════════════════════════════
 
 import { redirect } from "next/navigation";
@@ -29,9 +28,6 @@ export default async function RootPage() {
 
   if (roles.some((r) => (HR_ROLES as readonly string[]).includes(r))) {
     redirect("/hr/overview");
-  }
-  if (roles.includes("MANAGER")) {
-    redirect("/manager/inbox");
   }
 
   redirect("/employee/today");
