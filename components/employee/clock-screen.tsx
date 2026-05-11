@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import Link from "next/link";
 import { Clock, MapPin, Check, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ export function ClockScreen() {
   } = useClock();
   const { policy } = useAttendancePolicy();
   const disclaimer = policy.enforceGeofence ? t.clock.gpsDisclaimerEnforced : t.clock.gpsDisclaimer;
+  const dotGridId = useId();
 
   useEffect(() => { if (error) { toast.error(error); hapticError(); } }, [error]);
 
@@ -67,11 +68,11 @@ export function ClockScreen() {
             {/* dot-grid background */}
             <svg className="absolute inset-0 opacity-30" width="100%" height="100%">
               <defs>
-                <pattern id="dot-grid" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <pattern id={dotGridId} x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
                   <circle cx="10" cy="10" r="0.8" fill="var(--es-neutral-400)" />
                 </pattern>
               </defs>
-              <rect width="100%" height="100%" fill="url(#dot-grid)" />
+              <rect width="100%" height="100%" fill={`url(#${dotGridId})`} />
             </svg>
             {gpsStatus === "loading" && (
               <div className="relative flex items-center justify-center">
@@ -101,7 +102,7 @@ export function ClockScreen() {
             {gpsStatus === "loading" ? (
               <div className="text-[13px] text-muted-foreground">{t.clock.acquiringGPS}</div>
             ) : gpsStatus === "denied" ? (
-              <div className="flex items-center gap-1.5 text-[13px] text-[var(--es-warning-600)]">
+              <div className="flex items-center gap-1.5 text-[13px] text-[var(--es-warn-600)]">
                 <AlertTriangle className="size-3.5" /> {t.clock.gpsUnavailable}
               </div>
             ) : coords ? (
@@ -140,7 +141,7 @@ export function ClockScreen() {
             <div className="mt-1 text-xs text-muted-foreground">
               {t.clock.clockedAt.replace("{location}", locationLabel)}{coords ? ` · GPS ±${Math.round(coords.accuracy)} m` : ""}
             </div>
-            <button onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
+            <button type="button" onClick={reset} className="mt-3 text-sm font-medium text-[var(--es-accent-600)]">
               {t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockOutLabel : t.clock.clockInLabel)}
             </button>
             <Link
@@ -152,6 +153,8 @@ export function ClockScreen() {
           </div>
         ) : (
           <button
+            type="button"
+            aria-label={clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel}
             disabled={clockState === "clocking" || clockState === "loading"}
             onClick={() => { hapticTap(); handleClock(); }}
             className={cn(
@@ -161,7 +164,7 @@ export function ClockScreen() {
                 : "bg-[var(--es-accent-600)] hover:bg-[var(--es-accent-700)]",
             )}
           >
-            <Clock className="size-7" />
+            <Clock className="size-7" aria-hidden />
             {
               { loading: t.common.loading, clocking: t.clock.recording, idle: t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel), error: t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel), done: "" }[clockState]
             }

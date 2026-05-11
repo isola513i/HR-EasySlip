@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { CalendarDays, Timer, Receipt, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useMyPendingCounts } from "@/hooks/use-my-pending-counts";
+import { usePendingCounts } from "@/contexts/pending-counts-provider";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
 interface Props {
@@ -20,7 +20,7 @@ interface PendingItem {
 
 export function PendingRequestsCard({ dict }: Props) {
   const e = dict.employee;
-  const { counts, isLoading } = useMyPendingCounts();
+  const { counts, isLoading } = usePendingCounts();
 
   const total = counts ? counts.leave + counts.ot + counts.expense : 0;
 
@@ -56,11 +56,12 @@ export function PendingRequestsCard({ dict }: Props) {
           {total}
         </span>
       </div>
-      <ul>
+      <ul aria-label={e.pendingTitle}>
         {items.map((it, i) => (
           <li key={it.key} className={i < items.length - 1 ? "border-b border-[var(--es-warn-100)]" : ""}>
             <Link
               href={it.href}
+              aria-label={`${it.label} — ${it.count}`}
               className="flex items-center justify-between px-4 py-3 transition-colors active:bg-[var(--es-warn-100)]"
             >
               <div className="flex items-center gap-3">

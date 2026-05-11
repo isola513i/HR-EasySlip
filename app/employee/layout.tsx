@@ -5,6 +5,7 @@ import { getOnboardingRemainingCount } from "@/lib/onboarding/checklist-service"
 import { BottomNav } from "@/components/employee/bottom-nav";
 import { OfflineBanner } from "@/components/shared/offline-banner";
 import { OnboardingBanner } from "@/components/shared/onboarding-banner";
+import { PendingCountsProvider } from "@/contexts/pending-counts-provider";
 
 export const viewport: Viewport = {
   themeColor: "#10151e",
@@ -26,8 +27,10 @@ export default async function EmployeeLayout({
     <div className="mx-auto min-h-dvh max-w-md overscroll-contain bg-background">
       <OfflineBanner />
       {onboardingRemaining > 0 && <OnboardingBanner remaining={onboardingRemaining} />}
-      <div className="pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]">{children}</div>
-      <BottomNav />
+      <PendingCountsProvider>
+        <div className="pb-[calc(env(safe-area-inset-bottom,0px)+5rem)]">{children}</div>
+        <BottomNav />
+      </PendingCountsProvider>
     </div>
   );
 }

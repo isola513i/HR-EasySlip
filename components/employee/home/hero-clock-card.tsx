@@ -17,7 +17,7 @@ function useElapsedTime(inTime: string | null): string | null {
       const now = new Date();
       const clockIn = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
       const diffMs = now.getTime() - clockIn.getTime();
-      if (diffMs < 0) { setElapsed(null); return; }
+      if (diffMs < 0 || diffMs > 24 * 60 * 60 * 1000) { setElapsed(null); return; }
       const totalMin = Math.floor(diffMs / 60000);
       const hrs = Math.floor(totalMin / 60);
       const mins = totalMin % 60;

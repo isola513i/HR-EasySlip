@@ -13,7 +13,6 @@ export default async function MePage() {
         name: `${user.firstNameTh ?? ""} ${user.lastNameTh ?? ""}`.trim(),
         code: user.employeeCode ?? "",
         role: user.roles[0] ?? "EMPLOYEE",
-        email: user.email ?? "",
       }}
     />
   );

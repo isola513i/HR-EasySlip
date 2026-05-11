@@ -18,7 +18,6 @@ export function useMyPendingCounts() {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchCounts = useCallback(async (signal?: AbortSignal) => {
-    setIsLoading(true);
     try {
       const [leave, ot, expense] = await Promise.all([
         apiFetch<PagedTotal>("/api/v1/leave/requests/me?status=PENDING&perPage=1", { signal }),
@@ -26,7 +25,8 @@ export function useMyPendingCounts() {
         apiFetch<PagedTotal>("/api/v1/expense/me?status=PENDING&perPage=1", { signal }),
       ]);
       setCounts({ leave: leave.total, ot: ot.total, expense: expense.total });
-    } catch {
+    } catch (err) {
+      if ((err as { name?: string })?.name === "AbortError") return;
       setCounts({ leave: 0, ot: 0, expense: 0 });
     } finally {
       setIsLoading(false);
