@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useT } from "@/lib/i18n/locale-context";
-import { isoDateKey, monthBounds, shiftIsoDays } from "@/lib/datetime/bangkok";
+import { bangkokTodayKey, isoDateKey, monthBounds, shiftIsoDays } from "@/lib/datetime/bangkok";
 import type { MyLeaveRequest, PublicHoliday } from "@/hooks/use-my-leave-calendar";
 
 interface DayState {
@@ -106,8 +106,12 @@ function dayClassName(state: DayState | undefined, isToday: boolean, isSelected:
 
 export function CalendarGrid({ month, year, isLoading, requests, holidays, selectedDay, onSelectDay, onPrev, onNext }: Props) {
   const t = useT();
-  const today = new Date();
-  const [todayY, todayM, todayD] = [today.getFullYear(), today.getMonth() + 1, today.getDate()];
+  const todayKey = bangkokTodayKey();
+  const [todayY, todayM, todayD] = [
+    parseInt(todayKey.slice(0, 4), 10),
+    parseInt(todayKey.slice(5, 7), 10),
+    parseInt(todayKey.slice(8, 10), 10),
+  ];
 
   const cells = useMemo(() => buildGrid(year, month), [year, month]);
   const dayMap = useMemo(() => buildDayMap(year, month, requests, holidays), [year, month, requests, holidays]);

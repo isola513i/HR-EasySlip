@@ -354,6 +354,8 @@ const en = {
     requestCorrection: "Request correction",
     correctionTitle: "Request time correction",
     correctionClockType: "Clock type",
+    correctionClockInTab: "Clock-in",
+    correctionClockOutTab: "Clock-out",
     correctionTime: "Correct time",
     correctionReason: "Reason",
     correctionReasonPlaceholder: "Why this needs correction (e.g. forgot to clock out)",
@@ -778,6 +780,9 @@ const en = {
       HOLIDAY: "Holiday",
       HOLIDAY_WORK: "Holiday work",
     },
+    calendarSubtitle: "Approved and pending leave for your team this month",
+    settingsAccount: "Account",
+    settingsSecurity: "Security",
   },
   hr: {
     nav: {

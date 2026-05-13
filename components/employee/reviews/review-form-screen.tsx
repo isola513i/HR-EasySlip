@@ -34,7 +34,7 @@ export function ReviewFormScreen({ reviewId }: Props) {
         setOverall(r.overallRating ?? "");
         setComments(r.comments ?? "");
       })
-      .catch((e) => setError(e instanceof Error ? e.message : "load failed"));
+      .catch((e) => setError(e instanceof Error ? e.message : t.common.loadFailed));
   }, [reviewId]);
 
   if (error) return <div className="py-12 text-center text-sm text-destructive">{error}</div>;

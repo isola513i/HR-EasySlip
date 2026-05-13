@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useT } from "@/lib/i18n/locale-context";
 import { useLocale } from "@/hooks/use-locale";
 import { useFormat } from "@/hooks/use-format";
+import { bangkokTodayKey } from "@/lib/datetime/bangkok";
 import type { MyLeaveRequest, PublicHoliday } from "@/hooks/use-my-leave-calendar";
 
 interface Props {
@@ -46,7 +47,7 @@ export function DayDetail({ date, requests, holidays }: Props) {
 
   const isEmpty = matching.length === 0 && matchingHolidays.length === 0;
 
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = bangkokTodayKey();
   const isPast = date < todayKey;
   const hasPendingOrApproved = matching.some((r) => r.status === "PENDING" || r.status === "APPROVED");
   const canRequest = !isPast && !hasPendingOrApproved;

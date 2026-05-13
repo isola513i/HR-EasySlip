@@ -356,6 +356,8 @@ const th = {
     requestCorrection: "ขอแก้เวลา",
     correctionTitle: "ขอแก้ไขเวลา",
     correctionClockType: "ประเภทการลงเวลา",
+    correctionClockInTab: "ลงเวลาเข้า",
+    correctionClockOutTab: "ลงเวลาออก",
     correctionTime: "เวลาที่ถูกต้อง",
     correctionReason: "เหตุผล",
     correctionReasonPlaceholder: "เหตุผล เช่น ลืม clock out",
@@ -780,6 +782,9 @@ const th = {
       HOLIDAY: "วันหยุด",
       HOLIDAY_WORK: "วันหยุดทำงาน",
     },
+    calendarSubtitle: "การลาที่อนุมัติแล้วและรอดำเนินการของสมาชิกทีมประจำเดือนนี้",
+    settingsAccount: "บัญชีผู้ใช้",
+    settingsSecurity: "ความปลอดภัย",
   },
   hr: {
     nav: {

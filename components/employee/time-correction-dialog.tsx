@@ -82,10 +82,8 @@ export function TimeCorrectionDialog({ open, onClose, date, initialClockType = "
               <Label className="text-[12px]">{dict.correctionClockType}</Label>
               <Tabs value={clockType} onValueChange={(v) => setClockType(v as "IN" | "OUT")}>
                 <TabsList className="mt-1 w-full">
-                  <TabsTrigger value="IN" className="flex-1">
-                    {(dict.locations as Record<string, string>).OFFICE ?? ""} • Clock-in
-                  </TabsTrigger>
-                  <TabsTrigger value="OUT" className="flex-1">Clock-out</TabsTrigger>
+                  <TabsTrigger value="IN" className="flex-1">{dict.correctionClockInTab}</TabsTrigger>
+                  <TabsTrigger value="OUT" className="flex-1">{dict.correctionClockOutTab}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
