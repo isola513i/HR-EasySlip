@@ -30,6 +30,7 @@ const POSITIONS: Array<{ name: string; level: number }> = [
   { name: 'HR Manager', level: 4 },
   { name: 'HR Specialist', level: 3 },
   { name: 'Engineering Manager', level: 4 },
+  { name: 'Product Manager', level: 4 },
   { name: 'Design Manager', level: 4 },
   { name: 'Marketing Manager', level: 4 },
   { name: 'Finance Manager', level: 4 },

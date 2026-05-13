@@ -9,6 +9,7 @@
 //   Pass 2: Resolve managerId from employeeCode references
 // ════════════════════════════════════════════════════════════════
 
+import bcrypt from 'bcryptjs';
 import type { EmploymentStatus, PrismaClient, Role } from '@prisma/client';
 import type { OrgMap } from './organization';
 
@@ -24,8 +25,10 @@ type SeedEmployee = {
   positionName: string;
   hireDate: string; // ISO date
   probationEndDate?: string; // ISO date
+  terminationDate?: string; // ISO date
   employmentStatus: EmploymentStatus;
   managerCode?: string; // resolved in pass 2
+  plainPassword?: string; // if set, hashed and stored as passwordHash
 };
 
 const EMPLOYEES: SeedEmployee[] = [
@@ -259,6 +262,40 @@ const EMPLOYEES: SeedEmployee[] = [
     managerCode: 'ES0009',
   },
 
+  // ─── Dev account #2: Manager (email + password login) ───
+  {
+    code: 'ES0017',
+    email: 'development.v002@gmail.com',
+    firstNameTh: 'ปณิธาน',
+    lastNameTh: 'อิ่มสุข',
+    firstNameEn: 'Panitan',
+    lastNameEn: 'Imsuk',
+    roles: ['MANAGER'],
+    departmentCode: 'ENG',
+    positionName: 'Product Manager',
+    hireDate: '2021-09-01',
+    employmentStatus: 'ACTIVE',
+    managerCode: 'ES0002', // reports to CTO
+    plainPassword: 'manager123456',
+  },
+
+  // ─── Demo: Resigned employee (for Offboarding feature) ───
+  {
+    code: 'ES0018',
+    email: 'dev.v002+resigned@gmail.com',
+    firstNameTh: 'กัลยา',
+    lastNameTh: 'วงศ์สุวรรณ',
+    firstNameEn: 'Kanya',
+    lastNameEn: 'Wongsuwan',
+    roles: ['EMPLOYEE'],
+    departmentCode: 'DSGN',
+    positionName: 'Product Designer',
+    hireDate: '2022-05-15',
+    terminationDate: '2026-03-31',
+    employmentStatus: 'RESIGNED',
+    managerCode: 'ES0007',
+  },
+
   // ─── Test: SUSPENDED block ───
   {
     code: 'ES0099',
@@ -301,10 +338,18 @@ export async function seedEmployees(
       );
     }
 
+    const passwordHash = seed.plainPassword
+      ? await bcrypt.hash(seed.plainPassword, 12)
+      : undefined;
+
     const user = await prisma.user.upsert({
       where: { email: seed.email },
-      create: { email: seed.email, emailVerified: new Date() },
-      update: {},
+      create: {
+        email: seed.email,
+        emailVerified: new Date(),
+        ...(passwordHash ? { passwordHash } : {}),
+      },
+      update: passwordHash ? { passwordHash } : {},
     });
 
     const employee = await prisma.employee.upsert({
@@ -320,9 +365,8 @@ export async function seedEmployees(
         departmentId,
         positionId,
         hireDate: new Date(seed.hireDate),
-        probationEndDate: seed.probationEndDate
-          ? new Date(seed.probationEndDate)
-          : null,
+        probationEndDate: seed.probationEndDate ? new Date(seed.probationEndDate) : null,
+        terminationDate: seed.terminationDate ? new Date(seed.terminationDate) : null,
         employmentStatus: seed.employmentStatus,
       },
       update: {
@@ -330,6 +374,7 @@ export async function seedEmployees(
         departmentId,
         positionId,
         employmentStatus: seed.employmentStatus,
+        terminationDate: seed.terminationDate ? new Date(seed.terminationDate) : null,
       },
     });
 
