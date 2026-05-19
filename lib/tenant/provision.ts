@@ -23,8 +23,11 @@ export async function provisionTenantDb(opts: {
 
   try {
     const schemaPath = path.resolve(process.cwd(), "prisma/schema.prisma");
+    // Spawn the local prisma binary directly — avoids relying on `bun`/`npx`
+    // being in PATH on Vercel's Node.js runtime.
+    const prismaBin = path.resolve(process.cwd(), "node_modules/.bin/prisma");
     const { stderr } = await execAsync(
-      `bun prisma migrate deploy --schema="${schemaPath}"`,
+      `"${prismaBin}" migrate deploy --schema="${schemaPath}"`,
       {
         env: { ...process.env, DATABASE_URL: databaseUrl, DIRECT_URL: directUrl ?? databaseUrl },
         timeout: 120_000,

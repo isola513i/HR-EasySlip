@@ -1,11 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { verifyImpersonationToken, IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
 
-export async function endImpersonation(): Promise<void> {
+export async function endImpersonation(): Promise<{ redirectUrl: string }> {
   const jar = await cookies();
   const token = jar.get(IMPERSONATION_COOKIE)?.value;
 
@@ -42,8 +41,11 @@ export async function endImpersonation(): Promise<void> {
     ...(isLocal ? {} : { domain: `.${rootDomain}` }),
   });
 
-  const platformUrl = isLocal
+  // Cross-subdomain redirect: return URL so client can window.location.href.
+  // redirect() from Server Actions goes through Next's client router which
+  // can't traverse subdomain rewrites.
+  const redirectUrl = isLocal
     ? `http://admin.lvh.me:3000/tenants`
     : `https://admin.${rootDomain}/tenants`;
-  redirect(platformUrl);
+  return { redirectUrl };
 }

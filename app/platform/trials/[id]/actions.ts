@@ -6,9 +6,10 @@ import { requirePlatformSession } from "@/lib/auth/platform";
 import { encryptUrl } from "@/lib/db/url-encryption";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
 import { provisionTenantDb } from "@/lib/tenant/provision";
+import { env } from "@/lib/env";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(env.RESEND_API_KEY);
 
 type ActionResult = { error: string } | { success: true } | null;
 
@@ -76,7 +77,7 @@ export async function approveTrialSignup(signupId: string, _prev: ActionResult, 
       },
     }),
     resend.emails.send({
-      from: "EasySlip <noreply@easyslip.app>",
+      from: env.EMAIL_FROM,
       to: signup.contactEmail,
       subject: "Your EasySlip trial is ready!",
       html: `<p>Hi ${signup.contactName},</p>

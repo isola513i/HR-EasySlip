@@ -18,7 +18,10 @@ export function ImpersonationBanner({ platformEmail, expiresAt }: Props) {
 
   function handleEnd() {
     startTransition(async () => {
-      await endImpersonation();
+      const result = await endImpersonation();
+      if (result?.redirectUrl) {
+        window.location.href = result.redirectUrl;
+      }
     });
   }
 
