@@ -22,10 +22,11 @@ beforeEach(() => {
 });
 
 describe("grantInitialLeaveQuota", () => {
-  test("hire date 2026-01-15 → creates SICK 30d + PERSONAL 3d for year 2026", async () => {
+  test("hire date 2026-01-15 → creates SICK 30d + PERSONAL 3d + 4 other types for year 2026", async () => {
     await grantInitialLeaveQuota("emp-1", new Date("2026-01-15"));
 
-    expect(mockUpsert).toHaveBeenCalledTimes(2);
+    // SICK, PERSONAL, CHILD_CARE, FUNERAL, TRAINING, PATERNITY
+    expect(mockUpsert).toHaveBeenCalledTimes(6);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const calls = mockUpsert.mock.calls as any[];
@@ -43,8 +44,8 @@ describe("grantInitialLeaveQuota", () => {
     await grantInitialLeaveQuota("emp-1", new Date("2026-01-15"));
     await grantInitialLeaveQuota("emp-1", new Date("2026-01-15"));
 
-    // 4 upserts total (2 per call), all succeed
-    expect(mockUpsert).toHaveBeenCalledTimes(4);
+    // 12 upserts total (6 types × 2 calls), all succeed
+    expect(mockUpsert).toHaveBeenCalledTimes(12);
   });
 
   test("hire date 2025-11-01 → quota year = 2025", async () => {
