@@ -91,7 +91,7 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
                 className="text-sm"
               />
             </div>
-            {rejectState?.error && <p className="text-sm text-rose-400">{rejectState.error}</p>}
+            {rejectState && "error" in rejectState && <p className="text-sm text-rose-400">{rejectState.error}</p>}
             <Button type="submit" disabled={rejectPending} variant="destructive" className="w-full">
               {rejectPending ? "Rejecting…" : "Reject signup"}
             </Button>
