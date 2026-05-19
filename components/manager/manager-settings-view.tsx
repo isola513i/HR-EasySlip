@@ -70,7 +70,7 @@ export function ManagerSettingsView({ user }: Props) {
               <Button
                 variant="outline"
                 className="w-full justify-start gap-2 border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive"
-                onClick={() => signOut({ callbackUrl: "/signin" })}
+                onClick={() => signOut({ callbackUrl: `${window.location.origin}/signin` })}
               >
                 <LogOut className="size-4" />
                 {t.common.signOut}

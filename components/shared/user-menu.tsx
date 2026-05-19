@@ -45,7 +45,7 @@ export function UserMenu({ name, initials, role }: Props) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
-          onClick={() => signOut({ callbackUrl: "/signin" })}
+          onClick={() => signOut({ callbackUrl: `${window.location.origin}/signin` })}
           className="cursor-pointer gap-2 px-2 py-1.5 text-[13px] focus:bg-destructive/5 dark:focus:bg-destructive/15"
         >
           <LogOut className="size-4" />

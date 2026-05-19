@@ -39,6 +39,7 @@ import { seedGeofenceOverrides } from './seed/geofence-overrides';
 import { seedAnnualLeaveCashOut } from './seed/annual-leave-cashout';
 import { seedNotifications } from './seed/notifications';
 import { seedAuditLogs } from './seed/audit-logs';
+import { generateEmpeoFixture } from './seed/empeo-fixture';
 
 const prisma = new PrismaClient({ log: ['warn', 'error'] });
 
@@ -69,7 +70,10 @@ async function main() {
   console.log('  ✓ System config: defaults seeded\n');
 
   await seedPayrollCycle(prisma);
-  console.log('  ✓ Payroll cycles: Apr 2026 (OPEN) + Mar 2026 (LOCKED)\n');
+  console.log('  ✓ Payroll cycles: Mar 2026 (LOCKED) + current 3 months (OPEN)\n');
+
+  await generateEmpeoFixture();
+  console.log('  ✓ Empeo fixture: public/Employee_Data_Report_All_Resign_Inc_08052026.xlsx\n');
 
   const attendanceCount = await seedAttendanceRecords(prisma, employeeMap);
   console.log(`  ✓ Attendance records: ${attendanceCount} seeded\n`);

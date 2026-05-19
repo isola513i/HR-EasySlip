@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-const SECRET = process.env.E2E_TEST_SECRET;
+const IS_DEV = ["development", "test"].includes(process.env.NODE_ENV ?? "");
+// Fall back to "test-secret-dev" in dev so E2E_TEST_SECRET is optional locally
+const SECRET = process.env.E2E_TEST_SECRET ?? (IS_DEV ? "test-secret-dev" : undefined);
 
 export async function POST(req: Request) {
-  if (!["development", "test"].includes(process.env.NODE_ENV ?? "") || !SECRET) {
+  if (!IS_DEV || !SECRET) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

@@ -352,6 +352,13 @@ export async function seedEmployees(
       update: passwordHash ? { passwordHash } : {},
     });
 
+    // If a stale Employee record claims this userId under a different code, re-key it
+    // so the upsert below (keyed on employeeCode) doesn't hit the unique constraint.
+    await prisma.employee.updateMany({
+      where: { userId: user.id, NOT: { employeeCode: seed.code } },
+      data: { employeeCode: seed.code },
+    });
+
     const employee = await prisma.employee.upsert({
       where: { employeeCode: seed.code },
       create: {

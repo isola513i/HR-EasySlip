@@ -23,12 +23,13 @@ datasource db {
 enum Role {
   EMPLOYEE
   MANAGER
+  TENANT_ADMIN  // Company-level admin — manages users/settings; no salary access
   HR_AUTHORIZED
   HRMG
   CEO
   CTO
   COO
-  ADMIN
+  ADMIN         // Deprecated — use TENANT_ADMIN
 }
 
 enum EmploymentStatus {

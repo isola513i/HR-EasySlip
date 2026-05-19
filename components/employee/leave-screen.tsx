@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileTopbar } from "@/components/shared/mobile-topbar";
 import { SectionLabel } from "@/components/shared/section-label";
 import { PillToggleGroup } from "@/components/shared/pill-toggle-group";
@@ -144,22 +143,13 @@ export function LeaveScreen() {
       <div className="flex flex-col gap-5 p-4">
         <div>
           <SectionLabel>{t.leave.type}</SectionLabel>
-          <Select value={leaveType} onValueChange={(v) => setLeaveType(v as typeof leaveType)}>
-            <SelectTrigger className="h-11 w-full rounded-xl">
-              <SelectValue>
-                {leaveType
-                  ? (LEAVE_TYPES.find((lt) => lt.key === leaveType)?.label ?? leaveType)
-                  : t.leave.type}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {LEAVE_TYPES.map(({ key, label }) => (
-                <SelectItem key={key} value={key} disabled={isTypeIneligible(key)}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <PillToggleGroup
+            options={LEAVE_TYPES.map(({ key, label }) => ({ key, label, disabled: isTypeIneligible(key) }))}
+            value={leaveType}
+            onChange={(v) => setLeaveType(v as typeof leaveType)}
+            scroll
+            ariaLabel={t.leave.type}
+          />
           {leaveType && (
             <p className="mt-1.5 text-[12px] text-muted-foreground">{balanceFor(leaveType)}</p>
           )}

@@ -1,0 +1,105 @@
+// Control Plane DB — manages all tenants at the platform level
+// Run migrations with: bunx prisma migrate dev --schema=prisma/control-plane/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../lib/db/generated/control-plane"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("CONTROL_PLANE_DATABASE_URL")
+  directUrl = env("CONTROL_PLANE_DIRECT_URL")
+}
+
+model TrialSignup {
+  id           String       @id @default(cuid())
+  companyName  String
+  desiredSlug  String       // requested subdomain e.g. "acme"
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  teamSize     String?      // "1-10" | "11-50" | "51-100" | "100+"
+  status       SignupStatus @default(PENDING)
+  rejectReason String?
+  createdAt    DateTime     @default(now())
+  reviewedAt   DateTime?
+  tenantId     String?      // filled when provisioned
+}
+
+enum SignupStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Tenant {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  companyName    String
+  status         String    @default("PENDING") // PENDING|ACTIVE|TRIAL|TRIAL_EXPIRED|SUSPENDED|DELETED
+  databaseUrlEnc String?
+  directUrlEnc   String?
+  planCode       String?
+  trialEndsAt    DateTime?
+  provisionedAt  DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  auditLogs      PlatformAuditLog[]
+  impersonations Impersonation[]
+}
+
+model PlatformUser {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  role         PlatformRole @default(SUPPORT)
+  isDisabled   Boolean      @default(false)
+  lastLoginAt  DateTime?
+  createdAt    DateTime     @default(now())
+
+  auditLogs      PlatformAuditLog[]
+  impersonations Impersonation[]
+}
+
+model Impersonation {
+  id             String       @id @default(cuid())
+  platformUserId String
+  platformUser   PlatformUser @relation(fields: [platformUserId], references: [id])
+  tenantId       String
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  reason         String
+  startedAt      DateTime     @default(now())
+  endedAt        DateTime?    // null = active session; set when ended or expired
+}
+
+enum PlatformRole {
+  SUPER_ADMIN
+  SUPPORT
+  BILLING
+}
+
+model PlatformAuditLog {
+  id         String        @id @default(cuid())
+  actorId    String
+  actor      PlatformUser  @relation(fields: [actorId], references: [id])
+  tenantId   String?
+  tenant     Tenant?       @relation(fields: [tenantId], references: [id])
+  action     String        // e.g. "trial.approve", "tenant.provision", "trial.reject"
+  targetType String?
+  targetId   String?
+  metadata   Json?
+  createdAt  DateTime      @default(now())
+}
+
+model Plan {
+  code         String   @id // "starter" | "pro" | "enterprise" | custom
+  name         String
+  priceTHB     Int?     // null = custom pricing
+  maxEmployees Int?     // null = unlimited
+  features     String[] // postgres text array
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

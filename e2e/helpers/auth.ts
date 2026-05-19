@@ -1,7 +1,11 @@
 import type { Page } from "@playwright/test";
 
 const TEST_SECRET = process.env.E2E_TEST_SECRET ?? "test-secret-dev";
-const BASE_URL = "http://localhost:3000";
+const TENANT_SLUG = process.env.E2E_TENANT_SLUG ?? "demo";
+// Tests must run under the tenant subdomain so the middleware sets x-tenant-id
+// and the TenantLayout doesn't redirect back to the marketing home.
+const BASE_URL =
+  process.env.E2E_BASE_URL ?? `http://${TENANT_SLUG}.localhost:3000`;
 
 const ROLE_EMAILS: Record<string, string> = {
   employee: "dev.v001+emp.ice@gmail.com",
@@ -29,7 +33,7 @@ export async function loginAs(page: Page, role: keyof typeof ROLE_EMAILS) {
   // downstream getDictionary() calls return en.ts. The cookie also gets
   // picked up by the client-side useT() hook on the next page load.
   await page.context().addCookies([
-    { name: "NEXT_LOCALE", value: "en", domain: "localhost", path: "/" },
+    { name: "NEXT_LOCALE", value: "en", domain: `${TENANT_SLUG}.localhost`, path: "/" },
   ]);
 
   // Grant PDPA consent so layout-level requireConsent doesn't redirect mid-test.

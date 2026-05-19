@@ -37,6 +37,9 @@ tmp/
 # ----- Prisma local dev artefacts -----
 /prisma/migrations/dev.db*
 
+# ----- Prisma generated clients (run: prisma generate) -----
+/lib/db/generated/
+
 # ----- TypeScript -----
 *.tsbuildinfo
 

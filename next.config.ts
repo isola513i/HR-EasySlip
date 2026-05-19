@@ -42,7 +42,7 @@ const securityHeaders = [
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "upgrade-insecure-requests",
+      ...(isDev ? [] : ["upgrade-insecure-requests"]),
       "report-uri /api/v1/csp-report",
     ].join("; "),
   },
@@ -70,7 +70,7 @@ const docsSecurityHeaders = securityHeaders.map((h) => {
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
-      "upgrade-insecure-requests",
+      ...(isDev ? [] : ["upgrade-insecure-requests"]),
       "report-uri /api/v1/csp-report",
     ].join("; "),
   };
@@ -78,6 +78,7 @@ const docsSecurityHeaders = securityHeaders.map((h) => {
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  transpilePackages: ["@base-ui/react"],
   async headers() {
     return [
       {

@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 export interface PillOption<T extends string> {
   key: T;
   label: string;
+  disabled?: boolean;
 }
 
 type Variant = "outline" | "filled";
@@ -59,10 +60,13 @@ export function PillToggleGroup<T extends string>({
             type="button"
             role="radio"
             aria-checked={selected}
-            onClick={() => onChange(opt.key)}
+            disabled={opt.disabled}
+            onClick={() => !opt.disabled && onChange(opt.key)}
             className={cn(
               "min-h-11 rounded-full px-5 text-sm font-semibold transition-colors",
-              selected ? VARIANT_SELECTED[variant] : UNSELECTED,
+              opt.disabled
+                ? "border border-(--es-neutral-200) bg-card text-(--es-neutral-400) cursor-not-allowed"
+                : selected ? VARIANT_SELECTED[variant] : UNSELECTED,
             )}
           >
             {opt.label}

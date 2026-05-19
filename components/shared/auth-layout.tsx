@@ -30,7 +30,7 @@ export function AuthLayout({
   );
 
   return (
-    <main className="relative flex min-h-dvh flex-col lg:flex-row">
+    <main id="main-content" className="relative flex min-h-dvh flex-col lg:flex-row">
       <div className="relative flex flex-1 flex-col bg-background pl-12 pr-12 pb-8 pt-9">
         <header className="flex h-[72px] items-center justify-between">
           <Image
@@ -69,7 +69,7 @@ export function AuthLayout({
             href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
-            className="opacity-70 transition-opacity hover:text-foreground hover:opacity-100"
+            className="inline-flex min-h-[2.75rem] items-center opacity-70 transition-opacity hover:text-foreground hover:opacity-100"
           >
             {privacyPolicy}
           </a>

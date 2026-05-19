@@ -11,8 +11,16 @@ base.describe("password login", () => {
     await page.goto("/signin");
     await page.fill("#email", "nobody@example.com");
     await page.fill("#password", "wrongpassword");
+    // Wait for the login API response before checking for the error element
+    const loginDone = page.waitForResponse(
+      (resp) => resp.url().includes("/api/v1/auth/login"),
+      { timeout: 10_000 },
+    );
     await page.click('button[type="submit"]');
-    await expect(page.locator("text=Invalid email or password").or(page.locator("text=อีเมลหรือรหัสผ่าน"))).toBeVisible({ timeout: 5000 });
+    await loginDone;
+    await expect(
+      page.getByText(/Invalid email or password/i).or(page.getByText(/อีเมลหรือรหัสผ่าน/i))
+    ).toBeVisible({ timeout: 5_000 });
   });
 
   base("forgot password link is visible", async ({ page }) => {

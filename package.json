@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma migrate deploy && prisma generate && next build --turbopack",
+    "build": "prisma generate && next build --turbopack",
+    "db:migrate:deploy": "prisma migrate deploy",
     "postinstall": "prisma generate",
     "start": "next start",
     "db:generate": "prisma generate",
@@ -15,7 +16,8 @@
     "db:reset": "prisma migrate reset",
     "typecheck": "tsc --noEmit",
     "test": "bun test lib/",
-    "test:e2e": "bunx playwright test"
+    "test:e2e": "bunx playwright test",
+    "test:e2e:multitenant": "bunx playwright test --config playwright.multitenant.config.ts"
   },
   "prisma": {
     "seed": "bun prisma/seed.ts"

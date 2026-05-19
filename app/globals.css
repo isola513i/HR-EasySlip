@@ -57,6 +57,10 @@
   --color-border-subtle: var(--border-subtle);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   /* ═══ shadcn base tokens — mapped to EasySlip brand ═══ */
   --background: #f6f8fa;
@@ -70,7 +74,7 @@
   --secondary: #eef1f5;
   --secondary-foreground: #2f3844;
   --muted: #eef1f5;
-  --muted-foreground: #6b7684;
+  --muted-foreground: #5e6878;
   --accent: #eef1ff;
   --accent-foreground: #3d46cc;
   --destructive: #dc2626;

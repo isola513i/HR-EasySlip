@@ -1,7 +1,7 @@
 import { describe, test, expect, mock, beforeEach } from "bun:test";
 
 // ── Mock Prisma ──────────────────────────────────────────────
-const mockFindMany = mock(() => Promise.resolve([]));
+const mockFindMany = mock(() => Promise.resolve([] as any[])); // eslint-disable-line @typescript-eslint/no-explicit-any
 mock.module("@/lib/prisma", () => ({
   prisma: {
     payrollOutboxEvent: { findMany: mockFindMany },
@@ -96,7 +96,7 @@ describe("dispatchToEmpeo — success path", () => {
 
     await dispatchToEmpeo();
 
-    const [envelope] = mockSendEnvelope.mock.calls[0];
+    const [envelope] = (mockSendEnvelope.mock.calls as any[][])[0]; // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(envelope.eventType).toBe("SALARY_UPDATE");
     expect(envelope.aggregateId).toBe("emp-42");
     expect(envelope.idempotencyKey).toBe("idem-99");

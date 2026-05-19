@@ -16,7 +16,6 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { getDict } from "@/lib/i18n/get-dict";
 import { TocSidebar } from "./_components/toc-sidebar";
-import { BackButton } from "./_components/back-button";
 import {
   ControllerSection,
   ListSection,
@@ -60,9 +59,6 @@ export default async function PrivacyPage() {
           }}
         />
         <div className="relative mx-auto max-w-6xl px-6 py-10 text-white sm:py-14">
-          <div className="mb-5">
-            <BackButton label={t.common.back} />
-          </div>
           <div className="flex items-start gap-4">
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/20">
               <ShieldCheck className="size-6" />

@@ -61,8 +61,6 @@ export const viewport: Viewport = {
   themeColor: "#1e3a8a",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export default async function RootLayout({
@@ -72,9 +70,17 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
 
+  const t = getDictionary(locale)
+
   return (
     <html lang={locale} className={`${notoSansThai.variable} ${geistMono.variable}`}>
       <body className="antialiased">
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-[200] -translate-y-24 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg focus-visible:translate-y-0 transition-transform duration-150 focus-visible:outline-none"
+        >
+          {t.metadata.skipToContent}
+        </a>
         <LocaleProvider locale={locale}>
           {children}
         </LocaleProvider>

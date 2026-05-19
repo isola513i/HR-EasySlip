@@ -17,6 +17,15 @@ export const HR_ROLES: readonly Role[] = [
   "ADMIN",
 ] as const;
 
+/** Roles that can manage company settings and users (no salary access) */
+export const TENANT_ADMIN_ROLES: readonly Role[] = [
+  "TENANT_ADMIN",
+  "HRMG",
+  "CEO",
+  "CTO",
+  "COO",
+] as const;
+
 /** Roles that can access manager-level features */
 export const MANAGER_ROLES: readonly Role[] = [
   "MANAGER",

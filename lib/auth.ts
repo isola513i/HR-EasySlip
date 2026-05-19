@@ -25,6 +25,7 @@ const adapter = {
 };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   adapter,
   providers: [
     Resend({
@@ -70,6 +71,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/signin/error",
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const target = new URL(url);
+        const rootDomain = process.env.ROOT_DOMAIN ?? "localhost:3000";
+        // Allow exact root domain or any subdomain (e.g. easyslip.localhost:3000)
+        if (target.host === rootDomain || target.host.endsWith(`.${rootDomain}`)) {
+          return url;
+        }
+      } catch {}
+      return baseUrl;
+    },
     async signIn({ user }) {
       if (!user?.id) return true;
 

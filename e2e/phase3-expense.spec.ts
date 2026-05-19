@@ -18,7 +18,9 @@ test.describe("Phase 3.9 — expense (employee)", () => {
     await expect(page.getByText("Submit a new expense")).toBeVisible({ timeout: 5_000 });
     await expect(page.getByLabel(/amount/i)).toBeVisible();
     await expect(page.getByLabel(/category/i)).toBeVisible();
-    await expect(page.getByLabel(/date of expense/i)).toBeVisible();
+    // DatePicker renders as a button (not an input), so getByLabel won't work.
+    // Check the visible SectionLabel text instead.
+    await expect(page.getByText(/date of expense/i)).toBeVisible();
     await expect(page.getByLabel(/description/i)).toBeVisible();
   });
 

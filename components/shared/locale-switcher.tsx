@@ -4,6 +4,10 @@ import { useLocale } from "@/hooks/use-locale";
 import { cn } from "@/lib/utils";
 
 const LOCALES = ["th", "en"] as const;
+const LOCALE_LABELS: Record<(typeof LOCALES)[number], string> = {
+  th: "ภาษาไทย",
+  en: "English",
+};
 
 export function LocaleSwitcher() {
   const { locale, setLocale } = useLocale();
@@ -27,8 +31,9 @@ export function LocaleSwitcher() {
               type="button"
               onClick={() => setLocale(l)}
               aria-pressed={active}
+              aria-label={LOCALE_LABELS[l]}
               className={cn(
-                "cursor-pointer uppercase transition-opacity",
+                "inline-flex min-h-[2.75rem] min-w-[2.75rem] cursor-pointer items-center justify-center uppercase transition-opacity",
                 active ? "opacity-100" : "opacity-50 hover:opacity-100",
               )}
             >

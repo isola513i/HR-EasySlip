@@ -9,7 +9,7 @@ export function SignOutButton() {
   return (
     <button
       type="button"
-      onClick={() => signOut({ callbackUrl: "/signin" })}
+      onClick={() => signOut({ callbackUrl: `${window.location.origin}/signin` })}
       className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-(--es-error-200) bg-(--es-error-50) px-4 py-3.5 text-sm font-semibold text-(--es-error-600) transition-colors hover:bg-(--es-error-100)"
     >
       <LogOut className="size-4" strokeWidth={2} />

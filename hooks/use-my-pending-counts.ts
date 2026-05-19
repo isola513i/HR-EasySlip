@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, apiFetchPaginated } from "@/lib/api/client";
 
 export interface PendingCounts {
   leave: number;
@@ -9,7 +9,7 @@ export interface PendingCounts {
   expense: number;
 }
 
-interface PagedTotal {
+interface ExpenseListResult {
   total: number;
 }
 
@@ -19,12 +19,18 @@ export function useMyPendingCounts() {
 
   const fetchCounts = useCallback(async (signal?: AbortSignal) => {
     try {
+      // Leave and OT use apiPaginated → total lives in pagination.total
+      // Expense uses apiOk with a wrapper object → total lives in data.total
       const [leave, ot, expense] = await Promise.all([
-        apiFetch<PagedTotal>("/api/v1/leave/requests/me?status=PENDING&perPage=1", { signal }),
-        apiFetch<PagedTotal>("/api/v1/overtime/requests/me?status=PENDING&perPage=1", { signal }),
-        apiFetch<PagedTotal>("/api/v1/expense/me?status=PENDING&perPage=1", { signal }),
+        apiFetchPaginated<unknown>("/api/v1/leave/requests/me?status=PENDING&perPage=1", { signal }),
+        apiFetchPaginated<unknown>("/api/v1/overtime/requests/me?status=PENDING&perPage=1", { signal }),
+        apiFetch<ExpenseListResult>("/api/v1/expense/me?status=PENDING&perPage=1", { signal }),
       ]);
-      setCounts({ leave: leave.total, ot: ot.total, expense: expense.total });
+      setCounts({
+        leave: leave.pagination.total,
+        ot: ot.pagination.total,
+        expense: expense.total,
+      });
     } catch (err) {
       if ((err as { name?: string })?.name === "AbortError") return;
       setCounts({ leave: 0, ot: 0, expense: 0 });

@@ -88,9 +88,9 @@ export function LeaveQuotaCard({ dict }: LeaveQuotaCardProps) {
       </div>
       {items && items.length > 0 ? (
         items.map((q, i) => {
-          const allocated = Number(q.allocatedDays);
-          const used = Number(q.usedDays);
-          const avail = Number(q.available);
+          const allocated = Number.isFinite(Number(q.allocatedDays)) ? Number(q.allocatedDays) : 0;
+          const used = Number.isFinite(Number(q.usedDays)) ? Number(q.usedDays) : 0;
+          const avail = Number.isFinite(Number(q.available)) ? Number(q.available) : 0;
           const pct = allocated > 0 ? (used / allocated) * 100 : 0;
           const palette = LEAVE_PALETTE[q.leaveType] ?? FALLBACK_PALETTE;
           const label = LEAVE_TYPE_LABEL[q.leaveType] ?? q.leaveType;

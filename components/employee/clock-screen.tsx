@@ -154,7 +154,7 @@ export function ClockScreen() {
         ) : (
           <button
             type="button"
-            aria-label={clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel}
+            aria-label={t.clock.clockNow.replace("{type}", clockType === "IN" ? t.clock.clockInLabel : t.clock.clockOutLabel)}
             disabled={clockState === "clocking" || clockState === "loading"}
             onClick={() => { hapticTap(); handleClock(); }}
             className={cn(
