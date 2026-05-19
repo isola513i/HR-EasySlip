@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { changePlatformUserRole, togglePlatformUserDisabled, removePlatformUser } from "./actions";
 import {
   DropdownMenu,
@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, ShieldCheck, UserX, UserCheck, Trash2 } from "lucide-react";
 
@@ -50,11 +49,32 @@ export function MemberActions({ userId, currentRole, isDisabled }: Props) {
     removePlatformUser.bind(null, userId),
     null
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const busy = rolePending || togglePending;
 
   return (
-    <AlertDialog>
+    <>
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove team member?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete their platform access. They will not be able to sign in.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-rose-500 hover:bg-rose-600 text-white"
+              onClick={() => dispatchRemove(new FormData())}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <DropdownMenu>
         <DropdownMenuTrigger
           disabled={busy}
@@ -71,62 +91,44 @@ export function MemberActions({ userId, currentRole, isDisabled }: Props) {
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
               {ROLES.map((r) => (
-                <form key={r.value} action={dispatchRole}>
-                  <input type="hidden" name="role" value={r.value} />
-                  <DropdownMenuItem
-                    asChild
-                    className={currentRole === r.value ? "font-medium text-primary" : ""}
-                  >
-                    <button type="submit" className="w-full">
-                      {r.label}
-                      {currentRole === r.value && " ✓"}
-                    </button>
-                  </DropdownMenuItem>
-                </form>
+                <DropdownMenuItem
+                  key={r.value}
+                  className={currentRole === r.value ? "font-medium text-primary" : ""}
+                  onClick={() => {
+                    const fd = new FormData();
+                    fd.set("role", r.value);
+                    dispatchRole(fd);
+                  }}
+                >
+                  {r.label}
+                  {currentRole === r.value && " ✓"}
+                </DropdownMenuItem>
               ))}
             </DropdownMenuSubContent>
           </DropdownMenuSub>
 
-          <form action={dispatchToggle}>
-            <DropdownMenuItem asChild>
-              <button type="submit" className="w-full gap-2">
-                {isDisabled ? (
-                  <><UserCheck className="size-3.5" /> Enable access</>
-                ) : (
-                  <><UserX className="size-3.5" /> Disable access</>
-                )}
-              </button>
-            </DropdownMenuItem>
-          </form>
+          <DropdownMenuItem
+            className="gap-2"
+            onClick={() => dispatchToggle(new FormData())}
+          >
+            {isDisabled ? (
+              <><UserCheck className="size-3.5" /> Enable access</>
+            ) : (
+              <><UserX className="size-3.5" /> Disable access</>
+            )}
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator />
 
-          <AlertDialogTrigger asChild>
-            <DropdownMenuItem className="text-rose-400 focus:text-rose-400 focus:bg-rose-500/10 gap-2">
-              <Trash2 className="size-3.5" />
-              Remove
-            </DropdownMenuItem>
-          </AlertDialogTrigger>
+          <DropdownMenuItem
+            className="text-rose-400 focus:text-rose-400 focus:bg-rose-500/10 gap-2"
+            onClick={() => setConfirmOpen(true)}
+          >
+            <Trash2 className="size-3.5" />
+            Remove
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Remove team member?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will permanently delete their platform access. They will not be able to sign in.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            className="bg-rose-500 hover:bg-rose-600 text-white"
-            onClick={() => dispatchRemove(new FormData())}
-          >
-            Remove
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    </>
   );
 }
