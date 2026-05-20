@@ -9,6 +9,8 @@ import {
   updateEmployee,
 } from "@/lib/employee/employee-service";
 import { maskEmployeeForImpersonation } from "@/lib/security/sensitive-mask";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
+import { IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
 
 export const GET = withApiHandler(async (req, ctx) => {
   const caller = await requireApiEmployee(HR_ROLES);
@@ -18,11 +20,15 @@ export const GET = withApiHandler(async (req, ctx) => {
     userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles,
   });
 
-  const isImpersonating = req.headers.get("x-impersonation") === "1";
+  // Middleware doesn't run for /api/* paths, so check the cookie directly
+  const isImpersonating = !!req.cookies.get(IMPERSONATION_COOKIE)?.value;
   return apiOk(isImpersonating ? maskEmployeeForImpersonation(employee) : employee);
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
