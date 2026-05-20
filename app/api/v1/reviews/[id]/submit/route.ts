@@ -5,8 +5,12 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { submitReview } from "@/lib/reviews/review-service";
 import { ReviewSubmitSchema } from "@/lib/reviews/schemas";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
   const input = await parseBody(req, ReviewSubmitSchema);

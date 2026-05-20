@@ -5,6 +5,7 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { listTemplates, createTemplate } from "@/lib/reviews/template-service";
 import { ReviewTemplateCreateSchema } from "@/lib/reviews/schemas";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const HR_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
 
@@ -15,6 +16,9 @@ export const GET = withApiHandler(async () => {
 });
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
   const input = await parseBody(req, ReviewTemplateCreateSchema);

@@ -13,6 +13,7 @@ import {
   updateSettingsBatch,
 } from "@/lib/settings/settings-service";
 import { listDefinitions } from "@/lib/settings/registry";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const GET = withApiHandler(async () => {
   const caller = await requireApiRoles(HR_ROLES);
@@ -53,6 +54,9 @@ export const GET = withApiHandler(async () => {
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -65,6 +69,9 @@ export const PUT = withApiHandler(async (req, ctx) => {
 });
 
 export const PATCH = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 

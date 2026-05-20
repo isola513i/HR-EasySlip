@@ -5,8 +5,12 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles, HR_ROLES } from "@/lib/security/rbac";
 import { HolidayUpdateSchema } from "@/lib/leave/holiday-schemas";
 import { updateHoliday, deleteHoliday } from "@/lib/leave/holiday-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -16,6 +20,9 @@ export const PUT = withApiHandler(async (req, ctx) => {
 });
 
 export const DELETE = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 

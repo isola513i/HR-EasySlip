@@ -3,10 +3,14 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { markCashoutExported } from "@/lib/payroll/cashout-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const CASHOUT_ROLES = ["HRMG", "CEO", "CTO", "COO"] as const;
 
 export const POST = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(CASHOUT_ROLES);
   if (caller instanceof NextResponse) return caller;
 

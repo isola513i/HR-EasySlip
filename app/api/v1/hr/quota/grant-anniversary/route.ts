@@ -2,8 +2,12 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { verifyCronAuth } from "@/lib/system/cron-auth";
 import { grantAnniversaryLeave } from "@/lib/leave/leave-quota-grant-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const authError = verifyCronAuth(req);
   if (authError) return authError;
 

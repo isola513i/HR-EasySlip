@@ -5,6 +5,7 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, HR_ROLES } from "@/lib/security/rbac";
 import { TemplateUpdateSchema } from "@/lib/onboarding/schemas";
 import { getTemplateById, updateTemplate, deleteTemplate } from "@/lib/onboarding/template-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const GET = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiEmployee(HR_ROLES);
@@ -13,6 +14,9 @@ export const GET = withApiHandler(async (_req, ctx) => {
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -27,6 +31,9 @@ export const PUT = withApiHandler(async (req, ctx) => {
 });
 
 export const DELETE = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 

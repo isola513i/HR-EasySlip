@@ -6,8 +6,12 @@ import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { leaveRequestLimiter } from "@/lib/security/rate-limit";
 import { LeaveRequestSchema } from "@/lib/leave/schemas";
 import { submitLeaveRequest } from "@/lib/leave/leave-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

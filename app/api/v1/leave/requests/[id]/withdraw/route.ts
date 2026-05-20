@@ -3,8 +3,12 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { withdrawLeaveRequest } from "@/lib/leave/leave-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const PATCH = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

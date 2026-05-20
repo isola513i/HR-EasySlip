@@ -5,12 +5,16 @@ import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { signDocument } from "@/lib/documents/signature-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const SignSchema = z.object({
   signatureDataUrl: z.string().min(64).max(220_000),
 });
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

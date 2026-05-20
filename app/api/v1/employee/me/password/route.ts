@@ -7,6 +7,7 @@ import { parseBody } from "@/lib/api/validate";
 import { apiOk, apiError } from "@/lib/api/response";
 import { hashPassword, verifyPassword } from "@/lib/auth/password-utils";
 import { writeAuditLog } from "@/lib/audit/logger";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const ChangePasswordSchema = z.object({
   currentPassword: z.string().min(1, "กรุณากรอกรหัสผ่านปัจจุบัน"),
@@ -14,6 +15,9 @@ const ChangePasswordSchema = z.object({
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

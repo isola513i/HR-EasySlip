@@ -6,6 +6,7 @@ import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { ProfileUpdateSchema } from "@/lib/employee/profile-schemas";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const PROFILE_SELECT = {
   id: true, employeeCode: true, firstNameTh: true, lastNameTh: true,
@@ -39,6 +40,9 @@ export const GET = withApiHandler(async () => {
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

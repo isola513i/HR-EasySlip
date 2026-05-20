@@ -5,8 +5,12 @@ import { parseBody, parseSearchParams } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { TimeAdjSubmitSchema, TimeAdjFiltersSchema } from "@/lib/time-adjustment/schemas";
 import { submitRequest, getMyRequests } from "@/lib/time-adjustment/time-adjustment-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

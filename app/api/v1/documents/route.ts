@@ -12,8 +12,12 @@ import {
   type DocumentCategory,
   type DocumentEntityType,
 } from "@/lib/documents/document-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

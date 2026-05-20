@@ -6,6 +6,7 @@ import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { NotificationPrefsSchema } from "@/lib/employee/notification-schemas";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const PREFS_SELECT = { notifyLeave: true, notifyApproval: true } as const;
 
@@ -22,6 +23,9 @@ export const GET = withApiHandler(async () => {
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

@@ -5,10 +5,14 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { QuotaAdjustSchema } from "@/lib/leave/schemas";
 import { adjustQuota } from "@/lib/leave/leave-quota-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const ADJUST_ROLES = ["HRMG"] as const;
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(ADJUST_ROLES);
   if (caller instanceof NextResponse) return caller;
 

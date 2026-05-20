@@ -4,6 +4,7 @@ import { apiOk, apiError } from "@/lib/api/response";
 import { requireApiRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { DomainError } from "@/lib/api/errors";
 import { getDocument, deleteDocument } from "@/lib/documents/document-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const GET = withApiHandler(async (_req, ctx) => {
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
@@ -31,6 +32,9 @@ export const GET = withApiHandler(async (_req, ctx) => {
 });
 
 export const DELETE = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
   const documentId = ctx.params.documentId;

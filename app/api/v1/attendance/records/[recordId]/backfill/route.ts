@@ -5,10 +5,14 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { BackfillInputSchema } from "@/lib/attendance/schemas";
 import { backfillRecord } from "@/lib/attendance/attendance-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const BACKFILL_ROLES = ["HRMG", "HR_AUTHORIZED"] as const;
 
 export const PATCH = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(BACKFILL_ROLES);
   if (caller instanceof NextResponse) return caller;
 

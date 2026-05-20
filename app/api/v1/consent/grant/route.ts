@@ -3,8 +3,12 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiCreated } from "@/lib/api/response";
 import { requireApiRoles, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { grantConsent } from "@/lib/consent/consent-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

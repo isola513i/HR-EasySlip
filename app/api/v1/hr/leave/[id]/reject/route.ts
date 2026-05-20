@@ -5,10 +5,14 @@ import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, HR_ROLES } from "@/lib/security/rbac";
 import { rejectLeaveRequest } from "@/lib/leave/leave-approval-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const RejectSchema = z.object({ reason: z.string().min(1).max(500) });
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 

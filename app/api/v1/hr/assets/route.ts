@@ -5,6 +5,7 @@ import { parseBody, parseSearchParams } from "@/lib/api/validate";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { listAssets, createAsset } from "@/lib/assets/asset-service";
 import { AssetCreateSchema, AssetListFiltersSchema } from "@/lib/assets/schemas";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const ASSET_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
 
@@ -18,6 +19,9 @@ export const GET = withApiHandler(async (req) => {
 });
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(ASSET_ROLES);
   if (caller instanceof NextResponse) return caller;
 

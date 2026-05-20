@@ -3,6 +3,7 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { requireApiRoles, HR_ROLES } from "@/lib/security/rbac";
 import { generateTimestampExport } from "@/lib/payroll/empeo-formatter";
 import { findPendingExportEvent, markOutboxConsumed, markOutboxFailed } from "@/lib/payroll/outbox-processor";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const EXPORT_ROLES = ["HR_AUTHORIZED", ...HR_ROLES] as const;
 

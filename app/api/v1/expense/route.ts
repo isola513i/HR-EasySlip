@@ -5,8 +5,12 @@ import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { ExpenseCreateSchema } from "@/lib/expense/schemas";
 import { createExpenseClaim } from "@/lib/expense/expense-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

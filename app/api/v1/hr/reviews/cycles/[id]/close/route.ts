@@ -3,10 +3,14 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { closeCycle } from "@/lib/reviews/cycle-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const HR_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
 
 export const POST = withApiHandler(async (_req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiRoles(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
   const result = await closeCycle(

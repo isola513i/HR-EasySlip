@@ -10,8 +10,12 @@ import {
   PROFILE_PICTURE_MAX_BYTES,
   PROFILE_PICTURE_ALLOWED,
 } from "@/lib/employee/profile-picture-service";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 export const PUT = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
@@ -34,6 +38,9 @@ export const PUT = withApiHandler(async (req, ctx) => {
 });
 
 export const DELETE = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 

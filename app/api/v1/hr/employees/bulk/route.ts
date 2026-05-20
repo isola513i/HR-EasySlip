@@ -4,10 +4,14 @@ import { apiOk, apiError } from "@/lib/api/response";
 import { requireApiEmployee, HR_ROLES } from "@/lib/security/rbac";
 import { bulkImportEmployees } from "@/lib/employee/bulk-import-service";
 import { bulkImportEmpeoXlsx } from "@/lib/employee/bulk-import-empeo";
+import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
 export const POST = withApiHandler(async (req, ctx) => {
+  const guard = await requireApiMutable();
+  if (guard) return guard;
+
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
