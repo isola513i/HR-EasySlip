@@ -8,15 +8,18 @@ import {
   getEmployeeById,
   updateEmployee,
 } from "@/lib/employee/employee-service";
+import { maskEmployeeForImpersonation } from "@/lib/security/sensitive-mask";
 
-export const GET = withApiHandler(async (_req, ctx) => {
+export const GET = withApiHandler(async (req, ctx) => {
   const caller = await requireApiEmployee(HR_ROLES);
   if (caller instanceof NextResponse) return caller;
 
   const employee = await getEmployeeById(ctx.params.employeeId, {
     userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles,
   });
-  return apiOk(employee);
+
+  const isImpersonating = req.headers.get("x-impersonation") === "1";
+  return apiOk(isImpersonating ? maskEmployeeForImpersonation(employee) : employee);
 });
 
 export const PUT = withApiHandler(async (req, ctx) => {

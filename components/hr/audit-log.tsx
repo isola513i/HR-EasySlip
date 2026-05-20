@@ -1,9 +1,9 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useAuditLogs } from "@/hooks/use-audit-logs";
+import { useAuditLogs, type ActorTypeFilter } from "@/hooks/use-audit-logs";
 import { useT } from "@/lib/i18n/locale-context";
 import { useFormat } from "@/hooks/use-format";
 import { useLocale } from "@/hooks/use-locale";
@@ -32,6 +32,8 @@ export function AuditLog() {
     setSearch,
     moduleFilter,
     setModuleFilter,
+    actorTypeFilter,
+    setActorTypeFilter,
     dateRange,
     setDateRange,
     isLoading,
@@ -81,6 +83,21 @@ export function AuditLog() {
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
       />
+
+      {/* Platform Support filter chip */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => setActorTypeFilter(actorTypeFilter === "PLATFORM_SUPPORT" ? "ALL" : "PLATFORM_SUPPORT")}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+            actorTypeFilter === "PLATFORM_SUPPORT"
+              ? "border-amber-500/50 bg-amber-500/15 text-amber-700 dark:text-amber-400"
+              : "border-border text-muted-foreground hover:border-amber-500/30 hover:text-amber-700 dark:hover:text-amber-400"
+          }`}
+        >
+          <Shield className="size-3" />
+          Platform Support
+        </button>
+      </div>
 
       <AuditTable rows={logs} isLoading={isLoading} error={error} />
 

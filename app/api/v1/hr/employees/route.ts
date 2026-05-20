@@ -8,6 +8,7 @@ import {
   EmployeeCreateSchema,
 } from "@/lib/employee/schemas";
 import { listEmployees, createEmployee } from "@/lib/employee/employee-service";
+import { maskEmployeeList } from "@/lib/security/sensitive-mask";
 
 export const GET = withApiHandler(async (req) => {
   const caller = await requireApiEmployee(HR_ROLES);
@@ -18,7 +19,10 @@ export const GET = withApiHandler(async (req) => {
     userId: caller.userId, employeeId: caller.employeeId, roles: caller.roles,
   });
 
-  return apiPaginated(result.items, result.total, result.page, result.perPage);
+  const isImpersonating = req.headers.get("x-impersonation") === "1";
+  const items = isImpersonating ? maskEmployeeList(result.items) : result.items;
+
+  return apiPaginated(items, result.total, result.page, result.perPage);
 });
 
 export const POST = withApiHandler(async (req, ctx) => {

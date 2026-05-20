@@ -27,6 +27,14 @@ export const ACTION_LABELS_TH: Record<string, string> = {
   "user.change_password": "เปลี่ยนรหัสผ่าน",
   "user.reset_password": "รีเซ็ตรหัสผ่านโดย HR",
   "user.reset_password_self": "รีเซ็ตรหัสผ่านด้วยตนเอง",
+  "settings.impersonation.enabled": "เปิดใช้งานการเข้าถึงโดย Platform Support",
+  "settings.impersonation.disabled": "ปิดใช้งานการเข้าถึงโดย Platform Support",
+  "impersonation.approve": "อนุมัติคำขอเข้าถึงจาก Platform Support",
+  "impersonation.reject": "ปฏิเสธคำขอเข้าถึงจาก Platform Support",
+  "platform_support.session_start": "Platform Support เริ่ม session การสนับสนุน",
+  "platform_support.session_end": "Platform Support สิ้นสุด session การสนับสนุน",
+  "platform_support.view": "Platform Support เข้าดูข้อมูล",
+  "platform_support.access_denied": "Platform Support ถูกปฏิเสธการเข้าถึง",
 };
 
 export const ACTION_LABELS_EN: Record<string, string> = {
@@ -54,6 +62,14 @@ export const ACTION_LABELS_EN: Record<string, string> = {
   "user.change_password": "Password changed",
   "user.reset_password": "Password reset by HR",
   "user.reset_password_self": "Password reset",
+  "settings.impersonation.enabled": "Platform support access enabled",
+  "settings.impersonation.disabled": "Platform support access disabled",
+  "impersonation.approve": "Platform support request approved",
+  "impersonation.reject": "Platform support request rejected",
+  "platform_support.session_start": "Platform support session started",
+  "platform_support.session_end": "Platform support session ended",
+  "platform_support.view": "Platform support viewed data",
+  "platform_support.access_denied": "Platform support access denied",
 };
 
 export function getActionLabel(action: string, locale: "th" | "en" = "th"): string {

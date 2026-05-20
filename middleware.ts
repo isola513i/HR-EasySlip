@@ -105,9 +105,39 @@ export default async function middleware(req: NextRequest): Promise<NextResponse
     }
   }
 
+  // ── Impersonation: read-only perimeter ─────────────────────────
+  const impToken = req.cookies.get(IMPERSONATION_COOKIE)?.value;
+  if (impToken) {
+    // Block payroll & salary-history paths entirely
+    const isPayrollPath =
+      /^\/(hr\/)?payroll(\/|$)/.test(pathname) ||
+      /^\/api\/v1\/payroll(\/|$)/.test(pathname) ||
+      /^\/api\/v1\/hr\/employees\/[^/]+\/salary-history(\/|$)/.test(pathname);
+
+    if (isPayrollPath) {
+      const forbiddenUrl = new URL("/forbidden", req.url);
+      forbiddenUrl.searchParams.set("reason", "impersonation_blocked");
+      return NextResponse.redirect(forbiddenUrl);
+    }
+
+    // Block mutating HTTP verbs on /api/* (except impersonation end action)
+    const isMutatingApi =
+      pathname.startsWith("/api/") &&
+      ["POST", "PATCH", "PUT", "DELETE"].includes(req.method) &&
+      !pathname.startsWith("/api/v1/impersonation/end");
+
+    if (isMutatingApi) {
+      return NextResponse.json(
+        { error: "Forbidden", code: "READ_ONLY_IMPERSONATION_SESSION", message: "Read-only support session" },
+        { status: 403 },
+      );
+    }
+  }
+
   const res = NextResponse.next();
   res.headers.set("x-tenant-id", tenant.id);
   res.headers.set("x-tenant-slug", tenant.slug);
+  if (impToken) res.headers.set("x-impersonation", "1");
   return withLocale(req, res);
 }
 

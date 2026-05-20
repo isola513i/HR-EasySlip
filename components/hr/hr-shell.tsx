@@ -25,9 +25,10 @@ import { useT } from "@/lib/i18n/locale-context";
 interface Props {
   user: { id: string; name: string; role: string };
   children: React.ReactNode;
+  hidePayroll?: boolean;
 }
 
-export function HRShell({ user, children }: Props) {
+export function HRShell({ user, children, hidePayroll = false }: Props) {
   const t = useT();
   const nav = t.hr.nav;
 
@@ -43,9 +44,11 @@ export function HRShell({ user, children }: Props) {
     { key: "holidays", href: "/hr/holidays", icon: CalendarCheck, label: nav.holidays },
     // { key: "assets", href: "/hr/assets", icon: Boxes, label: nav.assets },
     // { key: "offboarding", href: "/hr/offboarding", icon: UserMinus, label: nav.offboarding },
-    { group: nav.groupPayroll },
-    { key: "payroll", href: "/hr/payroll", icon: Banknote, label: nav.payroll },
-    // { key: "cashout", href: "/hr/payroll/cashout", icon: Coins, label: nav.cashout },
+    ...(!hidePayroll ? [
+      { group: nav.groupPayroll } as NavGroup,
+      { key: "payroll", href: "/hr/payroll", icon: Banknote, label: nav.payroll } as NavItem,
+      // { key: "cashout", href: "/hr/payroll/cashout", icon: Coins, label: nav.cashout },
+    ] : []),
     { key: "reports", href: "/hr/reports", icon: FileBarChart, label: nav.reports },
     // { key: "reviews", href: "/hr/reviews", icon: ClipboardCheck, label: nav.reviews },
     // { key: "expense", href: "/hr/expense", icon: Receipt, label: nav.expense },

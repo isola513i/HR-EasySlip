@@ -2195,6 +2195,32 @@ const th = {
       company: "บริษัท",
       users: "ผู้ใช้งาน",
       billing: "แผนและการชำระเงิน",
+      security: "ความปลอดภัย",
+    },
+    security: {
+      title: "ความปลอดภัยและความเป็นส่วนตัว",
+      subtitle: "ควบคุมการเข้าถึงพื้นที่ทำงานของคุณโดยทีม EasySlip Support",
+      impersonation: {
+        sectionTitle: "การเข้าถึงของทีม Support",
+        description:
+          "เมื่อเปิดใช้งาน ทีม EasySlip Support สามารถขอเข้าถึงพื้นที่ทำงานของคุณเพื่อช่วยแก้ปัญหาทางเทคนิคได้ แต่ละคำขอต้องได้รับการอนุมัติจากผู้ดูแลระบบในองค์กรของคุณก่อนจึงจะเข้าถึงได้",
+        enabledLabel: "การเข้าถึงของทีม Support เปิดอยู่",
+        disabledLabel: "การเข้าถึงของทีม Support ปิดอยู่",
+        toggleEnable: "อนุญาตการเข้าถึงของทีม Support",
+        toggleDisable: "ปิดการเข้าถึงของทีม Support",
+        confirmDisableTitle: "ปิดการเข้าถึงของทีม Support?",
+        confirmDisableBody:
+          "ทีม Support จะไม่สามารถขอเข้าถึงพื้นที่ทำงานของคุณได้อีก เซสชันที่กำลังใช้งานอยู่จะสิ้นสุดทันที คุณสามารถเปิดใช้งานอีกครั้งได้ทุกเมื่อ",
+        confirmDisable: "ใช่ ปิดการเข้าถึง",
+        confirmEnableTitle: "อนุญาตการเข้าถึงของทีม Support?",
+        confirmEnableBody:
+          "ทีม Support จะสามารถขอเข้าถึงพื้นที่ทำงานของคุณได้ ผู้ดูแลระบบต้องอนุมัติแต่ละคำขอก่อนจึงจะเข้าถึงได้",
+        confirmEnable: "ใช่ อนุญาตการเข้าถึง",
+        disabledSince: "ปิดใช้งานตั้งแต่",
+        disabledBy: "ปิดโดย",
+        toggleSuccess: "อัปเดตการตั้งค่าแล้ว",
+        toggleError: "ไม่สามารถอัปเดตการตั้งค่าได้",
+      },
     },
     company: {
       title: "ตั้งค่าบริษัท",

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { verifyImpersonationToken, IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
+import { writePlatformAuditToTenant } from "@/lib/audit/platform-audit";
 
 export async function endImpersonation(): Promise<{ redirectUrl: string }> {
   const jar = await cookies();
@@ -26,6 +27,16 @@ export async function endImpersonation(): Promise<{ redirectUrl: string }> {
             targetId: session.impersonationId,
           },
         });
+        // Tenant-side audit: visible to tenant admins
+        writePlatformAuditToTenant({
+          tenantId: session.tenantId,
+          impersonationId: session.impersonationId,
+          platformActorId: session.platformUserId,
+          platformActorEmail: session.platformEmail,
+          action: "platform_support.session_end",
+          entityType: "Impersonation",
+          entityId: session.impersonationId,
+        }).catch(() => {}); // best-effort
       } catch {
         // best-effort — still clear the cookie
       }

@@ -7,6 +7,7 @@ import {
   FileText,
   ScrollText,
   Settings as SettingsIcon,
+  ShieldCheck,
   ShieldX,
   User,
   UserPlus,
@@ -48,10 +49,14 @@ function actionIcon(action: string): { Icon: LucideIcon; isDelete: boolean } {
 }
 
 function actorName(entry: AuditEntry): string {
+  if (entry.actorType === "PLATFORM_SUPPORT" && entry.platformActorEmail) {
+    return entry.platformActorEmail.split("@")[0];
+  }
   return entry.actor?.email?.split("@")[0] ?? entry.actorId ?? "—";
 }
 
 function actorInitials(entry: AuditEntry): string {
+  if (entry.actorType === "PLATFORM_SUPPORT") return "SP";
   const n = actorName(entry);
   const parts = n.split(/[._\-\s]/).filter(Boolean);
   if (parts.length >= 2) return parts[0][0] + parts[1][0];
@@ -114,11 +119,26 @@ export function AuditTable({ rows, isLoading, error }: Props) {
           const initials = actorInitials(r);
           const { Icon, isDelete } = actionIcon(r.action);
           const m = moduleForEntity(r.entityType);
+          const isPlatformSupport = r.actorType === "PLATFORM_SUPPORT";
           return (
-            <div key={r.id} className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0 hover:bg-muted/40`}>
+            <div
+              key={r.id}
+              className={`grid ${GRID} items-center border-b border-(--es-neutral-100) px-5 py-3.5 text-[13px] last:border-b-0 hover:bg-muted/40 ${isPlatformSupport ? "bg-amber-500/5" : ""}`}
+            >
               <div className="flex min-w-0 items-center gap-2.5">
-                <EmployeeAvatar seed={r.actorId ?? ""} initials={initials} />
-                <span className="truncate font-medium">{name}</span>
+                {isPlatformSupport ? (
+                  <div className="size-9 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="size-4 text-amber-600" />
+                  </div>
+                ) : (
+                  <EmployeeAvatar seed={r.actorId ?? ""} initials={initials} />
+                )}
+                <div className="min-w-0">
+                  <span className="truncate font-medium block">{name}</span>
+                  {isPlatformSupport && (
+                    <span className="text-[10px] text-amber-600 font-medium uppercase tracking-wide">Support</span>
+                  )}
+                </div>
               </div>
               <div className="flex min-w-0 items-center gap-2">
                 <Icon className={`size-4 shrink-0 ${isDelete ? "text-(--es-error-500)" : "text-muted-foreground"}`} />

@@ -10,6 +10,7 @@ export const AuditQuerySchema = z.object({
     .enum(["EMPLOYEES", "LEAVE", "ATTENDANCE", "OVERTIME", "PAYROLL", "REPORTS", "SETTINGS", "OTHER"])
     .optional(),
   actorId: z.string().optional(),
+  actorType: z.enum(["USER", "SYSTEM", "PLATFORM_SUPPORT"]).optional(),
   from: z.string().date().optional(),
   to: z.string().date().optional(),
   action: z.string().optional(),

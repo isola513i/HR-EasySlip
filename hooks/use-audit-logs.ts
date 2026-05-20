@@ -17,6 +17,10 @@ export interface AuditEntry {
   reason: string | null;
   createdAt: string;
   actor: { id: string; email: string } | null;
+  actorType: "USER" | "SYSTEM" | "PLATFORM_SUPPORT";
+  platformActorEmail: string | null;
+  platformActorId: string | null;
+  impersonationId: string | null;
 }
 
 export type AuditDateRange = "7d" | "30d" | "90d" | "all";
@@ -52,6 +56,8 @@ function dateRangeToISO(range: AuditDateRange): { from?: string; to?: string } {
   return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
 }
 
+export type ActorTypeFilter = "ALL" | "PLATFORM_SUPPORT";
+
 export function useAuditLogs() {
   const [logs, setLogs] = useState<AuditEntry[]>([]);
   const [summary, setSummary] = useState<AuditSummary>(DEFAULT_SUMMARY);
@@ -59,6 +65,7 @@ export function useAuditLogs() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState("");
   const [moduleFilter, setModuleFilter] = useState<AuditModule | "ALL">("ALL");
+  const [actorTypeFilter, setActorTypeFilter] = useState<ActorTypeFilter>("ALL");
   const [dateRange, setDateRange] = useState<AuditDateRange>("7d");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,10 +75,11 @@ export function useAuditLogs() {
     const base = new URLSearchParams();
     if (search.trim()) base.set("action", search.trim());
     if (moduleFilter !== "ALL") base.set("module", moduleFilter);
+    if (actorTypeFilter !== "ALL") base.set("actorType", actorTypeFilter);
     if (from) base.set("from", from);
     if (to) base.set("to", to);
     return base;
-  }, [search, moduleFilter, dateRange]);
+  }, [search, moduleFilter, actorTypeFilter, dateRange]);
 
   useEffect(() => {
     let cancelled = false;
@@ -106,7 +114,7 @@ export function useAuditLogs() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, moduleFilter, dateRange]);
+  }, [search, moduleFilter, actorTypeFilter, dateRange]);
 
   return {
     logs,
@@ -120,6 +128,8 @@ export function useAuditLogs() {
     setSearch,
     moduleFilter,
     setModuleFilter,
+    actorTypeFilter,
+    setActorTypeFilter,
     dateRange,
     setDateRange,
     isLoading,

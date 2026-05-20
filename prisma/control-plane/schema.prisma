@@ -46,8 +46,48 @@ model Tenant {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  auditLogs      PlatformAuditLog[]
-  impersonations Impersonation[]
+  // Impersonation opt-out (tenant-controlled kill switch)
+  impersonationEnabled          Boolean   @default(true)
+  impersonationDisabledAt       DateTime?
+  impersonationDisabledBy       String?   // tenant User.id mirror (no FK — cross-silo)
+  impersonationDisabledByEmail  String?
+
+  auditLogs             PlatformAuditLog[]
+  impersonations        Impersonation[]
+  impersonationRequests ImpersonationRequest[]
+}
+
+model ImpersonationRequest {
+  id                  String                      @id @default(cuid())
+  platformUserId      String
+  platformUser        PlatformUser                @relation(fields: [platformUserId], references: [id])
+  tenantId            String
+  tenant              Tenant                      @relation(fields: [tenantId], references: [id])
+  reason              String
+  expectedDurationMin Int                         @default(60)
+  status              ImpersonationRequestStatus  @default(PENDING)
+  approvalTokenHash   String                      // sha256(token); raw token is in email only
+  createdAt           DateTime                    @default(now())
+  expiresAt           DateTime                    // default now()+30min — controlled by IMPERSONATION_APPROVAL_TTL_MIN
+  decidedAt           DateTime?
+  decidedByUserId     String?                     // tenant User.id mirror (no FK — cross-silo)
+  decidedByEmail      String?
+  decisionNote        String?
+  consumedAt          DateTime?                   // set when session actually launches
+  impersonationId     String?                     @unique
+  impersonation       Impersonation?              @relation(fields: [impersonationId], references: [id])
+
+  @@index([tenantId, status])
+  @@index([approvalTokenHash])
+}
+
+enum ImpersonationRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  CONSUMED
+  CANCELLED
 }
 
 model PlatformUser {
@@ -59,8 +99,9 @@ model PlatformUser {
   lastLoginAt  DateTime?
   createdAt    DateTime     @default(now())
 
-  auditLogs      PlatformAuditLog[]
-  impersonations Impersonation[]
+  auditLogs             PlatformAuditLog[]
+  impersonations        Impersonation[]
+  impersonationRequests ImpersonationRequest[]
 }
 
 model Impersonation {
@@ -72,6 +113,8 @@ model Impersonation {
   reason         String
   startedAt      DateTime     @default(now())
   endedAt        DateTime?    // null = active session; set when ended or expired
+
+  request        ImpersonationRequest?
 }
 
 enum PlatformRole {

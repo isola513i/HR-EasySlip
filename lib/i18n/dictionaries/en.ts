@@ -2189,6 +2189,32 @@ const en = {
       company: "Company",
       users: "Users",
       billing: "Billing",
+      security: "Security",
+    },
+    security: {
+      title: "Security & Privacy",
+      subtitle: "Control how platform support can access your workspace",
+      impersonation: {
+        sectionTitle: "Platform Support Access",
+        description:
+          "When enabled, EasySlip support staff may request access to your workspace to assist with technical issues. Each request requires approval from an admin in your organisation before access is granted.",
+        enabledLabel: "Platform support access is enabled",
+        disabledLabel: "Platform support access is disabled",
+        toggleEnable: "Allow platform support access",
+        toggleDisable: "Disable platform support access",
+        confirmDisableTitle: "Disable platform support access?",
+        confirmDisableBody:
+          "Support staff will no longer be able to request access to your workspace. Any active support sessions will be terminated immediately. You can re-enable this at any time.",
+        confirmDisable: "Yes, disable access",
+        confirmEnableTitle: "Allow platform support access?",
+        confirmEnableBody:
+          "Support staff will be able to request access to your workspace. Your admins must approve each request before access is granted.",
+        confirmEnable: "Yes, allow access",
+        disabledSince: "Disabled since",
+        disabledBy: "Disabled by",
+        toggleSuccess: "Setting updated",
+        toggleError: "Failed to update setting",
+      },
     },
     company: {
       title: "Company Settings",

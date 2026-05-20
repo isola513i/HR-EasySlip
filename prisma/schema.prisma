@@ -538,10 +538,16 @@ model EmpeoInboundEvent {
 // PDPA & AUDIT
 // ────────────────────────────────────────────────────────────────
 
+enum AuditActorType {
+  USER             // normal tenant user action
+  SYSTEM           // cron / auto / system action
+  PLATFORM_SUPPORT // EasySlip support staff via impersonation
+}
+
 model AuditLog {
-  id         String   @id @default(cuid())
-  actorId    String? // null = system (cron/auto)
-  action     String // "leave.approve" | "attendance.backfill" | ...
+  id         String         @id @default(cuid())
+  actorId    String? // null = system or platform support (cross-silo)
+  action     String // "leave.approve" | "attendance.backfill" | "platform_support.session_start" | ...
   entityType String
   entityId   String
   before     Json?
@@ -551,10 +557,17 @@ model AuditLog {
   reason     String?  @db.Text
   createdAt  DateTime @default(now())
 
+  // Platform support actor fields (populated when actorType = PLATFORM_SUPPORT)
+  actorType          AuditActorType @default(USER)
+  platformActorId    String?        // PlatformUser.id — no FK (cross-silo)
+  platformActorEmail String?
+  impersonationId    String?        // Impersonation.id in Control Plane — no FK (cross-silo)
+
   actor User? @relation("AuditActor", fields: [actorId], references: [id])
 
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
+  @@index([actorType, createdAt])
   @@index([createdAt])
 }
 

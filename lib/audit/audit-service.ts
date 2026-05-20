@@ -44,6 +44,7 @@ function buildWhere(filters: AuditQuery) {
   }
 
   if (filters.actorId) where.actorId = filters.actorId;
+  if (filters.actorType) where.actorType = filters.actorType;
 
   if (filters.action) {
     const q = filters.action;

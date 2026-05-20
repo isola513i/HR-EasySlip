@@ -11,7 +11,7 @@ import { ChangePlanForm } from "./change-plan-form";
 import { getPlans } from "@/lib/platform/plan-catalog";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Database, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Database, CheckCircle2, ShieldOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -36,6 +36,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
       select: {
         id: true, slug: true, companyName: true, planCode: true, status: true,
         trialEndsAt: true, provisionedAt: true, createdAt: true, updatedAt: true, databaseUrlEnc: true,
+        impersonationEnabled: true, impersonationDisabledByEmail: true, impersonationDisabledAt: true,
       },
     }),
     cp.platformAuditLog.findMany({
@@ -79,13 +80,22 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            {isAdmin && (
+            {isAdmin && tenant.impersonationEnabled && (
               <Link
                 href={`/tenants/${tenant.id}/impersonate`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
               >
                 Impersonate
               </Link>
+            )}
+            {isAdmin && !tenant.impersonationEnabled && (
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/60 text-muted-foreground border border-border cursor-not-allowed"
+                title={`Disabled by tenant${tenant.impersonationDisabledByEmail ? ` (${tenant.impersonationDisabledByEmail})` : ""}`}
+              >
+                <ShieldOff className="size-3" />
+                Access disabled by tenant
+              </div>
             )}
             <span className="text-xs text-muted-foreground">
               Created {new Date(tenant.createdAt).toLocaleDateString("en-GB")}
