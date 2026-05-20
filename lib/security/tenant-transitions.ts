@@ -5,13 +5,20 @@ export const TENANT_STATUS_TRANSITIONS = {
   ],
   TRIAL: [
     { label: "Activate", variant: "default" as const, nextStatus: "ACTIVE" },
+    { label: "Expire", variant: "outline" as const, nextStatus: "EXPIRED" },
     { label: "Suspend", variant: "destructive" as const, nextStatus: "SUSPENDED" },
   ],
   TRIAL_EXPIRED: [
     { label: "Activate", variant: "default" as const, nextStatus: "ACTIVE" },
+    { label: "Expire", variant: "outline" as const, nextStatus: "EXPIRED" },
     { label: "Suspend", variant: "destructive" as const, nextStatus: "SUSPENDED" },
   ],
   ACTIVE: [
+    { label: "Expire", variant: "outline" as const, nextStatus: "EXPIRED" },
+    { label: "Suspend", variant: "destructive" as const, nextStatus: "SUSPENDED" },
+  ],
+  EXPIRED: [
+    { label: "Re-activate", variant: "default" as const, nextStatus: "ACTIVE" },
     { label: "Suspend", variant: "destructive" as const, nextStatus: "SUSPENDED" },
   ],
   SUSPENDED: [

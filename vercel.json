@@ -20,6 +20,10 @@
     {
       "path": "/api/platform/cron/trial-expiry",
       "schedule": "5 0 * * *"
+    },
+    {
+      "path": "/api/platform/cron/tenant-lifecycle",
+      "schedule": "10 0 * * *"
     }
   ]
 }

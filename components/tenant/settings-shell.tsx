@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, Users, CreditCard, ShieldCheck } from "lucide-react";
+import { Building2, Users, CreditCard, ShieldCheck, Database } from "lucide-react";
 import { AdminShell } from "@/components/shared/admin-shell";
 import type { NavItem } from "@/components/shared/admin-sidebar";
 import { useT } from "@/lib/i18n/locale-context";
@@ -19,6 +19,7 @@ export function SettingsShell({ user, children }: Props) {
     { key: "users", href: "/settings/users", icon: Users, label: nav.users },
     { key: "billing", href: "/settings/billing", icon: CreditCard, label: nav.billing },
     { key: "security", href: "/settings/security", icon: ShieldCheck, label: nav.security },
+    { key: "data", href: "/settings/data", icon: Database, label: nav.data },
   ];
 
   return (

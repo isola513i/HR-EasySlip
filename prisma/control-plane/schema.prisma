@@ -37,7 +37,7 @@ model Tenant {
   id             String    @id @default(cuid())
   slug           String    @unique
   companyName    String
-  status         String    @default("PENDING") // PENDING|ACTIVE|TRIAL|TRIAL_EXPIRED|SUSPENDED|DELETED
+  status         String    @default("PENDING") // PENDING|ACTIVE|TRIAL|TRIAL_EXPIRED|EXPIRED|SUSPENDED|DELETED
   databaseUrlEnc String?
   directUrlEnc   String?
   planCode       String?
@@ -51,6 +51,16 @@ model Tenant {
   impersonationDisabledAt       DateTime?
   impersonationDisabledBy       String?   // tenant User.id mirror (no FK — cross-silo)
   impersonationDisabledByEmail  String?
+
+  // PDPA Data Lifecycle (Phase 2)
+  expiredAt         DateTime?   // when status became EXPIRED
+  gracePeriodEndsAt DateTime?   // expiredAt + 30 days: read-only window closes
+  softDeleteAt      DateTime?   // expiredAt + 90 days: PII anonymised, access blocked
+  hardDeleteAt      DateTime?   // expiredAt + 180 days: DB dropped
+  softDeletedAt     DateTime?   // actual timestamp when anonymisation ran (set by cron)
+
+  // Self-service data export
+  lastExportRequestedAt DateTime?
 
   auditLogs             PlatformAuditLog[]
   impersonations        Impersonation[]
@@ -125,8 +135,8 @@ enum PlatformRole {
 
 model PlatformAuditLog {
   id         String        @id @default(cuid())
-  actorId    String
-  actor      PlatformUser  @relation(fields: [actorId], references: [id])
+  actorId    String?       // null = system/cron action
+  actor      PlatformUser? @relation(fields: [actorId], references: [id])
   tenantId   String?
   tenant     Tenant?       @relation(fields: [tenantId], references: [id])
   action     String        // e.g. "trial.approve", "tenant.provision", "trial.reject"

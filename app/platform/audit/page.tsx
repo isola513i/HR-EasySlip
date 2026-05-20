@@ -105,7 +105,7 @@ export default async function AuditPage({ searchParams }: Props) {
                       <SeverityBadge severity={severity} />
                     </td>
                     <td className="px-4 py-3 text-xs text-foreground/80">
-                      {log.actor.email}
+                      {log.actor?.email ?? "system"}
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-mono text-xs text-primary">{log.action}</span>

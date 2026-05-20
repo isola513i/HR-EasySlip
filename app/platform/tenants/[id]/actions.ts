@@ -1,12 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
 import { ALLOWED_TRANSITIONS } from "@/lib/security/tenant-transitions";
 import { getPlanByCode } from "@/lib/platform/plan-catalog";
+import { buildLifecycleDates, clearLifecycleDates } from "@/lib/platform/tenant-lifecycle-service";
 
 type ActionResult = { error: string } | null;
 
@@ -86,15 +86,61 @@ export async function reactivateTenant(
   const tenant = await cp.tenant.findUnique({ where: { id: tenantId }, select: { status: true } });
   if (!tenant) return { error: "Tenant not found." };
 
-  if (tenant.status !== "SUSPENDED") return { error: "Tenant is not suspended." };
+  if (!["SUSPENDED", "EXPIRED"].includes(tenant.status)) {
+    return { error: "Tenant is not suspended or expired." };
+  }
 
-  await cp.tenant.update({ where: { id: tenantId }, data: { status: "ACTIVE" } });
+  await cp.tenant.update({
+    where: { id: tenantId },
+    data: { status: "ACTIVE", ...clearLifecycleDates() },
+  });
   await cp.platformAuditLog.create({
     data: {
       actorId: session.userId,
       tenantId,
       action: "tenant.reactivate",
-      metadata: { reason },
+      metadata: { from: tenant.status, reason },
+    },
+  });
+
+  revalidatePath(`/tenants/${tenantId}`);
+  revalidatePath("/tenants");
+  return null;
+}
+
+export async function expireTenant(
+  tenantId: string,
+  _prev: ActionResult,
+  formData: FormData
+): Promise<ActionResult> {
+  const session = await requirePlatformSession(PLATFORM_ADMIN_ROLES);
+  const reason = (formData.get("reason") as string)?.trim();
+  if (!reason) return { error: "Reason is required." };
+
+  const cp = getControlPlane();
+  const tenant = await cp.tenant.findUnique({ where: { id: tenantId }, select: { status: true } });
+  if (!tenant) return { error: "Tenant not found." };
+
+  const allowed = ALLOWED_TRANSITIONS[tenant.status] ?? [];
+  if (!allowed.includes("EXPIRED")) return { error: "Cannot expire this tenant." };
+
+  const lifecycle = buildLifecycleDates(new Date());
+
+  await cp.tenant.update({
+    where: { id: tenantId },
+    data: { status: "EXPIRED", ...lifecycle },
+  });
+  await cp.platformAuditLog.create({
+    data: {
+      actorId: session.userId,
+      tenantId,
+      action: "tenant.expire",
+      metadata: {
+        from: tenant.status,
+        reason,
+        gracePeriodEndsAt: lifecycle.gracePeriodEndsAt,
+        hardDeleteAt: lifecycle.hardDeleteAt,
+      },
     },
   });
 

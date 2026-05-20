@@ -7,6 +7,7 @@ import { SeverityBadge } from "@/components/platform/severity-badge";
 import { DetailRow } from "@/components/platform/detail-row";
 import { CopyButton } from "@/components/platform/copy-button";
 import { DangerZone } from "./danger-zone";
+import { ExpireZone } from "./expire-zone";
 import { ChangePlanForm } from "./change-plan-form";
 import { getPlans } from "@/lib/platform/plan-catalog";
 import { notFound } from "next/navigation";
@@ -37,6 +38,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
         id: true, slug: true, companyName: true, planCode: true, status: true,
         trialEndsAt: true, provisionedAt: true, createdAt: true, updatedAt: true, databaseUrlEnc: true,
         impersonationEnabled: true, impersonationDisabledByEmail: true, impersonationDisabledAt: true,
+        expiredAt: true, gracePeriodEndsAt: true, softDeleteAt: true, hardDeleteAt: true, softDeletedAt: true,
       },
     }),
     cp.platformAuditLog.findMany({
@@ -214,7 +216,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
                     <SeverityBadge severity={severity} className="mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <span className="font-mono text-xs text-primary">{log.action}</span>
-                      <span className="text-xs text-muted-foreground"> · {log.actor.email}</span>
+                      <span className="text-xs text-muted-foreground"> · {log.actor?.email ?? "system"}</span>
                     </div>
                     <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
                       {new Date(log.createdAt).toLocaleString("en-GB")}
@@ -228,11 +230,21 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
       )}
 
       {tab === "danger" && isAdmin && (
-        <DangerZone
-          tenantId={tenant.id}
-          companyName={tenant.companyName}
-          status={tenant.status}
-        />
+        <div className="space-y-6">
+          <DangerZone
+            tenantId={tenant.id}
+            companyName={tenant.companyName}
+            status={tenant.status}
+          />
+          <ExpireZone
+            tenantId={tenant.id}
+            companyName={tenant.companyName}
+            status={tenant.status}
+            gracePeriodEndsAt={tenant.gracePeriodEndsAt?.toISOString() ?? null}
+            hardDeleteAt={tenant.hardDeleteAt?.toISOString() ?? null}
+            softDeletedAt={tenant.softDeletedAt?.toISOString() ?? null}
+          />
+        </div>
       )}
 
       {tab === "danger" && !isAdmin && (
