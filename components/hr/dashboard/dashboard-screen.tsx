@@ -1,8 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { KpiGrid } from "@/components/hr/dashboard/kpi-grid";
-import { LeaveTrendChart } from "@/components/hr/dashboard/leave-trend-chart";
+
+const LeaveTrendChart = dynamic(
+  () => import("@/components/hr/dashboard/leave-trend-chart").then((m) => ({ default: m.LeaveTrendChart })),
+  { ssr: false },
+);
 import { QuickActions } from "@/components/hr/dashboard/quick-actions";
 import { RecentActivities } from "@/components/hr/dashboard/recent-activities";
 import { UpcomingEvents } from "@/components/hr/dashboard/upcoming-events";

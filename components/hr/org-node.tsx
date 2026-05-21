@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import Image from "next/image";
 import { Building2 } from "lucide-react";
 import { profilePictureSrc } from "@/hooks/use-profile-picture";
 import { cn } from "@/lib/utils";
@@ -52,9 +53,8 @@ function NodeCard({ node, isCollapsed, isHighlighted, onToggle }: NodeCardProps)
       )}
     >
       {pictureSrc ? (
-        <div className="size-14 shrink-0 overflow-hidden rounded-full ring-2 ring-card">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={pictureSrc} alt={fullName} className="size-full object-cover" />
+        <div className="relative size-14 shrink-0 overflow-hidden rounded-full ring-2 ring-card">
+          <Image src={pictureSrc} alt={fullName} fill sizes="56px" className="object-cover" />
         </div>
       ) : (
         <div className="grid size-14 shrink-0 place-items-center rounded-full bg-(--es-accent-50) text-[15px] font-semibold tracking-wide text-(--es-accent-700) ring-2 ring-card">

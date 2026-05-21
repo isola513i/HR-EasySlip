@@ -79,6 +79,7 @@ const docsSecurityHeaders = securityHeaders.map((h) => {
 const nextConfig: NextConfig = {
   devIndicators: false,
   transpilePackages: ["@base-ui/react"],
+  serverExternalPackages: ["exceljs", "web-push"],
   async headers() {
     return [
       {
@@ -104,7 +105,7 @@ export default sentryEnabled
       project: process.env.SENTRY_PROJECT,
       authToken: process.env.SENTRY_AUTH_TOKEN,
       silent: !process.env.CI,
-      widenClientFileUpload: true,
+      widenClientFileUpload: false,
       disableLogger: true,
     })
   : nextConfig;

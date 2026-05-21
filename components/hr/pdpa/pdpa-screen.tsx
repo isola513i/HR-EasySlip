@@ -5,7 +5,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PdpaKpis } from "@/components/hr/pdpa/pdpa-kpis";
-import { PdpaOverviewChart } from "@/components/hr/pdpa/pdpa-overview-chart";
+import dynamic from "next/dynamic";
+
+const PdpaOverviewChart = dynamic(
+  () => import("@/components/hr/pdpa/pdpa-overview-chart").then((m) => ({ default: m.PdpaOverviewChart })),
+  { ssr: false },
+);
 import { PdpaCategories } from "@/components/hr/pdpa/pdpa-categories";
 import { PdpaRecordsTable } from "@/components/hr/pdpa/pdpa-records-table";
 import { PdpaComplianceBanner } from "@/components/hr/pdpa/pdpa-compliance-banner";

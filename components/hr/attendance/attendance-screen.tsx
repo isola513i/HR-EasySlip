@@ -6,7 +6,12 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { KpiCards } from "@/components/hr/attendance/kpi-cards";
-import { WeeklyOverviewChart } from "@/components/hr/attendance/weekly-overview-chart";
+import dynamic from "next/dynamic";
+
+const WeeklyOverviewChart = dynamic(
+  () => import("@/components/hr/attendance/weekly-overview-chart").then((m) => ({ default: m.WeeklyOverviewChart })),
+  { ssr: false },
+);
 import { TodayAttendanceTable } from "@/components/hr/attendance/today-attendance-table";
 import { GeofenceBreachPanel } from "@/components/hr/attendance/geofence-breach-panel";
 import { downloadBlob } from "@/lib/download";

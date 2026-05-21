@@ -8,7 +8,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "postinstall": "bun run db:generate",
     "start": "next start",
-    "db:generate": "prisma generate && prisma generate --schema=prisma/control-plane/schema.prisma",
+    "db:generate": "prisma generate --schema=prisma/schema.prisma & prisma generate --schema=prisma/control-plane/schema.prisma & wait",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",

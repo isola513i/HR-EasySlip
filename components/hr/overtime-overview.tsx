@@ -13,7 +13,12 @@ import { buildTopOT, buildTrends, buildKpis, buildOvertimeCSV } from "@/lib/over
 import { OvertimeKpis } from "@/components/hr/overtime/overtime-kpis";
 import { PendingOvertimeList } from "@/components/hr/overtime/pending-overtime-list";
 import { TopOtEmployees } from "@/components/hr/overtime/top-ot-employees";
-import { MonthlyTrendsChart } from "@/components/hr/overtime/monthly-trends-chart";
+import dynamic from "next/dynamic";
+
+const MonthlyTrendsChart = dynamic(
+  () => import("@/components/hr/overtime/monthly-trends-chart").then((m) => ({ default: m.MonthlyTrendsChart })),
+  { ssr: false },
+);
 
 export function OvertimeOverview() {
   const t = useT();
