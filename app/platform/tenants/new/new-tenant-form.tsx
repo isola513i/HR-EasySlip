@@ -38,7 +38,7 @@ export function NewTenantForm() {
 
       <Field id="status" label="Initial Status">
         <input type="hidden" name="status" value={status} />
-        <Select value={status} onValueChange={setStatus}>
+        <Select value={status} onValueChange={(v) => { if (v) setStatus(v); }}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

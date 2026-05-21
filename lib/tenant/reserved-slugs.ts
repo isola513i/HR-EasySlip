@@ -25,6 +25,7 @@ export const RESERVED_SLUGS = new Set([
   "icons",
   "fonts",
   "images",
+  "mock",
   "static",
   "assets",
   "health",
