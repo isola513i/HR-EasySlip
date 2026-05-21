@@ -127,10 +127,11 @@ export default async function middleware(req: NextRequest): Promise<NextResponse
     }
   }
 
-  const res = NextResponse.next();
-  res.headers.set("x-tenant-id", tenant.id);
-  res.headers.set("x-tenant-slug", tenant.slug);
-  if (impToken) res.headers.set("x-impersonation", "1");
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-tenant-id", tenant.id);
+  requestHeaders.set("x-tenant-slug", tenant.slug);
+  if (impToken) requestHeaders.set("x-impersonation", "1");
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
   return withLocale(req, res);
 }
 
