@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { suspendTenant, reactivateTenant } from "./actions";
+import { suspendTenant, reactivateTenant, deleteTenant } from "./actions";
 import { buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,26 +19,30 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ShieldAlert, UserCheck, AlertTriangle } from "lucide-react";
+import { ShieldAlert, UserCheck, AlertTriangle, Trash2 } from "lucide-react";
 
 interface Props {
   tenantId: string;
   companyName: string;
+  slug: string;
   status: string;
 }
 
-export function DangerZone({ tenantId, companyName, status }: Props) {
+export function DangerZone({ tenantId, companyName, slug, status }: Props) {
   const canSuspend = ["ACTIVE", "TRIAL", "TRIAL_EXPIRED"].includes(status);
   const canReactivate = status === "SUSPENDED";
 
   const suspendAction = suspendTenant.bind(null, tenantId);
   const reactivateAction = reactivateTenant.bind(null, tenantId);
+  const deleteAction = deleteTenant.bind(null, tenantId);
 
   const [suspendState, suspendDispatch, suspendPending] = useActionState(suspendAction, null);
   const [reactivateState, reactivateDispatch, reactivatePending] = useActionState(reactivateAction, null);
+  const [deleteState, deleteDispatch, deletePending] = useActionState(deleteAction, null);
 
   const [suspendReason, setSuspendReason] = useState("");
   const [reactivateReason, setReactivateReason] = useState("");
+  const [confirmSlug, setConfirmSlug] = useState("");
 
   return (
     <div className="space-y-4">
@@ -170,6 +175,56 @@ export function DangerZone({ tenantId, companyName, status }: Props) {
             </AlertDialog>
           </div>
         )}
+
+        <div className="flex items-start justify-between gap-4 p-5">
+          <div className="flex items-start gap-3">
+            <Trash2 className="size-4 text-rose-500 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Delete tenant</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Permanently removes <span className="font-medium">{companyName}</span> from the control plane and deletes the Neon branch. Irreversible.
+              </p>
+              {deleteState?.error && (
+                <p className="text-xs text-rose-400 mt-1">{deleteState.error}</p>
+              )}
+            </div>
+          </div>
+          <AlertDialog onOpenChange={(open) => { if (!open) setConfirmSlug(""); }}>
+            <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-rose-500/40 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400")}>
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {companyName}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes the tenant record and its Neon branch. There is no undo.
+                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <form action={deleteDispatch} id="delete-form" className="mt-2">
+                <input type="hidden" name="confirmSlug" value={confirmSlug} />
+                <Input
+                  value={confirmSlug}
+                  onChange={(e) => setConfirmSlug(e.target.value)}
+                  placeholder={slug}
+                  className="font-mono text-sm"
+                  autoComplete="off"
+                />
+              </form>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  form="delete-form"
+                  type="submit"
+                  disabled={deletePending || confirmSlug !== slug}
+                  className="bg-rose-600 hover:bg-rose-700 text-white"
+                >
+                  {deletePending ? "Deleting…" : "Permanently delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
     </div>
   );

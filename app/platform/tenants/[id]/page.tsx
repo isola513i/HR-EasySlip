@@ -262,6 +262,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
           <DangerZone
             tenantId={tenant.id}
             companyName={tenant.companyName}
+            slug={tenant.slug}
             status={tenant.status}
           />
           <ExpireZone

@@ -1,12 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
 import { ALLOWED_TRANSITIONS } from "@/lib/security/tenant-transitions";
 import { getPlanByCode } from "@/lib/platform/plan-catalog";
 import { buildLifecycleDates, clearLifecycleDates } from "@/lib/platform/tenant-lifecycle-service";
+import { deleteBranch, NeonError } from "@/lib/neon/client";
 
 type ActionResult = { error: string } | null;
 
@@ -178,4 +180,40 @@ export async function updateTenantPlan(
   revalidatePath(`/platform/tenants/${tenantId}`);
   revalidatePath("/platform/plans");
   return null;
+}
+
+export async function deleteTenant(
+  tenantId: string,
+  _prev: ActionResult,
+  formData: FormData,
+): Promise<ActionResult> {
+  const session = await requirePlatformSession(PLATFORM_ADMIN_ROLES);
+  const confirmedSlug = (formData.get("confirmSlug") as string)?.trim();
+
+  const cp = getControlPlane();
+  const tenant = await cp.tenant.findUnique({
+    where: { id: tenantId },
+    select: { slug: true, companyName: true, neonBranchId: true },
+  });
+  if (!tenant) return { error: "Tenant not found." };
+  if (confirmedSlug !== tenant.slug) return { error: `Slug mismatch. Type "${tenant.slug}" to confirm.` };
+
+  await cp.platformAuditLog.create({
+    data: {
+      actorId: session.userId,
+      tenantId,
+      action: "tenant.hard_delete",
+      metadata: { slug: tenant.slug, companyName: tenant.companyName },
+    },
+  });
+
+  await cp.tenant.delete({ where: { id: tenantId } });
+
+  if (tenant.neonBranchId) {
+    deleteBranch(tenant.neonBranchId).catch((e) => {
+      if (!(e instanceof NeonError)) console.error("[delete-tenant] branch cleanup failed:", e);
+    });
+  }
+
+  redirect("/platform/tenants");
 }
