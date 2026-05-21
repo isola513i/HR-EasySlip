@@ -222,6 +222,8 @@ const en = {
     setupSubtitle: "Create a password you'll use to sign in next time, as",
     setupButton: "Set password and continue",
     matchHint: "Matches new password",
+    marketingHeading: "Security starts with your password",
+    marketingTagline: "Create your personal password before accessing EasySlip HR and your team's data.",
     forgotTitle: "Forgot Password",
     forgotSubtitle: "Enter your email. We'll send a reset link.",
     forgotEmail: "Email",

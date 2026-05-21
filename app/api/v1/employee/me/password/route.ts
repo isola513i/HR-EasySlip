@@ -31,18 +31,17 @@ export const PUT = withApiHandler(async (req, ctx) => {
 
   if (!user) return apiError("USER_NOT_FOUND", "ไม่พบบัญชีผู้ใช้", 404);
 
-  // First-time password setup: passwordHash is null AND mustChangePassword is true →
-  // allow setting a new password without requiring the current one
-  const isFirstTimeSetup = !user.passwordHash && user.mustChangePassword;
+  // Forced setup: skip currentPassword verification when either
+  //   - mustChangePassword=true (admin forced a change; temp pw is being invalidated anyway), or
+  //   - passwordHash is null (user has never set one)
+  // Session authentication (magic link or temp pw) already proves identity.
+  const skipCurrentCheck = user.mustChangePassword || !user.passwordHash;
 
-  if (!isFirstTimeSetup) {
-    if (!user.passwordHash) {
-      return apiError("NO_PASSWORD", "บัญชีนี้ยังไม่ได้ตั้งรหัสผ่าน กรุณาเข้าสู่ระบบด้วย Magic Link", 400);
-    }
+  if (!skipCurrentCheck) {
     if (!currentPassword) {
       return apiError("MISSING_CURRENT_PASSWORD", "กรุณากรอกรหัสผ่านปัจจุบัน", 400);
     }
-    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    const valid = await verifyPassword(currentPassword, user.passwordHash!);
     if (!valid) {
       return apiError("INVALID_PASSWORD", "รหัสผ่านปัจจุบันไม่ถูกต้อง", 401);
     }
