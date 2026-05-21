@@ -194,34 +194,35 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
               Delete
             </AlertDialogTrigger>
             <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete {companyName}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This permanently deletes the tenant record and its Neon branch. There is no undo.
-                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <form action={deleteDispatch} id="delete-form" className="mt-2">
+              <form action={deleteDispatch}>
                 <input type="hidden" name="confirmSlug" value={confirmSlug} />
-                <Input
-                  value={confirmSlug}
-                  onChange={(e) => setConfirmSlug(e.target.value)}
-                  placeholder={slug}
-                  className="font-mono text-sm"
-                  autoComplete="off"
-                />
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {companyName}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This permanently deletes the tenant record and its Neon branch. There is no undo.
+                    Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="my-4">
+                  <Input
+                    value={confirmSlug}
+                    onChange={(e) => setConfirmSlug(e.target.value)}
+                    placeholder={slug}
+                    className="font-mono text-sm"
+                    autoComplete="off"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    type="submit"
+                    disabled={deletePending || confirmSlug !== slug}
+                    className="bg-rose-600 hover:bg-rose-700 text-white"
+                  >
+                    {deletePending ? "Deleting…" : "Permanently delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
               </form>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  form="delete-form"
-                  type="submit"
-                  disabled={deletePending || confirmSlug !== slug}
-                  className="bg-rose-600 hover:bg-rose-700 text-white"
-                >
-                  {deletePending ? "Deleting…" : "Permanently delete"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>
