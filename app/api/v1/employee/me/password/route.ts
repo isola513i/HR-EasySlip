@@ -1,12 +1,10 @@
-import { NextResponse } from "next/server";
 import { z } from "zod";
+import { auth } from "@/lib/auth";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { withApiHandler } from "@/lib/api/with-api-handler";
-import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { parseBody } from "@/lib/api/validate";
 import { apiOk, apiError } from "@/lib/api/response";
 import { hashPassword, verifyPassword } from "@/lib/auth/password-utils";
-import { writeAuditLog } from "@/lib/audit/logger";
 import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const ChangePasswordSchema = z.object({
@@ -18,23 +16,26 @@ export const PUT = withApiHandler(async (req, ctx) => {
   const guard = await requireApiMutable();
   if (guard) return guard;
 
-  const caller = await requireApiEmployee(EMPLOYEE_ROLES);
-  if (caller instanceof NextResponse) return caller;
+  const session = await auth();
+  if (!session?.user?.id) {
+    return apiError("UNAUTHENTICATED", "ต้องเข้าสู่ระบบก่อน", 401);
+  }
+  const userId = session.user.id;
 
   const { currentPassword, newPassword } = await parseBody(req, ChangePasswordSchema);
   const cp = getControlPlane();
 
   const user = await cp.user.findUnique({
-    where: { id: caller.userId },
-    select: { passwordHash: true, mustChangePassword: true },
+    where: { id: userId },
+    select: { passwordHash: true, mustChangePassword: true, email: true },
   });
 
   if (!user) return apiError("USER_NOT_FOUND", "ไม่พบบัญชีผู้ใช้", 404);
 
-  // Forced setup: skip currentPassword verification when either
+  // Skip currentPassword verification when either
   //   - mustChangePassword=true (admin forced a change; temp pw is being invalidated anyway), or
   //   - passwordHash is null (user has never set one)
-  // Session authentication (magic link or temp pw) already proves identity.
+  // The session itself (magic-link or temp-pw login) already proves identity.
   const skipCurrentCheck = user.mustChangePassword || !user.passwordHash;
 
   if (!skipCurrentCheck) {
@@ -49,18 +50,24 @@ export const PUT = withApiHandler(async (req, ctx) => {
 
   const newHash = await hashPassword(newPassword);
   await cp.user.update({
-    where: { id: caller.userId },
+    where: { id: userId },
     data: { passwordHash: newHash, mustChangePassword: false },
   });
 
-  await writeAuditLog({
-    actorId: caller.userId,
-    action: "user.change_password",
-    entityType: "User",
-    entityId: caller.userId,
-    ipAddress: ctx.ip,
-    userAgent: ctx.userAgent,
-  });
+  await cp.platformAuditLog.create({
+    data: {
+      actorId: userId,
+      action: "user.change_password",
+      targetType: "User",
+      targetId: userId,
+      metadata: {
+        email: user.email,
+        wasForced: skipCurrentCheck,
+        ipAddress: ctx.ip,
+        userAgent: ctx.userAgent,
+      },
+    },
+  }).catch(() => {});
 
   return apiOk({ ok: true });
 });
