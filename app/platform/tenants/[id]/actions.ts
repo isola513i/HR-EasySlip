@@ -219,6 +219,13 @@ export async function deleteTenant(
 
   await cp.tenant.delete({ where: { id: tenantId } });
 
+  // Nullify the tenantId reference in associated TrialSignup records so they
+  // don't appear as "live" after the tenant is gone.
+  await cp.trialSignup.updateMany({
+    where: { tenantId },
+    data: { tenantId: null },
+  });
+
   if (tenant.neonBranchId) {
     deleteBranch(tenant.neonBranchId).catch((e) => {
       if (!(e instanceof NeonError)) console.error("[delete-tenant] branch cleanup failed:", e);

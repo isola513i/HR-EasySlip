@@ -4,6 +4,7 @@ import { useT } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 import {
   Select,
   SelectContent,
@@ -57,19 +58,22 @@ export function InviteForm({ action, pending, state, onClose }: Props) {
   }
 
   return (
-    <form action={action} className="space-y-4">
-      <div className="space-y-1">
+    <FormRoot action={action} className="space-y-4">
+      <FormField name="email" className="space-y-1">
         <Label htmlFor="invite-email">{tu.inviteEmail}</Label>
         <Input id="invite-email" name="email" type="email" required />
-      </div>
-      <div className="space-y-1">
+        <FormFieldError inputType="email" />
+      </FormField>
+      <FormField name="firstNameTh" className="space-y-1">
         <Label htmlFor="invite-first">{tu.inviteFirstName}</Label>
         <Input id="invite-first" name="firstNameTh" required />
-      </div>
-      <div className="space-y-1">
+        <FormFieldError />
+      </FormField>
+      <FormField name="lastNameTh" className="space-y-1">
         <Label htmlFor="invite-last">{tu.inviteLastName}</Label>
         <Input id="invite-last" name="lastNameTh" required />
-      </div>
+        <FormFieldError />
+      </FormField>
       <div className="space-y-1">
         <Label htmlFor="invite-role">{tu.inviteRole}</Label>
         <Select name="role" defaultValue="EMPLOYEE">
@@ -91,6 +95,6 @@ export function InviteForm({ action, pending, state, onClose }: Props) {
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? t.common.saving : tu.inviteSubmit}
       </Button>
-    </form>
+    </FormRoot>
   );
 }

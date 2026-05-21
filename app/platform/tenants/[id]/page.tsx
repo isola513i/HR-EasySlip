@@ -104,23 +104,6 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
-            {isAdmin && tenant.impersonationEnabled && (
-              <Link
-                href={`/platform/tenants/${tenant.id}/impersonate`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
-              >
-                Impersonate
-              </Link>
-            )}
-            {isAdmin && !tenant.impersonationEnabled && (
-              <div
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-muted/60 text-muted-foreground border border-border cursor-not-allowed"
-                title={`Disabled by tenant${tenant.impersonationDisabledByEmail ? ` (${tenant.impersonationDisabledByEmail})` : ""}`}
-              >
-                <ShieldOff className="size-3" />
-                Access disabled by tenant
-              </div>
-            )}
             <span className="text-xs text-muted-foreground">
               Created {new Date(tenant.createdAt).toLocaleDateString("en-GB")}
             </span>

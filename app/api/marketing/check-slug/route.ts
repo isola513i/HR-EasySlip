@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SLUG_RE, RESERVED_SLUGS as RESERVED } from "@/lib/validation/trial-signup";
+import { SLUG_RE } from "@/lib/validation/trial-signup";
+import { isReservedSlug } from "@/lib/tenant/reserved-slugs";
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get("slug")?.toLowerCase().trim();
 
   if (!slug) return NextResponse.json({ available: false, reason: "MISSING" });
   if (!SLUG_RE.test(slug)) return NextResponse.json({ available: false, reason: "INVALID_FORMAT" });
-  if (RESERVED.has(slug)) return NextResponse.json({ available: false, reason: "RESERVED" });
+  if (isReservedSlug(slug)) return NextResponse.json({ available: false, reason: "RESERVED" });
 
   // Check Control Plane DB if configured
   if (process.env.CONTROL_PLANE_DATABASE_URL) {

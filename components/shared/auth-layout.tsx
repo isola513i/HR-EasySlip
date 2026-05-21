@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { AuthMarketing } from "@/components/shared/auth-marketing";
 import { cn } from "@/lib/utils";
@@ -39,13 +40,15 @@ export function AuthLayout({
     <main id="main-content" className="relative flex min-h-dvh flex-col lg:flex-row">
       <div className="relative flex flex-1 flex-col bg-background pl-12 pr-12 pb-8 pt-9">
         <header className="flex h-[72px] items-center justify-between">
-          <Image
-            src="/easyslip-logo.png"
-            alt="EasySlip"
-            width={121}
-            height={32}
-            priority
-          />
+          <Link href="/" aria-label="EasySlip home">
+            <Image
+              src="/easyslip-logo.png"
+              alt="EasySlip"
+              width={121}
+              height={32}
+              priority
+            />
+          </Link>
           <div className="lg:hidden">
             <LocaleSwitcher />
           </div>

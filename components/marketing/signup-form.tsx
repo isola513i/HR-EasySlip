@@ -16,7 +16,8 @@ import type { Dictionary } from "@/lib/i18n/dictionaries"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { useFieldErrors } from "@/lib/hooks/use-field-errors"
-import { RESERVED_SLUGS, SLUG_RE, PHONE_RE } from "@/lib/validation/trial-signup"
+import { SLUG_RE, PHONE_RE } from "@/lib/validation/trial-signup"
+import { isReservedSlug } from "@/lib/tenant/reserved-slugs"
 
 type SignupDict = Dictionary["marketing"]["signup"]
 
@@ -29,7 +30,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 type SignupField = "companyName" | "slug" | "contactName" | "phone" | "email" | "teamSize"
 
-type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid"
+type SlugStatus = "idle" | "checking" | "available" | "taken" | "reserved" | "invalid"
 
 function toSlug(value: string) {
   return value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
@@ -60,6 +61,7 @@ const SLUG_STATUS_STYLE: Record<SlugStatus, { color: string; text: (d: SignupDic
   checking:  { color: "text-muted-foreground", text: (d) => d.slugChecking },
   available: { color: "text-green-600",        text: (d) => d.slugAvailable },
   taken:     { color: "text-destructive",      text: (d) => d.slugTaken },
+  reserved:  { color: "text-destructive",      text: (d) => d.slugReserved },
   invalid:   { color: "text-destructive",      text: (d) => d.slugInvalid },
 }
 
@@ -78,11 +80,12 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const emailRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!slug) { setSlugStatus("idle"); return }
     if (!SLUG_RE.test(slug)) { setSlugStatus("invalid"); return }
-    if (RESERVED_SLUGS.has(slug)) { setSlugStatus("taken"); return }
+    if (isReservedSlug(slug)) { setSlugStatus("reserved"); return }
 
     setSlugStatus("checking")
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -109,6 +112,8 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
       e.slug = d.errorSlugRequired
     else if (slugStatus === "invalid")
       e.slug = d.slugInvalid
+    else if (slugStatus === "reserved")
+      e.slug = d.slugReserved
     else if (slugStatus === "taken")
       e.slug = d.errorSlugTaken
     else if (slugStatus === "checking")
@@ -147,8 +152,16 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        const msg = data?.code === "SLUG_TAKEN" ? d.errorSlugTaken : d.errorGeneric
-        setSubmitError(msg)
+        if (data?.code === "SLUG_TAKEN") {
+          setFieldErrors({ slug: d.errorSlugTaken })
+        } else if (data?.code === "TRIAL_EXISTS") {
+          setFieldErrors({ email: d.errorTrialExists })
+          emailRef.current?.focus()
+        } else if (res.status === 429 || data?.code === "RATE_LIMIT") {
+          setSubmitError(d.errorRateLimit)
+        } else {
+          setSubmitError(d.errorGeneric)
+        }
         return
       }
       router.push(`/signup/thanks?email=${encodeURIComponent(email)}`)
@@ -187,8 +200,10 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
           />
           <p className="text-xs text-muted-foreground">
             {d.slugHint}{" "}
-            <span className="font-mono font-medium">
-              {slug ? `/${slug}` : `/your-team`}
+            <span className="font-mono font-medium break-all">
+              {rootDomain
+                ? `${rootDomain}/${slug || "your-team"}`
+                : `/${slug || "your-team"}`}
             </span>
           </p>
           {!errors.slug && slugHintText && (
@@ -224,6 +239,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
 
       <Field id="email" label={d.email} error={errors.email}>
         <Input
+          ref={emailRef}
           id="email"
           type="email"
           autoComplete="email"
@@ -240,7 +256,9 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
           onValueChange={(v) => { setTeamSize(v ?? ""); clearField("teamSize") }}
         >
           <SelectTrigger id="teamSize" className={cn("w-full", errors.teamSize ? "border-destructive" : "")}>
-            <SelectValue placeholder={d.teamSizePlaceholder} />
+            <SelectValue placeholder={d.teamSizePlaceholder}>
+              {teamSize ? ({ size1: d.size1, size2: d.size2, size3: d.size3, size4: d.size4 }[teamSize] ?? teamSize) : d.teamSizePlaceholder}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="size1">{d.size1}</SelectItem>
@@ -270,7 +288,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
           "hover:from-[#2a36d4] hover:via-[#2745d9] hover:to-[#2563eb]",
           "hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/35 transition-all duration-200 ease-out"
         )}
-        disabled={submitting || slugStatus === "checking"}
+        disabled={submitting || slugStatus === "checking" || slugStatus === "reserved"}
       >
         {submitting ? d.submitting : d.submit}
       </Button>

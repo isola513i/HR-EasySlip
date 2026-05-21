@@ -17,7 +17,7 @@ export default async function HRLayout({
 }) {
   const { slug } = await params;
   const user = await requireRoles(HR_ROLES, slug);
-  await requireConsent("/hr/overview", slug);
+  await requireConsent(`/${slug}/hr/overview`, slug);
 
   const hdrs = await headers();
   const hidePayroll = hdrs.get("x-impersonation") === "1";

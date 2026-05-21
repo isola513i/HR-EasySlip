@@ -12,11 +12,14 @@ import { cn } from "@/lib/utils";
 export const metadata = { title: "Trials — EasySlip Platform" };
 
 const TABS = [
-  { label: "Pending",   value: "PENDING" },
-  { label: "Approved",  value: "APPROVED" },
-  { label: "Rejected",  value: "REJECTED" },
-  { label: "Converted", value: "CONVERTED" },
+  { label: "Pending review", value: "PENDING" },
+  { label: "Self-service",   value: "SELF_SERVICE" },
+  { label: "Live",           value: "READY" },
+  { label: "Approved",       value: "APPROVED" },
+  { label: "Rejected",       value: "REJECTED" },
 ];
+
+const SELF_SERVICE_STATUSES = ["PENDING_EMAIL", "EMAIL_VERIFIED", "PROVISIONING"] as const;
 
 interface Props {
   searchParams: Promise<{ q?: string; tab?: string }>;
@@ -27,36 +30,40 @@ export default async function TrialsPage({ searchParams }: Props) {
   await requirePlatformSession(PLATFORM_TRIAL_ROLES);
   const cp = getControlPlane();
 
-  const isConverted = tab === "CONVERTED";
+  const searchFilter = q ? {
+    OR: [
+      { companyName: { contains: q, mode: "insensitive" as const } },
+      { contactEmail: { contains: q, mode: "insensitive" as const } },
+      { desiredSlug: { contains: q, mode: "insensitive" as const } },
+    ],
+  } : {};
 
-  const where = {
-    ...(isConverted
-      ? { status: "APPROVED" as const, tenantId: { not: null } }
-      : { status: tab as "PENDING" | "APPROVED" | "REJECTED" }),
-    ...(q ? {
-      OR: [
-        { companyName: { contains: q, mode: "insensitive" as const } },
-        { contactEmail: { contains: q, mode: "insensitive" as const } },
-        { desiredSlug: { contains: q, mode: "insensitive" as const } },
-      ],
-    } : {}),
-  };
+  const statusFilter =
+    tab === "SELF_SERVICE"
+      ? { status: { in: [...SELF_SERVICE_STATUSES] as ("PENDING_EMAIL" | "EMAIL_VERIFIED" | "PROVISIONING")[] } }
+      : tab === "READY"
+      ? { status: "READY" as const, tenantId: { not: null } }
+      : { status: tab as "PENDING" | "APPROVED" | "REJECTED" };
+
+  const where = { ...statusFilter, ...searchFilter };
 
   const [signups, tabCounts] = await Promise.all([
     cp.trialSignup.findMany({ where, orderBy: { createdAt: "desc" }, take: 100 }),
     Promise.all([
       cp.trialSignup.count({ where: { status: "PENDING" } }),
+      cp.trialSignup.count({ where: { status: { in: [...SELF_SERVICE_STATUSES] as ("PENDING_EMAIL" | "EMAIL_VERIFIED" | "PROVISIONING")[] } } }),
+      cp.trialSignup.count({ where: { status: "READY", tenantId: { not: null } } }),
       cp.trialSignup.count({ where: { status: "APPROVED" } }),
       cp.trialSignup.count({ where: { status: "REJECTED" } }),
-      cp.trialSignup.count({ where: { status: "APPROVED", tenantId: { not: null } } }),
     ]),
   ]);
 
   const counts = {
-    PENDING: tabCounts[0],
-    APPROVED: tabCounts[1],
-    REJECTED: tabCounts[2],
-    CONVERTED: tabCounts[3],
+    PENDING:      tabCounts[0],
+    SELF_SERVICE: tabCounts[1],
+    READY:        tabCounts[2],
+    APPROVED:     tabCounts[3],
+    REJECTED:     tabCounts[4],
   };
 
   const now = Date.now();
@@ -77,7 +84,7 @@ export default async function TrialsPage({ searchParams }: Props) {
             )}
             <div>
               <p className="font-medium text-foreground">{s.companyName}</p>
-              <p className="text-xs font-mono text-muted-foreground">{s.desiredSlug}</p>
+              <p className="text-xs font-mono text-muted-foreground">/{s.desiredSlug}</p>
             </div>
           </div>
         );
@@ -140,7 +147,7 @@ export default async function TrialsPage({ searchParams }: Props) {
     <>
       <PageHeader
         title="Trial signups"
-        subtitle={`${counts.PENDING} pending review`}
+        subtitle={`${counts.PENDING} pending review · ${counts.SELF_SERVICE} self-service in progress · ${counts.READY} live`}
       />
 
       <div className="flex items-center gap-1 mb-4 border-b border-border pb-4">

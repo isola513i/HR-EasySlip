@@ -10,7 +10,7 @@ export default async function ApprovalsLayout({
 }) {
   const { slug } = await params;
   await requireRoles(MANAGER_ROLES, slug);
-  await requireConsent("/employee/approvals", slug);
+  await requireConsent(`/${slug}/employee/approvals`, slug);
 
   return <>{children}</>;
 }

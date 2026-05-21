@@ -40,7 +40,6 @@ export const RESERVED_SLUGS = new Set([
   "staging",
   "app",
   "api",
-  "easyslip",
 ]);
 
 /** Minimum 3-char slug: letter/digit, then 1-28 chars, ends with letter/digit */

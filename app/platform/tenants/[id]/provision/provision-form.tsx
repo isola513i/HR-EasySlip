@@ -5,6 +5,7 @@ import { provisionTenant } from "./actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 
 interface Props {
   tenantId: string;
@@ -15,8 +16,8 @@ export function ProvisionForm({ tenantId }: Props) {
   const [state, dispatch, pending] = useActionState(action, null);
 
   return (
-    <form action={dispatch} className="space-y-5">
-      <div className="space-y-2">
+    <FormRoot action={dispatch} className="space-y-5">
+      <FormField name="databaseUrl">
         <Label className="text-gray-300">
           DATABASE_URL <span className="text-red-400">*</span>
         </Label>
@@ -28,7 +29,8 @@ export function ProvisionForm({ tenantId }: Props) {
           className="bg-gray-800 border-gray-700 text-white font-mono text-xs"
         />
         <p className="text-xs text-gray-500">Pooled connection string from Neon Dashboard.</p>
-      </div>
+        <FormFieldError />
+      </FormField>
 
       <div className="space-y-2">
         <Label className="text-gray-300">DIRECT_URL</Label>
@@ -42,7 +44,7 @@ export function ProvisionForm({ tenantId }: Props) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
+        <FormField name="contactEmail">
           <Label className="text-gray-300">
             Admin email <span className="text-red-400">*</span>
           </Label>
@@ -53,8 +55,9 @@ export function ProvisionForm({ tenantId }: Props) {
             placeholder="admin@company.com"
             className="bg-gray-800 border-gray-700 text-white"
           />
-        </div>
-        <div className="space-y-2">
+          <FormFieldError inputType="email" />
+        </FormField>
+        <FormField name="contactName">
           <Label className="text-gray-300">
             Admin name <span className="text-red-400">*</span>
           </Label>
@@ -64,7 +67,8 @@ export function ProvisionForm({ tenantId }: Props) {
             placeholder="Somchai Jaidee"
             className="bg-gray-800 border-gray-700 text-white"
           />
-        </div>
+          <FormFieldError />
+        </FormField>
       </div>
 
       {state?.error && (
@@ -80,6 +84,6 @@ export function ProvisionForm({ tenantId }: Props) {
       >
         {pending ? "Running migrations…" : "Provision Tenant"}
       </Button>
-    </form>
+    </FormRoot>
   );
 }

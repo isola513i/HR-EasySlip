@@ -15,6 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Pencil, Plus } from "lucide-react";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 import type { PlanDef } from "@/lib/platform/plan-catalog";
 
 interface Props {
@@ -59,10 +60,10 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <form action={dispatch} className="space-y-4 pt-2">
+        <FormRoot action={dispatch} className="space-y-4 pt-2">
           <input type="hidden" name="isNew" value={isNew ? "1" : "0"} />
 
-          <div className="space-y-1.5">
+          <FormField name="code" className="space-y-1.5">
             <Label htmlFor="plan-code">Code</Label>
             <Input
               id="plan-code"
@@ -73,9 +74,10 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
               placeholder="starter"
               className="font-mono text-sm"
             />
-          </div>
+            <FormFieldError />
+          </FormField>
 
-          <div className="space-y-1.5">
+          <FormField name="name" className="space-y-1.5">
             <Label htmlFor="plan-name">Display name</Label>
             <Input
               id="plan-name"
@@ -84,7 +86,8 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
               defaultValue={plan?.name ?? ""}
               placeholder="Starter"
             />
-          </div>
+            <FormFieldError />
+          </FormField>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -113,7 +116,7 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <FormField name="features" className="space-y-1.5">
             <Label htmlFor="plan-features">Features (one per line)</Label>
             <Textarea
               id="plan-features"
@@ -124,7 +127,8 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
               placeholder={`GPS Clock-in / Clock-out\nLeave management\n…`}
               className="font-mono text-sm"
             />
-          </div>
+            <FormFieldError />
+          </FormField>
 
           <div className="space-y-1.5">
             <Label htmlFor="plan-order">Sort order</Label>
@@ -149,7 +153,7 @@ export function PlanFormDialog({ mode, plan, nextSortOrder = 0 }: Props) {
               {pending ? "Saving…" : isNew ? "Create plan" : "Save changes"}
             </Button>
           </div>
-        </form>
+        </FormRoot>
       </DialogContent>
     </Dialog>
   );

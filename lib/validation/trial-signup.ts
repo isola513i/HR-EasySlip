@@ -1,9 +1,5 @@
 import { z } from "zod";
-
-export const RESERVED_SLUGS = new Set([
-  "www", "admin", "api", "app", "mail", "demo",
-  "test", "staging", "dev", "help", "support", "status", "blog",
-]);
+import { isReservedSlug } from "@/lib/tenant/reserved-slugs";
 
 export const SLUG_RE = /^[a-z0-9][a-z0-9-]{1,28}[a-z0-9]$/;
 export const PHONE_RE = /^(\+66|0)[0-9]{8,9}$|^\+[1-9][0-9]{6,14}$/;
@@ -16,7 +12,7 @@ export const TrialSignupSchema = z.object({
     .max(30)
     .toLowerCase()
     .refine((v) => SLUG_RE.test(v), { message: "SLUG_INVALID" })
-    .refine((v) => !RESERVED_SLUGS.has(v), { message: "SLUG_INVALID" }),
+    .refine((v) => !isReservedSlug(v), { message: "SLUG_INVALID" }),
   contactName: z.string().min(2).max(120),
   email: z.string().email(),
   phone: z

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Clock, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 
 interface Props {
   tenantId: string;
@@ -144,22 +145,25 @@ export function ImpersonateForm({ tenantId, companyName }: Props) {
 
   // Initial form
   return (
-    <form action={dispatch} className="space-y-4">
+    <FormRoot action={dispatch} className="space-y-4">
       <div>
         <p className="text-sm text-gray-300 mb-3">
           Target: <span className="font-semibold text-white">{companyName}</span>
         </p>
-        <Label htmlFor="reason" className="text-gray-300">
-          Reason for access request
-        </Label>
-        <Textarea
-          id="reason"
-          name="reason"
-          placeholder="e.g. Customer reported login issue — investigating session data"
-          className="mt-1.5 bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-          rows={3}
-          required
-        />
+        <FormField name="reason">
+          <Label htmlFor="reason" className="text-gray-300">
+            Reason for access request
+          </Label>
+          <Textarea
+            id="reason"
+            name="reason"
+            placeholder="e.g. Customer reported login issue — investigating session data"
+            className="mt-1.5 bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+            rows={3}
+            required
+          />
+          <FormFieldError />
+        </FormField>
       </div>
       {state && "error" in state && (
         <p className="text-sm text-red-400">{state.error}</p>
@@ -174,6 +178,6 @@ export function ImpersonateForm({ tenantId, companyName }: Props) {
       >
         {pending ? "Sending Request…" : "Request Access"}
       </Button>
-    </form>
+    </FormRoot>
   );
 }

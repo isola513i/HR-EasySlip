@@ -12,6 +12,7 @@ const RATE_LIMIT_MAX = 3;
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1_000;
 
 function checkIpLimit(ip: string): boolean {
+  if (process.env.NODE_ENV === "development") return true;
   const now = Date.now();
   const windowStart = now - RATE_LIMIT_WINDOW_MS;
   const hits = (ipStore.get(ip) ?? []).filter((t) => t > windowStart);
@@ -113,11 +114,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const appUrl = process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const verifyUrl = `${appUrl}/signup/verify?token=${verificationToken}`;
 
+  if (process.env.NODE_ENV === "development") {
+    console.log(`\n[DEV] ✉️  Verification link for ${email}:\n  ${verifyUrl}\n`);
+  }
+
   try {
     await sendVerificationEmail({ to: email, contactName, companyName, verifyUrl });
   } catch (err) {
     console.error("[marketing/signup] verification email failed:", err);
-    // Don't fail the signup — user can re-request
   }
 
   // Also notify platform team (best-effort)

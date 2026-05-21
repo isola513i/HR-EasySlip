@@ -23,7 +23,7 @@ export default async function SignupPage() {
       privacyPolicy={t.signin.privacyPolicy}
       wide
     >
-      <SignupForm dict={s} />
+      <SignupForm dict={s} rootDomain={process.env.NEXT_PUBLIC_APP_URL ?? ""} />
     </AuthLayout>
   )
 }

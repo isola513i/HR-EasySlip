@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 import { CopyButton } from "@/components/platform/copy-button";
 import { UserPlus, CheckCircle2 } from "lucide-react";
 
@@ -74,8 +75,8 @@ export function InviteDialog() {
             </Button>
           </div>
         ) : (
-          <form action={dispatch} className="space-y-4 pt-2">
-            <div className="space-y-2">
+          <FormRoot action={dispatch} className="space-y-4 pt-2">
+            <FormField name="email">
               <Label htmlFor="invite-email">Email address</Label>
               <Input
                 id="invite-email"
@@ -85,7 +86,8 @@ export function InviteDialog() {
                 required
                 className="text-sm"
               />
-            </div>
+              <FormFieldError inputType="email" />
+            </FormField>
             <div className="space-y-2">
               <Label htmlFor="invite-role">Role</Label>
               <Select name="role" defaultValue="SUPPORT">
@@ -117,7 +119,7 @@ export function InviteDialog() {
                 {pending ? "Creating…" : "Create member"}
               </Button>
             </div>
-          </form>
+          </FormRoot>
         )}
       </DialogContent>
     </Dialog>

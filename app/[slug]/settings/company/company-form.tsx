@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/locale-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 import {
   Select,
   SelectContent,
@@ -33,8 +34,8 @@ export function CompanyForm({ companyName, timezone }: Props) {
   const [state, action, isPending] = useActionState(saveCompanySettings, null);
 
   return (
-    <form action={action} className="space-y-6 max-w-md">
-      <div className="space-y-2">
+    <FormRoot action={action} className="space-y-6 max-w-md">
+      <FormField name="companyName">
         <Label htmlFor="companyName">{ts.companyName}</Label>
         <Input
           id="companyName"
@@ -42,7 +43,8 @@ export function CompanyForm({ companyName, timezone }: Props) {
           defaultValue={companyName}
           required
         />
-      </div>
+        <FormFieldError />
+      </FormField>
 
       <div className="space-y-2">
         <Label htmlFor="timezone">{ts.timezone}</Label>
@@ -72,6 +74,6 @@ export function CompanyForm({ companyName, timezone }: Props) {
       <Button type="submit" disabled={isPending}>
         {isPending ? t.common.saving : ts.save}
       </Button>
-    </form>
+    </FormRoot>
   );
 }

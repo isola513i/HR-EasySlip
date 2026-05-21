@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormRoot, FormField, FormFieldError } from "@/components/ui/form-field";
 
 interface Props {
   signupId: string;
@@ -43,17 +44,19 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
         </TabsList>
 
         <TabsContent value="approve">
-          <form action={approveDispatch} className="space-y-4 mt-4">
-            <div className="space-y-2">
+          <FormRoot action={approveDispatch} className="space-y-4 mt-4">
+            <FormField name="slug">
               <Label className="text-sm">Slug</Label>
               <Input name="slug" defaultValue={desiredSlug} required className="font-mono text-sm" placeholder="acme" />
               <p className="text-xs text-muted-foreground">/{desiredSlug}</p>
-            </div>
-            <div className="space-y-2">
+              <FormFieldError />
+            </FormField>
+            <FormField name="companyName">
               <Label className="text-sm">Company name</Label>
               <Input name="companyName" defaultValue={companyName} required className="text-sm" />
-            </div>
-            <div className="space-y-2">
+              <FormFieldError />
+            </FormField>
+            <FormField name="databaseUrl">
               <Label className="text-sm">DATABASE_URL <span className="text-rose-400">*</span></Label>
               <Input
                 name="databaseUrl"
@@ -63,7 +66,8 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
                 placeholder="postgresql://user:pass@host/dbname"
               />
               <p className="text-xs text-muted-foreground">Neon Dashboard → Connection String (pooled)</p>
-            </div>
+              <FormFieldError />
+            </FormField>
             <div className="space-y-2">
               <Label className="text-sm">DIRECT_URL <span className="text-muted-foreground">(optional)</span></Label>
               <Input
@@ -77,7 +81,7 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
             <Button type="submit" disabled={approvePending} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white">
               {approvePending ? "Provisioning…" : "Approve & create tenant"}
             </Button>
-          </form>
+          </FormRoot>
         </TabsContent>
 
         <TabsContent value="reject">

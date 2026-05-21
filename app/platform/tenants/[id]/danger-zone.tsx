@@ -90,6 +90,68 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
       <div className="rounded-xl border border-border divide-y divide-border overflow-hidden">
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="flex items-start gap-3">
+            <KeyRound className="size-4 text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Reset admin password</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Generates a new one-time password for the first TENANT_ADMIN of <span className="font-medium">{companyName}</span>. They'll be forced to change it on next sign-in.
+              </p>
+            </div>
+          </div>
+          <AlertDialog
+            open={resetDialogOpen}
+            onOpenChange={(open) => {
+              setResetDialogOpen(open);
+              if (!open) {
+                setResetConfirmSlug("");
+                setResetError(null);
+              }
+            }}
+          >
+            <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300")}>
+              Reset password
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset admin password for {companyName}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This invalidates the current admin password and generates a new one-time temp password.
+                  The new password will appear on the tenant overview page once.
+                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="my-4">
+                <Input
+                  value={resetConfirmSlug}
+                  onChange={(e) => setResetConfirmSlug(e.target.value)}
+                  placeholder={slug}
+                  className="font-mono text-sm"
+                  autoComplete="off"
+                />
+                {resetError && (
+                  <p className="text-xs text-rose-400 mt-2">{resetError}</p>
+                )}
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel type="button" disabled={resetPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleResetAdminPassword();
+                  }}
+                  disabled={resetPending || resetConfirmSlug !== slug}
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                >
+                  {resetPending ? "Resetting…" : "Reset password"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 p-5">
+          <div className="flex items-start gap-3">
             <ShieldAlert className="size-4 text-amber-400 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-medium text-foreground">Impersonate tenant</p>
@@ -211,68 +273,6 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
             </AlertDialog>
           </div>
         )}
-
-        <div className="flex items-start justify-between gap-4 p-5">
-          <div className="flex items-start gap-3">
-            <KeyRound className="size-4 text-amber-400 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-foreground">Reset admin password</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Generates a new one-time password for the first TENANT_ADMIN of <span className="font-medium">{companyName}</span>. They'll be forced to change it on next sign-in.
-              </p>
-            </div>
-          </div>
-          <AlertDialog
-            open={resetDialogOpen}
-            onOpenChange={(open) => {
-              setResetDialogOpen(open);
-              if (!open) {
-                setResetConfirmSlug("");
-                setResetError(null);
-              }
-            }}
-          >
-            <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300")}>
-              Reset password
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset admin password for {companyName}?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This invalidates the current admin password and generates a new one-time temp password.
-                  The new password will appear on the tenant overview page once.
-                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <div className="my-4">
-                <Input
-                  value={resetConfirmSlug}
-                  onChange={(e) => setResetConfirmSlug(e.target.value)}
-                  placeholder={slug}
-                  className="font-mono text-sm"
-                  autoComplete="off"
-                />
-                {resetError && (
-                  <p className="text-xs text-rose-400 mt-2">{resetError}</p>
-                )}
-              </div>
-              <AlertDialogFooter>
-                <AlertDialogCancel type="button" disabled={resetPending}>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleResetAdminPassword();
-                  }}
-                  disabled={resetPending || resetConfirmSlug !== slug}
-                  className="bg-amber-500 hover:bg-amber-600 text-white"
-                >
-                  {resetPending ? "Resetting…" : "Reset password"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
 
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="flex items-start gap-3">

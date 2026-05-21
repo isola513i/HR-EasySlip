@@ -64,5 +64,5 @@ export default async function VerifyPage({ searchParams }: Props) {
     return <VerifyError code={result.code} message={result.error} />;
   }
 
-  redirect(`/${result.slug}/signin?welcome=1`);
+  redirect(`/signup/success?slug=${result.slug}`);
 }
