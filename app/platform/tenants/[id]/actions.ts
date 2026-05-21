@@ -9,6 +9,7 @@ import { ALLOWED_TRANSITIONS } from "@/lib/security/tenant-transitions";
 import { getPlanByCode } from "@/lib/platform/plan-catalog";
 import { buildLifecycleDates, clearLifecycleDates } from "@/lib/platform/tenant-lifecycle-service";
 import { deleteBranch, NeonError } from "@/lib/neon/client";
+import { hashPassword, generateTempPassword } from "@/lib/auth/password-utils";
 
 const FLASH_TEMP_PASSWORD_COOKIE = "es_platform_temp_password";
 
@@ -225,5 +226,65 @@ export async function deleteTenant(
   }
 
   revalidatePath("/platform/tenants");
+  return { ok: true };
+}
+
+export async function resetTenantAdminPassword(
+  tenantId: string,
+  confirmedSlug: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await requirePlatformSession(PLATFORM_ADMIN_ROLES);
+  const trimmed = confirmedSlug.trim();
+
+  const cp = getControlPlane();
+  const tenant = await cp.tenant.findUnique({
+    where: { id: tenantId },
+    select: { slug: true, companyName: true },
+  });
+  if (!tenant) return { ok: false, error: "Tenant not found." };
+  if (trimmed !== tenant.slug) return { ok: false, error: `Slug mismatch. Type "${tenant.slug}" to confirm.` };
+
+  const adminMembership = await cp.tenantMembership.findFirst({
+    where: { tenantId, role: "TENANT_ADMIN", status: "ACTIVE" },
+    select: { user: { select: { id: true, email: true } } },
+    orderBy: { createdAt: "asc" },
+  });
+  if (!adminMembership?.user) {
+    return { ok: false, error: "No active TENANT_ADMIN found for this tenant." };
+  }
+
+  const tempPassword = generateTempPassword(12);
+  const passwordHash = await hashPassword(tempPassword);
+
+  await cp.user.update({
+    where: { id: adminMembership.user.id },
+    data: { passwordHash, mustChangePassword: true },
+  });
+
+  await cp.platformAuditLog.create({
+    data: {
+      actorId: session.userId,
+      tenantId,
+      action: "tenant.reset_admin_password",
+      targetType: "User",
+      targetId: adminMembership.user.id,
+      metadata: { adminEmail: adminMembership.user.email },
+    },
+  });
+
+  const c = await cookies();
+  c.set(FLASH_TEMP_PASSWORD_COOKIE, JSON.stringify({
+    tenantId,
+    email: adminMembership.user.email,
+    password: tempPassword,
+  }), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 10,
+    path: "/platform",
+  });
+
+  revalidatePath(`/platform/tenants/${tenantId}`);
   return { ok: true };
 }

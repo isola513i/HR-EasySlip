@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { suspendTenant, reactivateTenant, deleteTenant } from "./actions";
+import { suspendTenant, reactivateTenant, deleteTenant, resetTenantAdminPassword } from "./actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ShieldAlert, UserCheck, AlertTriangle, Trash2 } from "lucide-react";
+import { ShieldAlert, UserCheck, AlertTriangle, Trash2, KeyRound } from "lucide-react";
 
 interface Props {
   tenantId: string;
@@ -46,6 +46,25 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deletePending, startDelete] = useTransition();
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const [resetConfirmSlug, setResetConfirmSlug] = useState("");
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetPending, startReset] = useTransition();
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
+  const handleResetAdminPassword = () => {
+    setResetError(null);
+    startReset(async () => {
+      const result = await resetTenantAdminPassword(tenantId, resetConfirmSlug);
+      if (!result.ok) {
+        setResetError(result.error);
+        return;
+      }
+      setResetDialogOpen(false);
+      setResetConfirmSlug("");
+      router.refresh();
+    });
+  };
 
   const handleDelete = () => {
     setDeleteError(null);
@@ -192,6 +211,68 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
             </AlertDialog>
           </div>
         )}
+
+        <div className="flex items-start justify-between gap-4 p-5">
+          <div className="flex items-start gap-3">
+            <KeyRound className="size-4 text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">Reset admin password</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Generates a new one-time password for the first TENANT_ADMIN of <span className="font-medium">{companyName}</span>. They'll be forced to change it on next sign-in.
+              </p>
+            </div>
+          </div>
+          <AlertDialog
+            open={resetDialogOpen}
+            onOpenChange={(open) => {
+              setResetDialogOpen(open);
+              if (!open) {
+                setResetConfirmSlug("");
+                setResetError(null);
+              }
+            }}
+          >
+            <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300")}>
+              Reset password
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Reset admin password for {companyName}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This invalidates the current admin password and generates a new one-time temp password.
+                  The new password will appear on the tenant overview page once.
+                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="my-4">
+                <Input
+                  value={resetConfirmSlug}
+                  onChange={(e) => setResetConfirmSlug(e.target.value)}
+                  placeholder={slug}
+                  className="font-mono text-sm"
+                  autoComplete="off"
+                />
+                {resetError && (
+                  <p className="text-xs text-rose-400 mt-2">{resetError}</p>
+                )}
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel type="button" disabled={resetPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleResetAdminPassword();
+                  }}
+                  disabled={resetPending || resetConfirmSlug !== slug}
+                  className="bg-amber-500 hover:bg-amber-600 text-white"
+                >
+                  {resetPending ? "Resetting…" : "Reset password"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
 
         <div className="flex items-start justify-between gap-4 p-5">
           <div className="flex items-start gap-3">
