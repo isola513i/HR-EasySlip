@@ -50,18 +50,7 @@ export const CUTOFF_OVERRIDE_ROLES: readonly Role[] = [
   "HR_AUTHORIZED",
 ] as const;
 
-/** Roles that redirect to /hr/overview (vs /employee/today) in workspace picker */
-export const HR_LANDING_ROLES = new Set<string>([
-  "TENANT_ADMIN",
-  "HR_AUTHORIZED",
-  "HRMG",
-  "CEO",
-  "CTO",
-  "COO",
-  "ADMIN",
-]);
-
-export { SENSITIVE_DATA_ROLES, isSensitiveDataRole } from "./role-helpers";
+export { SENSITIVE_DATA_ROLES, isSensitiveDataRole, HR_LANDING_ROLES } from "./role-helpers";
 
 export interface AuthResult {
   userId: string;

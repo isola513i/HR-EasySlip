@@ -15,3 +15,14 @@ export const SENSITIVE_DATA_ROLES: readonly Role[] = [
 export function isSensitiveDataRole(roles: readonly Role[]): boolean {
   return roles.some((r) => SENSITIVE_DATA_ROLES.includes(r));
 }
+
+/** Roles that redirect to /dashboard (vs /employee/today) in workspace picker. Safe to import in Client Components. */
+export const HR_LANDING_ROLES = new Set<string>([
+  "TENANT_ADMIN",
+  "HR_AUTHORIZED",
+  "HRMG",
+  "CEO",
+  "CTO",
+  "COO",
+  "ADMIN",
+]);

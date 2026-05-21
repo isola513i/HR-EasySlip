@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
-import { HR_LANDING_ROLES } from "@/lib/security/rbac";
+import { HR_LANDING_ROLES } from "@/lib/security/role-helpers";
 import type { Dictionary } from "@/lib/i18n/dictionaries/en";
 
 interface Membership {
