@@ -70,13 +70,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      if (url.startsWith("/")) return `${baseUrl}${url}`;
-      try {
-        const target = new URL(url);
-        const appHost = new URL(baseUrl).host;
-        if (target.host === appHost) return url;
-      } catch {}
-      return baseUrl;
+      const fallback = `${baseUrl}/workspaces`;
+      let resolved: string;
+      if (url.startsWith("/")) {
+        resolved = `${baseUrl}${url}`;
+      } else {
+        try {
+          const target = new URL(url);
+          const appHost = new URL(baseUrl).host;
+          resolved = target.host === appHost ? url : baseUrl;
+        } catch {
+          resolved = baseUrl;
+        }
+      }
+      // Authenticated bare-root navigation has no meaning in this app — send
+      // the user to /workspaces so they can resolve to their tenant dashboard.
+      if (resolved === baseUrl || resolved === `${baseUrl}/`) return fallback;
+      return resolved;
     },
     async signIn({ user }) {
       if (!user?.id) return true;

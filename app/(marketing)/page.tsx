@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
 import { HeroSection } from "@/components/marketing/hero-section"
 import TrustPillars from "@/components/marketing/trust-pillars"
 import ProblemSolution from "@/components/marketing/problem-solution"
@@ -26,7 +28,10 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth()
+  if (session?.user?.id) redirect("/workspaces")
+
   return (
     <>
       <HeroSection />
