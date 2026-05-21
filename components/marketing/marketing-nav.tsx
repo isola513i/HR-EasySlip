@@ -47,12 +47,12 @@ export async function MarketingNav() {
         {/* Desktop right actions */}
         <div className="hidden items-center gap-2 lg:flex">
           {isAuthed ? (
-            <Link href="/dashboard" className={cn(buttonVariants(), "bg-clip-border border-primary")}>
+            <Link href="/workspaces" className={cn(buttonVariants(), "bg-clip-border border-primary")}>
               {t.goToDashboard}
             </Link>
           ) : (
             <>
-              <Link href="/login" className={buttonVariants({ variant: "ghost" })}>
+              <Link href="/signin" className={buttonVariants({ variant: "ghost" })}>
                 {t.signIn}
               </Link>
               <Link href="/signup" target="_blank" rel="noopener noreferrer" className={cn(buttonVariants(), "bg-clip-border border-primary")}>

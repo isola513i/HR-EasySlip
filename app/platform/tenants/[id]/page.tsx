@@ -9,11 +9,29 @@ import { CopyButton } from "@/components/platform/copy-button";
 import { DangerZone } from "./danger-zone";
 import { ExpireZone } from "./expire-zone";
 import { ChangePlanForm } from "./change-plan-form";
+import { TempPasswordBanner } from "./temp-password-banner";
 import { getPlans } from "@/lib/platform/plan-catalog";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Database, CheckCircle2, ShieldOff, GitBranch, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const FLASH_TEMP_PASSWORD_COOKIE = "es_platform_temp_password";
+
+interface FlashCredentials { tenantId: string; email: string; password: string }
+
+async function readTempCredentialsFlash(tenantId: string): Promise<FlashCredentials | null> {
+  const c = await cookies();
+  const raw = c.get(FLASH_TEMP_PASSWORD_COOKIE)?.value;
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as FlashCredentials;
+    return parsed.tenantId === tenantId ? parsed : null;
+  } catch {
+    return null;
+  }
+}
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -30,6 +48,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
   const [{ id }, { tab = "overview" }] = await Promise.all([params, searchParams]);
   const session = await requirePlatformSession(PLATFORM_VIEWER_ROLES);
   const cp = getControlPlane();
+  const flash = await readTempCredentialsFlash(id);
 
   const [tenant, recentLogs, plans] = await Promise.all([
     cp.tenant.findUnique({
@@ -108,6 +127,10 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
           </div>
         </div>
       </div>
+
+      {flash && isAdmin && (
+        <TempPasswordBanner email={flash.email} password={flash.password} />
+      )}
 
       <div className="flex items-center gap-0.5 mb-6 border-b border-border pb-4">
         {TABS.map(({ key, label }) => {

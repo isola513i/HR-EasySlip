@@ -104,7 +104,7 @@ export function MobileMenu({ isAuthed, labels }: MobileMenuProps) {
         <div className="mt-auto border-t border-border/50 px-4 py-5 flex flex-col gap-2.5">
           {isAuthed ? (
             <Link
-              href="/dashboard"
+              href="/workspaces"
               onClick={close}
               className={cn(buttonVariants({ size: "lg" }), "w-full justify-center font-semibold")}
             >
@@ -126,7 +126,7 @@ export function MobileMenu({ isAuthed, labels }: MobileMenuProps) {
                 {labels.startTrial}
               </Link>
               <Link
-                href="/login"
+                href="/signin"
                 onClick={close}
                 className={cn(
                   buttonVariants({ variant: "ghost" }),

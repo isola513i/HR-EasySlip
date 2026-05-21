@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
@@ -8,6 +9,14 @@ import { ALLOWED_TRANSITIONS } from "@/lib/security/tenant-transitions";
 import { getPlanByCode } from "@/lib/platform/plan-catalog";
 import { buildLifecycleDates, clearLifecycleDates } from "@/lib/platform/tenant-lifecycle-service";
 import { deleteBranch, NeonError } from "@/lib/neon/client";
+
+const FLASH_TEMP_PASSWORD_COOKIE = "es_platform_temp_password";
+
+export async function dismissTempPassword(): Promise<void> {
+  await requirePlatformSession(PLATFORM_ADMIN_ROLES);
+  const c = await cookies();
+  c.delete(FLASH_TEMP_PASSWORD_COOKIE);
+}
 
 type ActionResult = { error: string } | null;
 

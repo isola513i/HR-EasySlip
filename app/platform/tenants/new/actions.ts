@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
@@ -13,6 +14,8 @@ import {
   deleteBranch,
   NeonError,
 } from "@/lib/neon/client";
+
+const FLASH_TEMP_PASSWORD_COOKIE = "es_platform_temp_password";
 
 const NEON_ROLE = process.env.NEON_BRANCH_ROLE_NAME ?? "neondb_owner";
 const NEON_PARENT_BRANCH_ID = process.env.NEON_PARENT_BRANCH_ID ?? "";
@@ -84,6 +87,21 @@ export async function createTenant(_prev: ActionResult, formData: FormData): Pro
     });
 
     if (!provision.success) throw new Error(provision.error ?? "provisionTenantDb failed");
+
+    if (provision.tempPassword) {
+      const c = await cookies();
+      c.set(FLASH_TEMP_PASSWORD_COOKIE, JSON.stringify({
+        tenantId: tenant.id,
+        email: contactEmail,
+        password: provision.tempPassword,
+      }), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 60 * 10,
+        path: "/platform",
+      });
+    }
 
     await Promise.all([
       cp.tenant.update({ where: { id: tenant.id }, data: { status, provisioningStatus: "READY" } }),

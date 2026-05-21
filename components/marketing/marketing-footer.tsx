@@ -128,7 +128,7 @@ export default async function MarketingFooter() {
                 { href: "/#features", label: links.features },
                 { href: "/#pricing", label: links.pricing },
                 { href: "/signup", label: links.startTrial, newTab: true },
-                { href: "/login", label: links.signIn },
+                { href: "/signin", label: links.signIn },
               ].map(({ href, label, newTab }) => (
                 <li key={href}>
                   <Link
