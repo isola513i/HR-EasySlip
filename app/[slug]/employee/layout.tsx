@@ -22,7 +22,7 @@ export default async function EmployeeLayout({
 }) {
   const { slug } = await params;
   const user = await requireRoles(EMPLOYEE_ROLES, slug);
-  await requireConsent("/employee/today");
+  await requireConsent("/employee/today", slug);
 
   const isManager = user.roles.some((r) => (MANAGER_ROLES as readonly Role[]).includes(r));
 
