@@ -124,10 +124,10 @@ export async function getConnectionUri(opts: {
     database_name: opts.databaseName ?? NEON_DATABASE_NAME,
     pooled: opts.pooled ? "true" : "false",
   });
-  const data = await neonFetch<{ uri: NeonConnectionUri }>(
+  const data = await neonFetch<NeonConnectionUri>(
     `/projects/${PROJECT_ID}/connection_uri?${params.toString()}`,
   );
-  return data.uri.uri;
+  return data.uri;
 }
 
 export async function deleteBranch(branchId: string): Promise<void> {
