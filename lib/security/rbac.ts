@@ -10,7 +10,6 @@ import { getTenantPrisma } from "@/lib/db/tenant";
 import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 import type { Role } from "@prisma/client";
 
-/** Roles that can access HR-level features */
 export const HR_ROLES: readonly Role[] = [
   "HRMG",
   "HR_AUTHORIZED",
@@ -18,6 +17,7 @@ export const HR_ROLES: readonly Role[] = [
   "CTO",
   "COO",
   "ADMIN",
+  "TENANT_ADMIN",
 ] as const;
 
 /** Roles that can manage company settings and users (no salary access) */

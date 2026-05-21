@@ -1,5 +1,5 @@
 import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { verifyImpersonationToken, IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
 import { ImpersonationBanner } from "@/components/tenant/impersonation-banner";
@@ -22,7 +22,7 @@ export default async function TenantLayout({
 }) {
   const h = await headers();
   if (!h.get("x-tenant-id")) {
-    redirect("/");
+    notFound();
   }
 
   // Cross-tenant URL tampering guard: authenticated users must have membership here
