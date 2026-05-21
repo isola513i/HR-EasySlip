@@ -110,14 +110,18 @@ export async function waitForBranchReady(
   throw new NeonError(`Branch ${branchId} not ready after ${timeoutMs}ms`);
 }
 
+const NEON_DATABASE_NAME = process.env.NEON_DATABASE_NAME ?? "neondb";
+
 export async function getConnectionUri(opts: {
   branchId: string;
   role: string;
   pooled?: boolean;
+  databaseName?: string;
 }): Promise<string> {
   const params = new URLSearchParams({
     branch_id: opts.branchId,
     role_name: opts.role,
+    database_name: opts.databaseName ?? NEON_DATABASE_NAME,
     pooled: opts.pooled ? "true" : "false",
   });
   const data = await neonFetch<{ uri: NeonConnectionUri }>(
