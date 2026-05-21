@@ -19,6 +19,7 @@ export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,15 +67,14 @@ export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?
     <form onSubmit={handleSubmit} className="space-y-7" noValidate>
       {!firstTimeSetup && (
         <Field id="currentPassword" label={t.password.currentPassword}>
-          <Input
+          <PasswordInput
             id="currentPassword"
-            type="password"
             autoComplete="current-password"
-            required
             value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
+            onChange={setCurrentPassword}
             disabled={isLoading}
-            className="h-11"
+            show={showCurrent}
+            onToggle={() => setShowCurrent((v) => !v)}
           />
         </Field>
       )}
@@ -182,7 +182,8 @@ function PasswordInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
-        className="h-11 pr-10"
+        placeholder={show ? "" : "••••••••"}
+        className="h-11 pr-10 placeholder:tracking-[0.3em] placeholder:text-muted-foreground/40"
       />
       <button
         type="button"
