@@ -73,9 +73,22 @@ export async function provisionTenantDb(opts: {
       : null;
     if (existingEmp) return { success: true };
 
+    // Legacy: tenant DB still has a User table (from init migration) with a FK
+    // Employee.userId → User.id. The User model was removed from schema.prisma
+    // but the table + FK constraint remain. Mirror the CP user row here so the
+    // FK is satisfied. Drop this once a migration removes the FK.
+    const userId = cpUserId ?? adminEmail;
+    await client.$executeRawUnsafe(
+      `INSERT INTO "User" ("id", "email", "emailVerified", "updatedAt")
+       VALUES ($1, $2, NOW(), NOW())
+       ON CONFLICT ("id") DO NOTHING`,
+      userId,
+      adminEmail,
+    );
+
     const employee = await client.employee.create({
       data: {
-        userId: cpUserId ?? adminEmail, // fallback to email string if CP not wired
+        userId,
         employeeCode: "ADM001",
         firstNameTh: firstName,
         lastNameTh,

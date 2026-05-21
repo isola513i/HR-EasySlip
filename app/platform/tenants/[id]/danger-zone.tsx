@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { suspendTenant, reactivateTenant, deleteTenant } from "./actions";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,20 +30,36 @@ interface Props {
 }
 
 export function DangerZone({ tenantId, companyName, slug, status }: Props) {
+  const router = useRouter();
   const canSuspend = ["ACTIVE", "TRIAL", "TRIAL_EXPIRED"].includes(status);
   const canReactivate = status === "SUSPENDED";
 
   const suspendAction = suspendTenant.bind(null, tenantId);
   const reactivateAction = reactivateTenant.bind(null, tenantId);
-  const deleteAction = deleteTenant.bind(null, tenantId);
 
   const [suspendState, suspendDispatch, suspendPending] = useActionState(suspendAction, null);
   const [reactivateState, reactivateDispatch, reactivatePending] = useActionState(reactivateAction, null);
-  const [deleteState, deleteDispatch, deletePending] = useActionState(deleteAction, null);
 
   const [suspendReason, setSuspendReason] = useState("");
   const [reactivateReason, setReactivateReason] = useState("");
   const [confirmSlug, setConfirmSlug] = useState("");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletePending, startDelete] = useTransition();
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleDelete = () => {
+    setDeleteError(null);
+    startDelete(async () => {
+      const result = await deleteTenant(tenantId, confirmSlug);
+      if (!result.ok) {
+        setDeleteError(result.error);
+        return;
+      }
+      setDialogOpen(false);
+      router.push("/platform/tenants");
+      router.refresh();
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -184,45 +201,55 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
               <p className="text-xs text-muted-foreground mt-0.5">
                 Permanently removes <span className="font-medium">{companyName}</span> from the control plane and deletes the Neon branch. Irreversible.
               </p>
-              {deleteState?.error && (
-                <p className="text-xs text-rose-400 mt-1">{deleteState.error}</p>
-              )}
             </div>
           </div>
-          <AlertDialog onOpenChange={(open) => { if (!open) setConfirmSlug(""); }}>
+          <AlertDialog
+            open={dialogOpen}
+            onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) {
+                setConfirmSlug("");
+                setDeleteError(null);
+              }
+            }}
+          >
             <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-rose-500/40 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400")}>
               Delete
             </AlertDialogTrigger>
             <AlertDialogContent>
-              <form action={deleteDispatch}>
-                <input type="hidden" name="confirmSlug" value={confirmSlug} />
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {companyName}?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This permanently deletes the tenant record and its Neon branch. There is no undo.
-                    Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <div className="my-4">
-                  <Input
-                    value={confirmSlug}
-                    onChange={(e) => setConfirmSlug(e.target.value)}
-                    placeholder={slug}
-                    className="font-mono text-sm"
-                    autoComplete="off"
-                  />
-                </div>
-                <AlertDialogFooter>
-                  <AlertDialogCancel type="button">Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    type="submit"
-                    disabled={deletePending || confirmSlug !== slug}
-                    className="bg-rose-600 hover:bg-rose-700 text-white"
-                  >
-                    {deletePending ? "Deleting…" : "Permanently delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </form>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete {companyName}?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes the tenant record and its Neon branch. There is no undo.
+                  Type <span className="font-mono font-semibold text-foreground">{slug}</span> to confirm.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="my-4">
+                <Input
+                  value={confirmSlug}
+                  onChange={(e) => setConfirmSlug(e.target.value)}
+                  placeholder={slug}
+                  className="font-mono text-sm"
+                  autoComplete="off"
+                />
+                {deleteError && (
+                  <p className="text-xs text-rose-400 mt-2">{deleteError}</p>
+                )}
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel type="button" disabled={deletePending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleDelete();
+                  }}
+                  disabled={deletePending || confirmSlug !== slug}
+                  className="bg-rose-600 hover:bg-rose-700 text-white"
+                >
+                  {deletePending ? "Deleting…" : "Permanently delete"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
         </div>

@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
@@ -182,21 +181,22 @@ export async function updateTenantPlan(
   return null;
 }
 
+type DeleteResult = { ok: true } | { ok: false; error: string };
+
 export async function deleteTenant(
   tenantId: string,
-  _prev: ActionResult,
-  formData: FormData,
-): Promise<ActionResult> {
+  confirmedSlug: string,
+): Promise<DeleteResult> {
   const session = await requirePlatformSession(PLATFORM_ADMIN_ROLES);
-  const confirmedSlug = (formData.get("confirmSlug") as string)?.trim();
+  const trimmed = confirmedSlug.trim();
 
   const cp = getControlPlane();
   const tenant = await cp.tenant.findUnique({
     where: { id: tenantId },
     select: { slug: true, companyName: true, neonBranchId: true },
   });
-  if (!tenant) return { error: "Tenant not found." };
-  if (confirmedSlug !== tenant.slug) return { error: `Slug mismatch. Type "${tenant.slug}" to confirm.` };
+  if (!tenant) return { ok: false, error: "Tenant not found." };
+  if (trimmed !== tenant.slug) return { ok: false, error: `Slug mismatch. Type "${tenant.slug}" to confirm.` };
 
   await cp.platformAuditLog.create({
     data: {
@@ -215,5 +215,6 @@ export async function deleteTenant(
     });
   }
 
-  redirect("/platform/tenants");
+  revalidatePath("/platform/tenants");
+  return { ok: true };
 }
