@@ -1,42 +1,42 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import { cache } from "react";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
+import { resolveTenantBySlug } from "./tenant-resolver";
 
-/**
- * AsyncLocalStorage override for the current tenant.
- *
- * Set by `runWithTenantContext()` — used in cron / background jobs that
- * iterate multiple tenants and have no `x-tenant-id` request header.
- * Within the callback, `getTenantId()` returns this value instead of
- * reading the header.
- */
+export const TENANT_COOKIE = "es_tenant";
+
 const tenantOverride = new AsyncLocalStorage<string>();
 
-async function readTenantFromHeaders(): Promise<string> {
-  const h = await headers();
-  const tenantId = h.get("x-tenant-id");
-  if (!tenantId) throw new Error("TENANT_CONTEXT_MISSING: x-tenant-id header not set by middleware");
-  return tenantId;
+async function readTenantContext(): Promise<{ id: string; slug: string }> {
+  const [h, jar] = await Promise.all([headers(), cookies()]);
+
+  const headerId = h.get("x-tenant-id");
+  const headerSlug = h.get("x-tenant-slug");
+  if (headerId && headerSlug) return { id: headerId, slug: headerSlug };
+
+  const cookieSlug = jar.get(TENANT_COOKIE)?.value;
+  if (cookieSlug) {
+    const t = await resolveTenantBySlug(cookieSlug);
+    if (t) return { id: t.id, slug: t.slug };
+  }
+
+  throw new Error("TENANT_CONTEXT_MISSING: no tenant header or cookie");
 }
 
-const cachedHeaderRead = cache(readTenantFromHeaders);
+const cachedRead = cache(readTenantContext);
 
-/**
- * Returns the current tenant ID.
- *
- * - In request context: reads middleware-injected `x-tenant-id` header (cached per-render).
- * - In cron / background context: reads the AsyncLocalStorage override set by `runWithTenantContext()`.
- * - Throws TENANT_CONTEXT_MISSING if neither is set.
- */
 export async function getTenantId(): Promise<string> {
   const override = tenantOverride.getStore();
   if (override) return override;
-  return cachedHeaderRead();
+  return (await cachedRead()).id;
 }
 
 export const getTenantSlug = cache(async (): Promise<string> => {
-  const h = await headers();
-  return h.get("x-tenant-slug") ?? "";
+  try {
+    return (await cachedRead()).slug;
+  } catch {
+    return "";
+  }
 });
 
 /**

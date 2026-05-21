@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { HR_LANDING_ROLES } from "@/lib/security/rbac";
 
@@ -8,7 +7,7 @@ export default async function DashboardPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const [{ slug }, session, h] = await Promise.all([params, auth(), headers()]);
+  const [{ slug }, session] = await Promise.all([params, auth()]);
 
   if (!session?.user) {
     redirect(`/${slug}/signin`);
@@ -18,10 +17,7 @@ export default async function DashboardPage({
     redirect(`/${slug}/change-password`);
   }
 
-  const tenantId = h.get("x-tenant-id") ?? "";
-  const membership = session.user.memberships?.find(
-    (m) => m.tenantId === tenantId,
-  );
+  const membership = session.user.memberships?.find((m) => m.tenantSlug === slug);
 
   if (!membership) {
     redirect("/workspaces?error=no_access");

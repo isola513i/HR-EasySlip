@@ -132,6 +132,12 @@ export default async function middleware(req: NextRequest): Promise<NextResponse
   requestHeaders.set("x-tenant-slug", tenant.slug);
   if (impToken) requestHeaders.set("x-impersonation", "1");
   const res = NextResponse.next({ request: { headers: requestHeaders } });
+  res.cookies.set("es_tenant", tenant.slug, {
+    path: "/",
+    sameSite: "lax",
+    httpOnly: true,
+    maxAge: 60 * 60,
+  });
   return withLocale(req, res);
 }
 

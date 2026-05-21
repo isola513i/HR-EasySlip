@@ -3,10 +3,10 @@
 // ════════════════════════════════════════════════════════════════
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getTenantPrisma } from "@/lib/db/tenant";
+import { getTenantId, getTenantSlug } from "@/lib/db/tenant-context";
 import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 import type { Role } from "@prisma/client";
 
@@ -84,12 +84,17 @@ async function resolveEmployee(tenantId: string, employeeRecordId: string) {
 export async function requireRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult> {
-  const [session, h] = await Promise.all([auth(), headers()]);
-  const tenantId = h.get("x-tenant-id") ?? "";
-  const tenantSlug = h.get("x-tenant-slug") ?? "";
+  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
+  let tenantId = "";
+  try { tenantId = await getTenantId(); } catch {}
 
   if (!session?.user?.id) {
     redirect(tenantSlug ? `/${tenantSlug}/signin` : "/workspaces");
+  }
+
+  if (!tenantId && session.user.memberships) {
+    const m = session.user.memberships.find((m) => m.tenantSlug === tenantSlug);
+    if (m) tenantId = m.tenantId;
   }
 
   const membership = session.user.memberships?.find(
@@ -140,10 +145,15 @@ export async function requireRoles(
 export async function checkRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult | null> {
-  const [session, h] = await Promise.all([auth(), headers()]);
+  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
   if (!session?.user?.id) return null;
 
-  const tenantId = h.get("x-tenant-id") ?? "";
+  let tenantId = "";
+  try { tenantId = await getTenantId(); } catch {}
+  if (!tenantId) {
+    const m = session.user.memberships?.find((m) => m.tenantSlug === tenantSlug);
+    if (m) tenantId = m.tenantId;
+  }
   const membership = session.user.memberships?.find(
     (m) => m.tenantId === tenantId,
   );
@@ -173,7 +183,7 @@ export async function checkRoles(
 export async function requireApiRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult | NextResponse> {
-  const [session, h] = await Promise.all([auth(), headers()]);
+  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -182,7 +192,12 @@ export async function requireApiRoles(
     );
   }
 
-  const tenantId = h.get("x-tenant-id") ?? "";
+  let tenantId = "";
+  try { tenantId = await getTenantId(); } catch {}
+  if (!tenantId) {
+    const m = session.user.memberships?.find((m) => m.tenantSlug === tenantSlug);
+    if (m) tenantId = m.tenantId;
+  }
   const membership = session.user.memberships?.find(
     (m) => m.tenantId === tenantId,
   );
