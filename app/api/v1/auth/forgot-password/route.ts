@@ -49,8 +49,8 @@ export const POST = withApiHandler(async (req, ctx) => {
   const sent = await sendNotificationEmail(
     emailLower,
     "รีเซ็ตรหัสผ่าน EasySlip HR",
-    `<p>กดลิงก์ด้านล่างเพื่อรีเซ็ตรหัสผ่าน (หมดอายุใน 1 ชั่วโมง):</p><p><a href="${resetUrl}">${resetUrl}</a></p>`,
-    `รีเซ็ตรหัสผ่าน: ${resetUrl}`,
+    resetPasswordEmailHtml({ resetUrl }),
+    `รีเซ็ตรหัสผ่าน EasySlip HR\n\nกดลิงก์ด้านล่างเพื่อรีเซ็ตรหัสผ่าน (หมดอายุใน 1 ชั่วโมง)\n\n${resetUrl}\n\nถ้าคุณไม่ได้ขอรีเซ็ตรหัสผ่าน ไม่ต้องทำอะไร`,
   );
 
   if (!sent) {
@@ -59,3 +59,47 @@ export const POST = withApiHandler(async (req, ctx) => {
 
   return successResponse;
 }, { rateLimit: authEndpointLimiter });
+
+function resetPasswordEmailHtml({ resetUrl }: { resetUrl: string }): string {
+  const PRIMARY = "#3d46cc";
+  const MUTED = "#6b7280";
+  const BORDER = "#e5e7eb";
+  const BG = "#f6f8fa";
+  const CARD = "#ffffff";
+  const TEXT = "#111827";
+
+  return `<!DOCTYPE html>
+<html lang="th">
+<head><meta charset="utf-8" /><title>EasySlip HR</title></head>
+<body style="margin:0;padding:0;background-color:${BG};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+    <tr><td align="center" style="padding:40px 16px;">
+      <table role="presentation" width="100%" style="max-width:480px;">
+        <tr><td align="center" style="padding-bottom:24px;">
+          <span style="font-size:22px;font-weight:700;color:${PRIMARY};">EasySlip HR</span>
+        </td></tr>
+        <tr><td style="background:${CARD};border:1px solid ${BORDER};border-radius:12px;padding:32px 28px;">
+          <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:${TEXT};">รีเซ็ตรหัสผ่าน</p>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:${MUTED};">
+            เราได้รับคำขอรีเซ็ตรหัสผ่านสำหรับบัญชีนี้ กดปุ่มด้านล่างเพื่อตั้งรหัสผ่านใหม่ ลิงก์จะหมดอายุใน <strong>1 ชั่วโมง</strong>
+          </p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+            <tr><td style="border-radius:8px;background:${PRIMARY};">
+              <a href="${resetUrl}" target="_blank"
+                style="display:inline-block;padding:12px 28px;font-size:14px;font-weight:600;color:#fff;text-decoration:none;border-radius:8px;">
+                รีเซ็ตรหัสผ่าน →
+              </a>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 8px;font-size:12px;color:${MUTED};">หรือคัดลอกลิงก์นี้ลงในเบราว์เซอร์:</p>
+          <p style="margin:0 0 20px;font-size:11px;color:${MUTED};word-break:break-all;">
+            <a href="${resetUrl}" style="color:${PRIMARY};">${resetUrl}</a>
+          </p>
+          <hr style="border:none;border-top:1px solid ${BORDER};margin:0 0 16px;" />
+          <p style="margin:0;font-size:12px;color:${MUTED};">ถ้าคุณไม่ได้ขอรีเซ็ตรหัสผ่าน ไม่ต้องทำอะไร — รหัสผ่านปัจจุบันของคุณยังคงเดิม</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}

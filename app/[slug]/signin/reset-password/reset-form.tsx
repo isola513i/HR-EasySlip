@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,23 +12,26 @@ import { useT } from "@/lib/i18n/locale-context";
 interface Props {
   token: string;
   email: string;
+  slug?: string;
 }
 
-export function ResetPasswordForm({ token, email }: Props) {
+export function ResetPasswordForm({ token, email, slug = "" }: Props) {
   const router = useRouter();
-  const { slug } = useParams<{ slug: string }>();
   const t = useT();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const signinPath = slug ? `/${slug}/signin` : "/signin";
+  const forgotPath = slug ? `/${slug}/signin/forgot-password` : "/signin/forgot-password";
+
   if (!token || !email) {
     return (
       <div className="space-y-3 text-sm text-muted-foreground">
         <p>{t.password.resetInvalidLink}</p>
         <Link
-          href={`/${slug}/signin/forgot-password`}
+          href={forgotPath}
           className="inline-flex items-center gap-1.5 text-primary hover:underline"
         >
           <ArrowLeft className="size-3.5" /> {t.password.resetRequestNew}
@@ -64,7 +67,7 @@ export function ResetPasswordForm({ token, email }: Props) {
         return;
       }
 
-      router.push(`/${slug}/signin?reset=success`);
+      router.push(`${signinPath}?reset=success`);
     } catch {
       setError(t.common.genericError);
     } finally {
@@ -73,15 +76,13 @@ export function ResetPasswordForm({ token, email }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="rp-new">{t.password.newPassword}</Label>
         <Input
           id="rp-new"
           type="password"
           autoComplete="new-password"
-          required
-          minLength={8}
           placeholder={t.password.minLength}
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
@@ -94,7 +95,6 @@ export function ResetPasswordForm({ token, email }: Props) {
           id="rp-confirm"
           type="password"
           autoComplete="new-password"
-          required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           disabled={isLoading}
