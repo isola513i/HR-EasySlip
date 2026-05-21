@@ -32,8 +32,6 @@ export default async function ConsentPage({
 
   return (
     <AuthLayout
-      heading={t.consent.title}
-      subtitle={t.consent.subtitle}
       marketingHeading={t.consent.brandTitle}
       marketingTagline={t.consent.brandSubtitle}
       copyright={t.signin.copyright}

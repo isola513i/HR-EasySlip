@@ -60,20 +60,20 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
   };
 
   return (
-    <div className="w-full max-w-xl space-y-6">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-(--es-accent-50) text-(--es-accent-600) ring-1 ring-(--es-accent-100)">
-          <ShieldCheck className="size-7" aria-hidden />
+    <div className="w-full max-w-xl space-y-4">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex size-11 items-center justify-center rounded-xl bg-(--es-accent-50) text-(--es-accent-600) ring-1 ring-(--es-accent-100)">
+          <ShieldCheck className="size-5" aria-hidden />
         </div>
-        <div className="space-y-1.5">
-          <h1 className="text-2xl font-bold tracking-tight">{t.consent.title}</h1>
+        <div className="space-y-1">
+          <h1 className="text-xl font-bold tracking-tight">{t.consent.title}</h1>
           <p className="text-sm text-muted-foreground">{t.consent.subtitle}</p>
         </div>
       </div>
 
       <section
         aria-labelledby="data-collected-heading"
-        className="rounded-xl border border-border bg-card p-6 shadow-(--es-shadow-sm)"
+        className="rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm)"
       >
         <h2
           id="data-collected-heading"
@@ -82,31 +82,31 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
           {t.consent.dataCollected}
         </h2>
 
-        <ul className="mt-4 space-y-3" role="list">
+        <ul className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2" role="list">
           {dataItems.map(({ icon: Icon, label, desc }) => (
-            <li key={label} className="flex items-start gap-3">
-              <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
-                <Icon className="size-4" aria-hidden />
+            <li key={label} className="flex items-start gap-2.5">
+              <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+                <Icon className="size-3.5" aria-hidden />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-foreground">{label}</p>
-                <p className="text-xs leading-relaxed text-muted-foreground">{desc}</p>
+                <p className="text-xs leading-snug text-muted-foreground">{desc}</p>
               </div>
             </li>
           ))}
         </ul>
 
-        <Separator className="my-5" />
+        <Separator className="my-3" />
 
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
-            <Scale className="size-4" aria-hidden />
+        <div className="flex items-start gap-2.5">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground/70">
+            <Scale className="size-3.5" aria-hidden />
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">
               {t.consent.legalBasisHeading}
             </p>
-            <p className="text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-snug text-muted-foreground">
               {t.consent.legalBasis}
             </p>
           </div>
@@ -114,14 +114,14 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
 
         <Link
           href="/privacy"
-          className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--es-accent-600) underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-(--es-accent-600) underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
         >
           {t.consent.readFull}
-          <ExternalLink className="size-3.5" aria-hidden />
+          <ExternalLink className="size-3" aria-hidden />
         </Link>
       </section>
 
-      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-4 shadow-(--es-shadow-sm) transition-colors hover:bg-muted/40">
+      <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-card p-3 shadow-(--es-shadow-sm) transition-colors hover:bg-muted/40">
         <Checkbox
           checked={agreed}
           onCheckedChange={(v) => setAgreed(!!v)}
@@ -144,7 +144,6 @@ export function ConsentForm({ callbackUrl }: { callbackUrl: string }) {
 
       <Button
         className="w-full"
-        size="lg"
         disabled={!agreed || loading}
         onClick={handleSubmit}
       >

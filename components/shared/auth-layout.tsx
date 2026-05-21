@@ -4,8 +4,8 @@ import { AuthMarketing } from "@/components/shared/auth-marketing";
 import { cn } from "@/lib/utils";
 
 interface AuthLayoutProps {
-  heading: string;
-  subtitle: string;
+  heading?: string;
+  subtitle?: string;
   marketingHeading?: string;
   marketingTagline?: string;
   marketingSlot?: React.ReactNode;
@@ -51,19 +51,26 @@ export function AuthLayout({
           </div>
         </header>
 
-        <div className="flex flex-1 items-center justify-center pb-12 pt-6">
+        <div className="flex flex-1 items-center justify-center pb-8 pt-4">
           <div
             className={cn(
-              "w-full space-y-8",
+              "w-full",
               wide ? "max-w-2xl" : "max-w-md",
+              (heading || subtitle) && "space-y-8",
             )}
           >
-            <div className="space-y-3 text-center">
-              <h1 className="text-5xl font-bold leading-[1.1] tracking-tight">
-                {heading}
-              </h1>
-              <p className="text-base text-muted-foreground">{subtitle}</p>
-            </div>
+            {(heading || subtitle) && (
+              <div className="space-y-3 text-center">
+                {heading && (
+                  <h1 className="text-5xl font-bold leading-[1.1] tracking-tight">
+                    {heading}
+                  </h1>
+                )}
+                {subtitle && (
+                  <p className="text-base text-muted-foreground">{subtitle}</p>
+                )}
+              </div>
+            )}
 
             {children}
           </div>
