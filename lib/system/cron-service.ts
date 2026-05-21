@@ -2,19 +2,19 @@
 // Cron Service — daily quota tick + auto cut-off lock
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
 import { grantAnniversaryLeave } from "@/lib/leave/leave-quota-grant-service";
 import { alertOnExhaustedOutboxEvents } from "@/lib/system/outbox-service";
 import { getSettingValue } from "@/lib/settings/settings-service";
 
-export async function dailyQuotaTick() {
+export async function dailyQuotaTick(prisma: PrismaClient) {
   const result = await grantAnniversaryLeave();
 
   // Ensure the current + next cycles exist so leave / clock submissions
   // never bounce with NO_CYCLE on the first business day of a new month.
-  const cycles = await ensureUpcomingCycles().catch((err) => {
+  const cycles = await ensureUpcomingCycles(prisma).catch((err) => {
     logger.error("Failed to ensure cycles", { error: err?.message });
     return null;
   });
@@ -30,7 +30,7 @@ export async function dailyQuotaTick() {
   const bkk = new Date(Date.now() + 7 * 3600_000);
   let pruned: number | null = null;
   if (bkk.getUTCDay() === 0) {
-    const r = await pruneOldAuditLogs().catch((err) => {
+    const r = await pruneOldAuditLogs(prisma).catch((err) => {
       logger.error("Failed to prune audit logs", { error: err?.message });
       return null;
     });
@@ -59,7 +59,7 @@ function cycleBounds(year: number, month: number, cutoffDay: number) {
 }
 
 /** Idempotently create OPEN cycles for the current and next calendar months. */
-export async function ensureUpcomingCycles() {
+export async function ensureUpcomingCycles(prisma: PrismaClient) {
   const cutoffDay = await getSettingValue<number>("payroll.cutoff.day_of_month");
   const months = thisAndNextMonth();
   let created = 0;
@@ -78,7 +78,7 @@ export async function ensureUpcomingCycles() {
   return { created, months };
 }
 
-export async function cutoffLock() {
+export async function cutoffLock(prisma: PrismaClient) {
   const now = new Date();
   const day = now.getDate();
   const cutoffDay = await getSettingValue<number>("payroll.cutoff.day_of_month");
@@ -112,7 +112,7 @@ export async function cutoffLock() {
     entityId: cycle.id,
     before: cycle,
     after: updated,
-  });
+  }, prisma);
 
   return { locked: true, cycleId: cycle.id };
 }
@@ -122,7 +122,7 @@ export async function cutoffLock() {
  * Retention is read from the `pdpa.audit_log.retention_days` setting.
  * Writes a meta audit row recording how many were pruned.
  */
-export async function pruneOldAuditLogs() {
+export async function pruneOldAuditLogs(prisma: PrismaClient) {
   const retentionDays = await getSettingValue<number>("pdpa.audit_log.retention_days");
   const cutoff = new Date();
   cutoff.setUTCDate(cutoff.getUTCDate() - retentionDays);
@@ -141,7 +141,7 @@ export async function pruneOldAuditLogs() {
       candidateCount: before,
       deletedCount: result.count,
     },
-  });
+  }, prisma);
 
   return { retentionDays, cutoffDate: cutoff.toISOString(), deletedCount: result.count };
 }

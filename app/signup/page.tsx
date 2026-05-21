@@ -23,7 +23,7 @@ export default async function SignupPage() {
       privacyPolicy={t.signin.privacyPolicy}
       wide
     >
-      <SignupForm dict={s} rootDomain={process.env.ROOT_DOMAIN ?? "easyslip.app"} />
+      <SignupForm dict={s} />
     </AuthLayout>
   )
 }

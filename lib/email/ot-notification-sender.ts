@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { sendNotificationEmail } from "./notification-service";
 import { otSubmittedHtml, otSubmittedText } from "./ot-submitted-template";
 import { otDecisionHtml, otDecisionText } from "./ot-decision-template";
@@ -9,17 +10,27 @@ import { formatOTType } from "@/lib/utils";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
+async function getUserEmail(userId: string): Promise<string | null> {
+  const cp = getControlPlane();
+  const u = await cp.user.findUnique({ where: { id: userId }, select: { email: true } });
+  return u?.email ?? null;
+}
+
 export async function notifyOTSubmitted(requestId: string): Promise<void> {
   try {
+    const prisma = await getPrisma();
     const req = await prisma.overtimeRequest.findUnique({
       where: { id: requestId },
       include: {
         employee: { select: { firstNameTh: true, lastNameTh: true, employeeCode: true } },
-        approver: { select: { notifyLeave: true, user: { select: { email: true } } } },
+        approver: { select: { userId: true, notifyLeave: true } },
       },
     });
-    if (!req?.approver?.user?.email) return;
+    if (!req?.approver?.userId) return;
     if (req.approver.notifyLeave === false) return;
+
+    const approverEmail = await getUserEmail(req.approver.userId);
+    if (!approverEmail) return;
 
     const params = {
       employeeName: `${req.employee.firstNameTh} ${req.employee.lastNameTh}`,
@@ -32,7 +43,7 @@ export async function notifyOTSubmitted(requestId: string): Promise<void> {
     };
 
     await sendNotificationEmail(
-      req.approver.user.email,
+      approverEmail,
       `[EasySlip] New OT request from ${params.employeeName}`,
       otSubmittedHtml(params),
       otSubmittedText(params),
@@ -47,6 +58,7 @@ export async function notifyOTDecision(
   decision: "APPROVED" | "REJECTED",
 ): Promise<void> {
   try {
+    const prisma = await getPrisma();
     const req = await prisma.overtimeRequest.findUnique({
       where: { id: requestId },
       include: {
@@ -56,16 +68,17 @@ export async function notifyOTDecision(
             lastNameTh: true,
             notifyApproval: true,
             userId: true,
-            user: { select: { email: true } },
           },
         },
       },
     });
-    if (!req?.employee?.user?.email) return;
+    if (!req?.employee?.userId) return;
     if (req.employee.notifyApproval === false) return;
 
-    // For REJECTED requests, suppress the hours line — the value reflects the
-    // employee's submitted estimate, not an HR decision.
+    const employeeEmail = await getUserEmail(req.employee.userId);
+    if (!employeeEmail) return;
+
+    // For REJECTED requests, suppress the hours line.
     const showHours = decision === "APPROVED" && req.hoursApproved !== null;
     const hoursLabel = showHours ? Number(req.hoursApproved).toFixed(1) : null;
 
@@ -94,7 +107,7 @@ export async function notifyOTDecision(
       : `[EasySlip] OT rejected — ${params.date}`;
 
     await sendNotificationEmail(
-      req.employee.user.email,
+      employeeEmail,
       subject,
       otDecisionHtml(params),
       otDecisionText(params),

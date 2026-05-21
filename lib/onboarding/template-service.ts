@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { TemplateCreateInput, TemplateUpdateInput } from "./schemas";
 
 export async function createTemplate(input: TemplateCreateInput, caller: Caller, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     if (input.isDefault) {
       await tx.onboardingTemplate.updateMany({ where: { isDefault: true }, data: { isDefault: false } });
@@ -36,6 +37,7 @@ export async function createTemplate(input: TemplateCreateInput, caller: Caller,
 }
 
 export async function updateTemplate(id: string, input: TemplateUpdateInput, caller: Caller, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const existing = await tx.onboardingTemplate.findUnique({ where: { id } });
     if (!existing) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -75,6 +77,7 @@ export async function updateTemplate(id: string, input: TemplateUpdateInput, cal
 }
 
 export async function listTemplates() {
+  const prisma = await getPrisma();
   return prisma.onboardingTemplate.findMany({
     where: { isActive: true },
     include: { _count: { select: { items: true } } },
@@ -83,6 +86,7 @@ export async function listTemplates() {
 }
 
 export async function getTemplateById(id: string) {
+  const prisma = await getPrisma();
   const template = await prisma.onboardingTemplate.findUnique({
     where: { id },
     include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -92,6 +96,7 @@ export async function getTemplateById(id: string) {
 }
 
 export async function deleteTemplate(id: string, caller: Caller, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const existing = await tx.onboardingTemplate.findUnique({ where: { id } });
     if (!existing) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

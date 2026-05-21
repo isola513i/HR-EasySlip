@@ -1,25 +1,30 @@
 import { getPlatformSession } from "@/lib/auth/platform";
 import { redirect } from "next/navigation";
+import { AuthLayout } from "@/components/shared/auth-layout";
 import { PlatformSignInForm } from "./sign-in-form";
+import { PlatformMarketing } from "./platform-marketing";
 
-export const metadata = { title: "Sign In — EasySlip Platform" };
+export const metadata = { title: "Platform Admin — EasySlip" };
 
 export default async function PlatformSignInPage() {
   const session = await getPlatformSession();
-  if (session) redirect("/overview");
+  if (session) redirect("/platform/overview");
+
+  const isDev = process.env.NODE_ENV === "development";
 
   return (
-    <div className="dark min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-6 p-8 bg-card rounded-xl border border-border">
-        <div className="text-center">
-          <h1 className="text-xl font-semibold text-foreground tracking-tight">EasySlip Platform</h1>
-          <p className="text-sm text-muted-foreground mt-1">Staff access only</p>
-        </div>
-        <PlatformSignInForm
-          devEmail={process.env.NODE_ENV === "development" ? (process.env.PLATFORM_ADMIN_EMAIL ?? "admin@easyslip.app") : undefined}
-          devPassword={process.env.NODE_ENV === "development" ? (process.env.PLATFORM_ADMIN_PASSWORD ?? "EasySlip@Admin2026") : undefined}
-        />
-      </div>
-    </div>
+    <AuthLayout
+      heading="Platform Admin"
+      subtitle="Staff access only"
+      marketingSlot={<PlatformMarketing />}
+      copyright={`© ${new Date().getFullYear()} EasySlip`}
+      privacyPolicy="Privacy Policy"
+      hidePlatformLink
+    >
+      <PlatformSignInForm
+        devEmail={isDev ? (process.env.PLATFORM_ADMIN_EMAIL ?? "admin@easyslip.app") : undefined}
+        devPassword={isDev ? (process.env.PLATFORM_ADMIN_PASSWORD ?? undefined) : undefined}
+      />
+    </AuthLayout>
   );
 }

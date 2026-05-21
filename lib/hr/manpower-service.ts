@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { LeaveType } from "@prisma/client";
 
 export type ManpowerStatus = "WORKING" | "ON_LEAVE" | "OFF";
@@ -38,6 +38,7 @@ export function todayBangkokDateString(): string {
  * `dateStr` must be YYYY-MM-DD; defaults to today (Bangkok time).
  */
 export async function getManpower(dateStr: string = todayBangkokDateString()): Promise<ManpowerEmployee[]> {
+  const prisma = await getPrisma();
   const { dayStart, dayEnd, dateOnly } = bangkokDayRange(dateStr);
 
   const [employees, todaysClocks, todaysLeaves] = await Promise.all([

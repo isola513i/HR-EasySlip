@@ -67,6 +67,6 @@ export async function savePlan(
     },
   });
 
-  revalidatePath("/plans");
+  revalidatePath("/platform/plans");
   return { success: true };
 }

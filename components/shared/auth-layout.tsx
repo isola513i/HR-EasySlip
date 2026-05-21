@@ -6,10 +6,13 @@ import { cn } from "@/lib/utils";
 interface AuthLayoutProps {
   heading: string;
   subtitle: string;
-  marketingHeading: string;
-  marketingTagline: string;
+  marketingHeading?: string;
+  marketingTagline?: string;
+  marketingSlot?: React.ReactNode;
   copyright: string;
   privacyPolicy: string;
+  platformAdminLink?: string;
+  hidePlatformLink?: boolean;
   wide?: boolean;
   children: React.ReactNode;
 }
@@ -19,8 +22,11 @@ export function AuthLayout({
   subtitle,
   marketingHeading,
   marketingTagline,
+  marketingSlot,
   copyright,
   privacyPolicy,
+  platformAdminLink = "Platform Admin",
+  hidePlatformLink = false,
   wide = false,
   children,
 }: AuthLayoutProps) {
@@ -65,18 +71,30 @@ export function AuthLayout({
 
         <footer className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
           <p>{copyrightText}</p>
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-[2.75rem] items-center opacity-70 transition-opacity hover:text-foreground hover:opacity-100"
-          >
-            {privacyPolicy}
-          </a>
+          <div className="flex items-center gap-4">
+            {!hidePlatformLink && (
+              <a
+                href="/platform/signin"
+                className="opacity-30 transition-opacity hover:opacity-60"
+              >
+                {platformAdminLink}
+              </a>
+            )}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-[2.75rem] items-center opacity-70 transition-opacity hover:text-foreground hover:opacity-100"
+            >
+              {privacyPolicy}
+            </a>
+          </div>
         </footer>
       </div>
 
-      <AuthMarketing heading={marketingHeading} tagline={marketingTagline} />
+      {marketingSlot ?? (marketingHeading && marketingTagline ? (
+        <AuthMarketing heading={marketingHeading} tagline={marketingTagline} />
+      ) : null)}
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { grantInitialLeaveQuota } from "@/lib/leave/leave-quota-grant-service";
@@ -42,14 +43,20 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
   const initialPassword = generateInitialPassword(input.employeeCode);
   const passwordHash = await hashPassword(initialPassword);
 
-  const result = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.create({
-      data: { email: input.email, emailVerified: new Date(), passwordHash, mustChangePassword: true },
-    });
+  // Create CP user before the tenant transaction (cross-silo, can't be part of Prisma tx)
+  const cp = getControlPlane();
+  const cpUser = await cp.user.upsert({
+    where: { email: input.email },
+    create: { email: input.email, emailVerified: new Date(), passwordHash, mustChangePassword: true },
+    update: {},
+    select: { id: true },
+  });
 
+  const prisma = await getPrisma();
+  const result = await prisma.$transaction(async (tx) => {
     const employee = await tx.employee.create({
       data: {
-        userId: user.id, employeeCode: input.employeeCode,
+        userId: cpUser.id, employeeCode: input.employeeCode,
         firstNameTh: input.firstNameTh, lastNameTh: input.lastNameTh,
         firstNameEn: input.firstNameEn, lastNameEn: input.lastNameEn,
         phone: input.phone, roles: input.roles, departmentId: input.departmentId,
@@ -90,6 +97,7 @@ export async function createEmployee(input: EmployeeCreateInput, caller: Caller,
 export async function updateEmployee(employeeId: string, input: EmployeeUpdateInput, caller: Caller, meta: RequestMeta) {
   pickSensitiveOrThrow(input, caller);
   const { baseSalary, salaryAdjustmentType, salaryAdjustmentNote, ...rest } = input;
+  const prisma = await getPrisma();
 
   return prisma.$transaction(async (tx) => {
     const existing = await tx.employee.findUnique({ where: { id: employeeId } });
@@ -134,6 +142,7 @@ export async function updateEmployee(employeeId: string, input: EmployeeUpdateIn
 }
 
 export async function getEmployeeById(employeeId: string, caller?: Caller) {
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     include: { ...EMPLOYEE_INCLUDE, user: { select: { email: true } } },
@@ -148,6 +157,7 @@ export async function getEmployeeById(employeeId: string, caller?: Caller) {
  * calculation will yield zero for those rows.
  */
 export async function countEmployeesMissingBaseSalary(): Promise<number> {
+  const prisma = await getPrisma();
   return prisma.employee.count({
     where: {
       employmentStatus: { in: ["ACTIVE", "PROBATION"] },
@@ -157,6 +167,7 @@ export async function countEmployeesMissingBaseSalary(): Promise<number> {
 }
 
 export async function listEmployees(filters: EmployeeListFilters, caller?: Caller) {
+  const prisma = await getPrisma();
   const where = {
     ...(filters.status && { employmentStatus: filters.status }),
     ...(filters.departmentId && { departmentId: filters.departmentId }),

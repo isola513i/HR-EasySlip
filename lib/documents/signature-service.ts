@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller } from "./types";
@@ -21,6 +21,7 @@ export async function signDocument({
     throw new DomainError("INVALID_SIGNATURE", { message: "Signature must be a PNG data URL under 150KB" });
   }
 
+  const prisma = await getPrisma();
   const doc = await prisma.document.findUnique({
     where: { id: documentId },
     select: { id: true, ownerEmployeeId: true, requiresSignature: true },
@@ -67,6 +68,7 @@ export async function signDocument({
 }
 
 export async function getDocumentSignatures(documentId: string) {
+  const prisma = await getPrisma();
   return prisma.documentSignature.findMany({
     where: { documentId },
     select: {
@@ -82,6 +84,7 @@ export async function getDocumentSignatures(documentId: string) {
 }
 
 export async function hasSignedDocument(documentId: string, employeeId: string): Promise<boolean> {
+  const prisma = await getPrisma();
   const sig = await prisma.documentSignature.findUnique({
     where: { documentId_signerEmployeeId: { documentId, signerEmployeeId: employeeId } },
     select: { id: true },

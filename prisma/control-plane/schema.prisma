@@ -1,21 +1,109 @@
-// Control Plane DB — manages all tenants at the platform level
+// Control Plane DB — manages all tenants and global auth identity
 // Run migrations with: bunx prisma migrate dev --schema=prisma/control-plane/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../../lib/db/generated/control-plane"
+  provider        = "prisma-client-js"
+  output          = "../../lib/db/generated/control-plane"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("CONTROL_PLANE_DATABASE_URL")
-  directUrl = env("CONTROL_PLANE_DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("CONTROL_PLANE_DATABASE_URL")
+  directUrl  = env("CONTROL_PLANE_DIRECT_URL")
+  extensions = [citext]
 }
+
+// ────────────────────────────────────────────────────────────────
+// GLOBAL AUTH IDENTITY (NextAuth v5 standard models)
+// ────────────────────────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique @db.Citext
+  emailVerified      DateTime?
+  passwordHash       String?   @db.Text
+  mustChangePassword Boolean   @default(false)
+  isDisabled         Boolean   @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  memberships TenantMembership[]
+
+  @@index([email])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ────────────────────────────────────────────────────────────────
+// TENANT MEMBERSHIP — maps CP User → Tenant workspace
+// ────────────────────────────────────────────────────────────────
+
+model TenantMembership {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenantId         String
+  tenant           Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Primary role — mirrors the highest Employee.role (used for workspace routing)
+  // Values: TENANT_ADMIN | HR_AUTHORIZED | HRMG | CEO | CTO | COO | MANAGER | EMPLOYEE
+  role             String    @default("EMPLOYEE")
+  status           String    @default("ACTIVE") // ACTIVE | INVITED | SUSPENDED
+  employeeRecordId String?   // Employee.id in tenant DB (loose cross-silo reference, no FK)
+  invitedById      String?   // CP User.id of inviter
+  invitedAt        DateTime?
+  acceptedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([userId, tenantId])
+  @@index([userId, status])
+  @@index([tenantId, status])
+}
+
+// ────────────────────────────────────────────────────────────────
+// TRIALS & PROVISIONING
+// ────────────────────────────────────────────────────────────────
 
 model TrialSignup {
   id           String       @id @default(cuid())
   companyName  String
-  desiredSlug  String       // requested subdomain e.g. "acme"
+  desiredSlug  String
   contactName  String
   contactEmail String
   contactPhone String?
@@ -25,13 +113,50 @@ model TrialSignup {
   createdAt    DateTime     @default(now())
   reviewedAt   DateTime?
   tenantId     String?      // filled when provisioned
+
+  // Self-service flow (Phase 3)
+  emailVerifiedAt          DateTime?
+  provisioningStartedAt    DateTime?
+  provisioningCompletedAt  DateTime?
+  provisioningError        String?   @db.Text
+
+  emailVerifications EmailVerification[]
 }
 
 enum SignupStatus {
   PENDING
-  APPROVED
-  REJECTED
+  PENDING_EMAIL   // waiting for email verification (self-service)
+  EMAIL_VERIFIED  // email verified, provisioning not yet started
+  PROVISIONING    // Neon branch + tenant DB being set up
+  READY           // provisioning complete, user can log in
+  APPROVED        // manually approved by platform admin (legacy)
+  REJECTED        // rejected
+  FAILED          // auto-provisioning failed
 }
+
+// ────────────────────────────────────────────────────────────────
+// EMAIL VERIFICATION — one-time tokens for self-service flows
+// ────────────────────────────────────────────────────────────────
+
+model EmailVerification {
+  id          String    @id @default(cuid())
+  token       String    @unique @default(cuid())
+  email       String
+  userId      String?   // CP User.id if user already exists
+  signupId    String?   // TrialSignup.id for self-service flow
+  signup      TrialSignup? @relation(fields: [signupId], references: [id], onDelete: Cascade)
+  purpose     String    // "TRIAL_SIGNUP" | "RESET_PASSWORD" | "INVITE"
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email, purpose])
+  @@index([token])
+}
+
+// ────────────────────────────────────────────────────────────────
+// TENANT
+// ────────────────────────────────────────────────────────────────
 
 model Tenant {
   id             String    @id @default(cuid())
@@ -46,46 +171,58 @@ model Tenant {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
 
-  // Impersonation opt-out (tenant-controlled kill switch)
-  impersonationEnabled          Boolean   @default(true)
-  impersonationDisabledAt       DateTime?
-  impersonationDisabledBy       String?   // tenant User.id mirror (no FK — cross-silo)
-  impersonationDisabledByEmail  String?
+  // Neon branch provisioning (Phase 3)
+  neonProjectId        String?
+  neonBranchId         String?
+  neonBranchEndpointId String?
+  provisioningStatus   String? @default("READY") // PENDING | RUNNING | READY | FAILED
+  provisioningError    String? @db.Text
 
-  // PDPA Data Lifecycle (Phase 2)
-  expiredAt         DateTime?   // when status became EXPIRED
-  gracePeriodEndsAt DateTime?   // expiredAt + 30 days: read-only window closes
-  softDeleteAt      DateTime?   // expiredAt + 90 days: PII anonymised, access blocked
-  hardDeleteAt      DateTime?   // expiredAt + 180 days: DB dropped
-  softDeletedAt     DateTime?   // actual timestamp when anonymisation ran (set by cron)
+  // Impersonation opt-out (tenant-controlled kill switch)
+  impersonationEnabled         Boolean   @default(true)
+  impersonationDisabledAt      DateTime?
+  impersonationDisabledBy      String?
+  impersonationDisabledByEmail String?
+
+  // PDPA Data Lifecycle
+  expiredAt         DateTime?
+  gracePeriodEndsAt DateTime?
+  softDeleteAt      DateTime?
+  hardDeleteAt      DateTime?
+  softDeletedAt     DateTime?
 
   // Self-service data export
   lastExportRequestedAt DateTime?
 
+  memberships           TenantMembership[]
   auditLogs             PlatformAuditLog[]
   impersonations        Impersonation[]
   impersonationRequests ImpersonationRequest[]
 }
 
+// ────────────────────────────────────────────────────────────────
+// PLATFORM STAFF & IMPERSONATION
+// ────────────────────────────────────────────────────────────────
+
 model ImpersonationRequest {
-  id                  String                      @id @default(cuid())
+  id                  String                     @id @default(cuid())
   platformUserId      String
-  platformUser        PlatformUser                @relation(fields: [platformUserId], references: [id])
+  platformUser        PlatformUser               @relation(fields: [platformUserId], references: [id])
   tenantId            String
-  tenant              Tenant                      @relation(fields: [tenantId], references: [id])
+  tenant              Tenant                     @relation(fields: [tenantId], references: [id])
   reason              String
-  expectedDurationMin Int                         @default(60)
-  status              ImpersonationRequestStatus  @default(PENDING)
-  approvalTokenHash   String                      // sha256(token); raw token is in email only
-  createdAt           DateTime                    @default(now())
-  expiresAt           DateTime                    // default now()+30min — controlled by IMPERSONATION_APPROVAL_TTL_MIN
+  expectedDurationMin Int                        @default(60)
+  status              ImpersonationRequestStatus @default(PENDING)
+  approvalTokenHash   String
+  createdAt           DateTime                   @default(now())
+  expiresAt           DateTime
   decidedAt           DateTime?
-  decidedByUserId     String?                     // tenant User.id mirror (no FK — cross-silo)
+  decidedByUserId     String?
   decidedByEmail      String?
   decisionNote        String?
-  consumedAt          DateTime?                   // set when session actually launches
-  impersonationId     String?                     @unique
-  impersonation       Impersonation?              @relation(fields: [impersonationId], references: [id])
+  consumedAt          DateTime?
+  impersonationId     String?                    @unique
+  impersonation       Impersonation?             @relation(fields: [impersonationId], references: [id])
 
   @@index([tenantId, status])
   @@index([approvalTokenHash])
@@ -122,9 +259,9 @@ model Impersonation {
   tenant         Tenant       @relation(fields: [tenantId], references: [id])
   reason         String
   startedAt      DateTime     @default(now())
-  endedAt        DateTime?    // null = active session; set when ended or expired
+  endedAt        DateTime?
 
-  request        ImpersonationRequest?
+  request ImpersonationRequest?
 }
 
 enum PlatformRole {
@@ -135,23 +272,23 @@ enum PlatformRole {
 
 model PlatformAuditLog {
   id         String        @id @default(cuid())
-  actorId    String?       // null = system/cron action
+  actorId    String?       // null = system/cron/tenant user action
   actor      PlatformUser? @relation(fields: [actorId], references: [id])
   tenantId   String?
   tenant     Tenant?       @relation(fields: [tenantId], references: [id])
-  action     String        // e.g. "trial.approve", "tenant.provision", "trial.reject"
+  action     String
   targetType String?
-  targetId   String?
+  targetId   String?       // e.g. CP User.id for auth events
   metadata   Json?
   createdAt  DateTime      @default(now())
 }
 
 model Plan {
-  code         String   @id // "starter" | "pro" | "enterprise" | custom
+  code         String   @id
   name         String
-  priceTHB     Int?     // null = custom pricing
-  maxEmployees Int?     // null = unlimited
-  features     String[] // postgres text array
+  priceTHB     Int?
+  maxEmployees Int?
+  features     String[]
   sortOrder    Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

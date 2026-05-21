@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getBangkokDayBounds } from "@/lib/attendance/clock-validation";
 import {
   WEEKDAY_KEYS,
@@ -38,6 +38,7 @@ interface ActiveEmployee {
 }
 
 async function listActiveEmployees(): Promise<ActiveEmployee[]> {
+  const prisma = await getPrisma();
   const rows = await prisma.employee.findMany({
     where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] }, isAnonymized: false },
     select: {
@@ -72,6 +73,7 @@ async function loadShiftLateMap(): Promise<Record<"MORNING" | "EVENING", { h: nu
 }
 
 async function getDayContext(date: Date) {
+  const prisma = await getPrisma();
   const { todayStart, todayEnd } = getBangkokDayBounds(date);
 
   const [records, leaves, holiday] = await Promise.all([

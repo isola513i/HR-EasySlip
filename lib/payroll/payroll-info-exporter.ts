@@ -1,5 +1,5 @@
 import ExcelJS from "exceljs";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 const COMPANY_NAME = "บริษัท โกไฟว์ จำกัด";
 
@@ -17,6 +17,7 @@ interface OTBucket { weekday: number; holiday: number }
 export async function generatePayrollInfoExcel(
   cycleId: string,
 ): Promise<{ buffer: ArrayBuffer; filename: string }> {
+  const prisma = await getPrisma();
   const cycle = await prisma.payrollCycle.findUnique({ where: { id: cycleId } });
   if (!cycle) throw new Error("Cycle not found");
 

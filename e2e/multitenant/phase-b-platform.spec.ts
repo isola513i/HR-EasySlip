@@ -1,7 +1,7 @@
 /**
  * Phase B — SuperAdmin Platform Portal
  *
- * Tests the platform admin UI at admin.localhost:3000:
+ * Tests the platform admin UI at localhost:3000/platform:
  * - Sign-in form (UI + credential validation)
  * - Protected pages render after auth
  * - Tenants, trials, audit pages smoke-test

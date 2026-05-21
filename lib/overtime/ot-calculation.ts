@@ -1,5 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export const WORK_END_HOUR = 18; // 18:00 — default MORNING shift end
 export const EVENING_WORK_END_HOUR = 22; // 22:00 — default EVENING shift end
@@ -90,6 +90,7 @@ export async function checkOTLimits(
 
   const warnings: OTWarning[] = [];
 
+  const prisma = await getPrisma();
   const dailyAgg = await prisma.overtimeRequest.aggregate({
     where: { employeeId, date, status: { in: ["PENDING", "APPROVED"] } },
     _sum: { hoursApproved: true },
@@ -137,6 +138,7 @@ export async function isHolidayOrWeekend(date: Date): Promise<boolean> {
   const day = date.getUTCDay();
   if (day === 0 || day === 6) return true; // weekend
 
+  const prisma = await getPrisma();
   const holiday = await prisma.publicHoliday.findFirst({
     where: { date },
     select: { id: true },

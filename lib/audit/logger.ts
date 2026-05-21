@@ -5,13 +5,10 @@
 // Logs are append-only (no UPDATE/DELETE on AuditLog table).
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { Prisma, PrismaClient } from "@prisma/client";
 
-type TxClient = Omit<
-  PrismaClient,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
+type TxClient = Prisma.TransactionClient;
 
 interface AuditLogInput {
   /** userId of actor, null for system/cron actions */
@@ -36,21 +33,22 @@ interface AuditLogInput {
 
 /**
  * Write an immutable audit log entry.
- * Can be used standalone or within a Prisma transaction.
+ * Can be used standalone, inside a transaction (pass `tx`), or from cron
+ * (pass a tenant-scoped PrismaClient explicitly).
  */
 export async function writeAuditLog(
   input: AuditLogInput,
-  tx?: TxClient,
+  dbOrTx?: PrismaClient | TxClient,
 ): Promise<void> {
-  const client = tx ?? prisma;
+  const client = dbOrTx ?? (await getPrisma());
   await client.auditLog.create({
     data: {
       actorId: input.actorId,
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId,
-      before: input.before as Prisma.InputJsonValue ?? undefined,
-      after: input.after as Prisma.InputJsonValue ?? undefined,
+      before: (input.before as Prisma.InputJsonValue) ?? undefined,
+      after: (input.after as Prisma.InputJsonValue) ?? undefined,
       ipAddress: input.ipAddress ?? null,
       userAgent: input.userAgent ?? null,
       reason: input.reason ?? null,

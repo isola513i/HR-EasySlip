@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError } from "@/lib/api/errors";
 import type { RequestMeta } from "@/lib/api/types";
@@ -15,9 +16,12 @@ export async function anonymizeEmployee(
   employeeId: string,
   meta: RequestMeta,
 ): Promise<void> {
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
-    include: { user: { select: { id: true } } },
+    select: {
+      userId: true, employeeCode: true, employmentStatus: true, isAnonymized: true, anonymizedAt: true,
+    },
   });
 
   if (!employee) {
@@ -56,7 +60,11 @@ export async function anonymizeEmployee(
       },
     });
 
-    await tx.user.delete({ where: { id: employee.userId } });
+    // Disable CP user so login is no longer possible (hard-delete is forbidden — cross-silo ref)
+    if (employee.userId) {
+      const cp = getControlPlane();
+      await cp.user.update({ where: { id: employee.userId }, data: { isDisabled: true } });
+    }
 
     await writeAuditLog({
       actorId,

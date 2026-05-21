@@ -2,7 +2,7 @@
 // Leave Query Service — read-only queries (list, detail, preview)
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { calculateWorkingDays } from "./working-days";
 import { isSensitiveDataRole } from "@/lib/security/role-helpers";
@@ -15,6 +15,7 @@ export async function previewLeave(
 ) {
   const startDate = new Date(input.startDate);
   const endDate = new Date(input.endDate);
+  const prisma = await getPrisma();
 
   // Quota lookup is skipped for unpaid leave; overlap check always runs.
   // Auto-generated overflow children are excluded — they're internal
@@ -78,6 +79,7 @@ export async function getMyLeaveRequests(
   employeeId: string,
   filters: LeaveFilters,
 ) {
+  const prisma = await getPrisma();
   const where = {
     employeeId,
     ...(filters.status && { status: filters.status }),
@@ -107,6 +109,7 @@ export async function getLeaveRequestDetail(
   id: string,
   caller: { employeeId: string; roles: Role[] },
 ) {
+  const prisma = await getPrisma();
   const request = await prisma.leaveRequest.findUnique({
     where: { id },
     include: {
@@ -146,6 +149,7 @@ export async function getTeamCalendar(
   month: number,
   year: number,
 ) {
+  const prisma = await getPrisma();
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 
@@ -185,6 +189,7 @@ export async function getTeamCalendar(
  *   - public holidays in the same month
  */
 export async function getEmployeeCalendar(employeeId: string, month: number, year: number) {
+  const prisma = await getPrisma();
   const startDate = new Date(year, month - 1, 1);
   const endDate = new Date(year, month, 0);
 

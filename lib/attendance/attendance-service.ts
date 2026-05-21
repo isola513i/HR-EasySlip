@@ -2,7 +2,8 @@
 // Attendance Service — business logic for clock, records, backfill
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
@@ -44,6 +45,7 @@ export async function clockInOut(
     geofence.enforced && geofence.distanceMeters !== null && !geofence.inside;
   const distanceTag = buildDistanceTag(geofence, isOutOfFence);
 
+  const prisma = await getPrisma();
   const { record, usedOverrideId } = await prisma.$transaction(async (tx) => {
     await validateClockAction(tx, caller.employeeId, input.clockType, todayStart, todayEnd);
 
@@ -93,12 +95,14 @@ export async function clockInOut(
   return { record, geofence } as const;
 }
 
-export type ClockResult = { record: Awaited<ReturnType<typeof prisma.attendanceRecord.create>>; geofence: GeofenceEvaluation };
+type AttendanceRecordRow = Prisma.AttendanceRecordGetPayload<Record<string, never>>;
+export type ClockResult = { record: AttendanceRecordRow; geofence: GeofenceEvaluation };
 
 export async function getMyRecords(
   employeeId: string,
   filters: AttendanceFilters,
 ) {
+  const prisma = await getPrisma();
   const where = {
     employeeId,
     clockedAt: {
@@ -125,6 +129,7 @@ export async function getTeamRecords(
   date: string,
   departmentId?: string,
 ) {
+  const prisma = await getPrisma();
   const dayStart = new Date(date);
   const dayEnd = new Date(date + "T23:59:59.999Z");
 
@@ -168,6 +173,7 @@ export async function getEmployeeRecords(
   employeeId: string,
   filters: AttendanceFilters,
 ) {
+  const prisma = await getPrisma();
   const exists = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { id: true },
@@ -185,6 +191,7 @@ export async function backfillRecord(
   input: BackfillInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const record = await prisma.attendanceRecord.findUnique({
     where: { id: recordId },
   });
@@ -226,6 +233,7 @@ export async function finalizeCycle(
   caller: Caller,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   // Find the most recent open cycle and delegate to payroll-service
   const cycle = await prisma.payrollCycle.findFirst({
     where: { status: "OPEN" },
@@ -238,5 +246,5 @@ export async function finalizeCycle(
 
   // Delegate to payroll service (single source of truth for cycle locking)
   const { lockCycle } = await import("@/lib/payroll/payroll-service");
-  return lockCycle(caller, cycle.id, meta);
+  return lockCycle(prisma, caller, cycle.id, meta);
 }

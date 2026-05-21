@@ -51,7 +51,8 @@ test.describe("Cron: trial-expiry", () => {
 // ── Health / connection pool ──────────────────────────────────────────────────
 
 test.describe("Health endpoint", () => {
-  const HEALTH_URL = `${PLATFORM_URL}/api/platform/health`;
+  // /api routes are always at root, not under /platform
+  const HEALTH_URL = `${MARKETING_URL}/api/platform/health`;
 
   test("no platform session → 401", async ({ request }) => {
     const res = await request.get(HEALTH_URL);
@@ -156,17 +157,11 @@ test.describe("Impersonation", () => {
     await page.fill("textarea", "E2E automated test impersonation");
     await page.getByRole('button', { name: /start impersonation/i }).click();
 
-    // Should redirect to the tenant zone (any slug — first in list may vary by creation order).
-    // In local dev, startImpersonation redirects to {slug}.lvh.me while the cookie is
-    // issued from admin.localhost — different domains, so the browser won't send
-    // the impersonation-token cookie to lvh.me. The redirect itself validates the
-    // server action ran successfully; the banner is only checked in production.
+    // Path-based routing: redirects to /{slug}/impersonation (same origin).
+    // Cookie is set server-side by the action — no cross-domain handoff needed.
     await page.waitForLoadState("networkidle");
-    await expect(page).toHaveURL(
-      /[a-z0-9-]+\.(localhost|lvh\.me)/,
-      { timeout: 10_000 },
-    );
-    // Soft-check: banner only appears when impersonation cookie crosses to lvh.me domain
+    await expect(page).toHaveURL(/\/impersonation/, { timeout: 10_000 });
+    // Banner should be visible since cookie is same-origin
     const bannerEl = page.getByText(/superadmin|impersonat|viewing as/i).first();
     if (await bannerEl.count() > 0) {
       await expect(bannerEl).toBeVisible({ timeout: 5_000 });
@@ -184,11 +179,11 @@ test.describe("Impersonation", () => {
     } catch {
       test.skip(true, "IMPERSONATION_COOKIE_VALUE is not a valid JWT");
     }
-    // Manually inject an impersonation-token cookie for the tenant domain
+    // Inject impersonation-token cookie — same-origin (localhost), no subdomain.
     await page.context().addCookies([{
       name: "impersonation-token",
       value: process.env.IMPERSONATION_COOKIE_VALUE!,
-      domain: `${TENANT_SLUG}.localhost`,
+      domain: "localhost",
       path: "/",
       httpOnly: true,
       sameSite: "Lax",
@@ -200,8 +195,8 @@ test.describe("Impersonation", () => {
     const endBtn = page.getByRole("button", { name: /end session|ยุติ/i });
     await expect(endBtn).toBeVisible({ timeout: 5_000 });
     await endBtn.click();
-    // Should redirect back to platform (endImpersonation redirects to admin.lvh.me in local dev)
-    await expect(page).toHaveURL(/admin\.(localhost|lvh\.me)/, { timeout: 10_000 });
+    // Path-based: end-session redirects to /platform
+    await expect(page).toHaveURL(/\/platform/, { timeout: 10_000 });
   });
 });
 
@@ -219,8 +214,8 @@ test.describe("Cross-tenant isolation", () => {
     // Login to TENANT_SLUG (tenant A)
     await loginAsTenantUser(page);
 
-    // Navigate to tenant B's protected route
-    await page.goto(`http://${tenantB}.localhost:3000/hr/overview`, { waitUntil: "domcontentloaded" });
+    // Navigate to tenant B's protected route — path-based
+    await page.goto(`${MARKETING_URL}/${tenantB}/hr/overview`, { waitUntil: "domcontentloaded" });
 
     // Should be redirected away from /hr/overview — either to /signin (no session)
     // or /settings/billing (if tenant B is TRIAL_EXPIRED). Either proves isolation.

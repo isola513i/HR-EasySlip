@@ -1,6 +1,7 @@
 import ExcelJS from "exceljs";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { hashPassword, generateInitialPassword } from "@/lib/auth/password-utils";
 import { grantInitialLeaveQuota } from "@/lib/leave/leave-quota-grant-service";
@@ -58,6 +59,7 @@ export async function bulkImportEmpeoXlsx(
   meta: RequestMeta,
   opts: { dryRun?: boolean } = {},
 ): Promise<EmpeoImportResult> {
+  const prisma = await getPrisma();
   const sheet = await readSheet(buffer);
   if (!detectEmpeoFormat(sheet.headers)) {
     throw new DomainError("NOT_EMPEO_FORMAT", { headers: sheet.headers.slice(0, 10) }, 400);
@@ -120,11 +122,21 @@ export async function bulkImportEmpeoXlsx(
     };
   }
 
+  // Pre-create CP users (cross-silo, outside tenant transaction)
+  const cp = getControlPlane();
   const passwordMap = new Map<string, { plain: string; hash: string }>();
+  const cpUserMap = new Map<string, string>(); // employeeCode → cpUserId
   await Promise.all(mapped.map(async ({ row }) => {
     const plain = generateInitialPassword(row.employeeCode);
     const hash = await hashPassword(plain);
     passwordMap.set(row.employeeCode, { plain, hash });
+    const cpUser = await cp.user.upsert({
+      where: { email: row.email },
+      create: { email: row.email, emailVerified: new Date(), passwordHash: hash, mustChangePassword: true },
+      update: {},
+      select: { id: true },
+    });
+    cpUserMap.set(row.employeeCode, cpUser.id);
   }));
 
   const created = await prisma.$transaction(async (tx) => {
@@ -145,15 +157,13 @@ export async function bulkImportEmpeoXlsx(
     const createdEmployees: EmpeoImportResult["created"] = [];
     const employeeByCode = new Map<string, string>();
 
-    // Pass 1 — create users + employees without managerId
+    // Pass 1 — create employees without managerId (CP users already created above)
     for (const { rowIndex, row } of mapped) {
       const pw = passwordMap.get(row.employeeCode)!;
-      const user = await tx.user.create({
-        data: { email: row.email, emailVerified: new Date(), passwordHash: pw.hash, mustChangePassword: true },
-      });
+      const cpUserId = cpUserMap.get(row.employeeCode)!;
       const emp = await tx.employee.create({
         data: {
-          userId: user.id, employeeCode: row.employeeCode,
+          userId: cpUserId, employeeCode: row.employeeCode,
           firstNameTh: row.firstNameTh, lastNameTh: row.lastNameTh,
           firstNameEn: row.firstNameEn, lastNameEn: row.lastNameEn,
           phone: row.phone, hireDate: new Date(row.hireDate),

@@ -10,9 +10,9 @@ interface PlatformShellProps {
 export function PlatformShell({ children, email }: PlatformShellProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="h-14 border-b border-border px-6 flex items-center justify-between sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
+      <header className="h-14 border-b border-border px-6 flex items-center justify-between sticky top-0 z-40 bg-card">
         <div className="flex items-center gap-5">
-          <Link href="/overview" className="text-sm font-semibold text-foreground tracking-tight">
+          <Link href="/platform/overview" className="text-sm font-semibold text-foreground tracking-tight">
             EasySlip <span className="text-muted-foreground font-normal">Platform</span>
           </Link>
           <PlatformNav />

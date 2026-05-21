@@ -53,60 +53,8 @@ enum EmploymentType {
   INTERN // ฝึกงาน — treated like DAILY for hourly math
 }
 
-model User {
-  id                 String    @id @default(cuid())
-  email              String    @unique @db.Citext
-  emailVerified      DateTime?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  isDisabled         Boolean   @default(false)
-  passwordHash       String?   @db.Text
-  mustChangePassword Boolean   @default(false)
-
-  employee      Employee?
-  sessions      Session[]
-  accounts      Account[]
-  auditLogs     AuditLog[]      @relation("AuditActor")
-  consents      ConsentRecord[]
-  notifications Notification[]
-
-  @@index([email])
-}
-
-// NextAuth v5 models (Passwordless / Magic Link)
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
+// User, Account, Session, VerificationToken moved to Control Plane DB (Phase 2)
+// Employee.userId is a loose cross-silo reference to CP User.id — no FK
 
 model PushSubscription {
   id        String   @id @default(cuid())
@@ -197,7 +145,6 @@ model Employee {
   notifyLeave    Boolean   @default(true)
   notifyApproval Boolean   @default(true)
 
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   department   Department? @relation(fields: [departmentId], references: [id])
   position     Position?   @relation(fields: [positionId], references: [id])
   manager      Employee?   @relation("ManagerTree", fields: [managerId], references: [id])
@@ -563,7 +510,7 @@ model AuditLog {
   platformActorEmail String?
   impersonationId    String?        // Impersonation.id in Control Plane — no FK (cross-silo)
 
-  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+  // actorId is a loose cross-silo reference to CP User.id — no FK
 
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
@@ -582,7 +529,7 @@ model ConsentRecord {
   ipAddress   String?
   userAgent   String?   @db.Text
 
-  user User @relation(fields: [userId], references: [id])
+  // userId is a loose cross-silo reference to CP User.id — no FK
 
   @@index([userId, purpose])
 }
@@ -1050,7 +997,7 @@ model Notification {
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // userId is a loose cross-silo reference to CP User.id — no FK
 
   @@unique([userId, kind, refId])
   @@index([userId, readAt])

@@ -4,7 +4,7 @@ import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { NotificationPrefsSchema } from "@/lib/employee/notification-schemas";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
@@ -14,6 +14,7 @@ export const GET = withApiHandler(async () => {
   const caller = await requireApiEmployee(EMPLOYEE_ROLES);
   if (caller instanceof NextResponse) return caller;
 
+  const prisma = await getPrisma();
   const prefs = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
     select: PREFS_SELECT,
@@ -31,6 +32,7 @@ export const PUT = withApiHandler(async (req, ctx) => {
 
   const input = await parseBody(req, NotificationPrefsSchema);
 
+  const prisma = await getPrisma();
   const before = await prisma.employee.findUnique({
     where: { id: caller.employeeId },
     select: PREFS_SELECT,

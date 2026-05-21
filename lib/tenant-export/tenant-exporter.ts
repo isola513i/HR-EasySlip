@@ -1,8 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 import { getSettingValue } from "@/lib/settings/settings-service";
 
 /** Full PDPA data-portability export for a tenant. ~50 employees → sync is fine. */
-export async function generateTenantExport() {
+export async function generateTenantExport(prisma: PrismaClient) {
   const retentionDays = await getSettingValue<number>("pdpa.audit_log.retention_days");
   const auditCutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1_000);
   const attendanceCutoff = new Date(Date.now() - 365 * 24 * 60 * 60 * 1_000);

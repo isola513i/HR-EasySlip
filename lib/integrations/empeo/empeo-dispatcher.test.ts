@@ -2,10 +2,12 @@ import { describe, test, expect, mock, beforeEach } from "bun:test";
 
 // ── Mock Prisma ──────────────────────────────────────────────
 const mockFindMany = mock(() => Promise.resolve([] as any[])); // eslint-disable-line @typescript-eslint/no-explicit-any
+const mockPrismaClient = {
+  payrollOutboxEvent: { findMany: mockFindMany },
+} as unknown as import("@prisma/client").PrismaClient;
+
 mock.module("@/lib/prisma", () => ({
-  prisma: {
-    payrollOutboxEvent: { findMany: mockFindMany },
-  },
+  getPrisma: async () => mockPrismaClient,
 }));
 
 // ── Mock outbox helpers ──────────────────────────────────────
@@ -62,7 +64,7 @@ beforeEach(() => {
 describe("dispatchToEmpeo — disabled", () => {
   test("returns enabled:false and skips DB when not configured", async () => {
     mockIsEnabled.mockReturnValue(false);
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
     expect(result).toEqual({ enabled: false, processed: 0, consumed: 0, failed: 0, skipped: 0 });
     expect(mockFindMany).not.toHaveBeenCalled();
   });
@@ -71,7 +73,7 @@ describe("dispatchToEmpeo — disabled", () => {
 describe("dispatchToEmpeo — empty queue", () => {
   test("returns zero counts when no pending events", async () => {
     mockFindMany.mockResolvedValue([]);
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
     expect(result).toMatchObject({ enabled: true, processed: 0, consumed: 0, failed: 0 });
     expect(mockWriteAuditLog).not.toHaveBeenCalled();
   });
@@ -82,7 +84,7 @@ describe("dispatchToEmpeo — success path", () => {
     mockFindMany.mockResolvedValue([makeEvent()]);
     mockSendEnvelope.mockResolvedValue({ ok: true, status: 200, body: "ok" });
 
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
 
     expect(result).toMatchObject({ consumed: 1, failed: 0, skipped: 0 });
     expect(mockMarkConsumed).toHaveBeenCalledWith("evt-1");
@@ -94,7 +96,7 @@ describe("dispatchToEmpeo — success path", () => {
     const evt = makeEvent({ eventType: "SALARY_UPDATE", aggregateId: "emp-42", idempotencyKey: "idem-99" });
     mockFindMany.mockResolvedValue([evt]);
 
-    await dispatchToEmpeo();
+    await dispatchToEmpeo(mockPrismaClient);
 
     const [envelope] = (mockSendEnvelope.mock.calls as any[][])[0]; // eslint-disable-line @typescript-eslint/no-explicit-any
     expect(envelope.eventType).toBe("SALARY_UPDATE");
@@ -109,7 +111,7 @@ describe("dispatchToEmpeo — failure path", () => {
     mockFindMany.mockResolvedValue([makeEvent()]);
     mockSendEnvelope.mockResolvedValue({ ok: false, status: 503, body: "Service Unavailable" });
 
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
 
     expect(result).toMatchObject({ consumed: 0, failed: 1 });
     expect(mockMarkFailed).toHaveBeenCalledWith("evt-1", expect.stringContaining("503"));
@@ -120,7 +122,7 @@ describe("dispatchToEmpeo — failure path", () => {
     mockFindMany.mockResolvedValue([makeEvent()]);
     mockSendEnvelope.mockRejectedValue(new Error("ECONNREFUSED"));
 
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
 
     expect(result).toMatchObject({ consumed: 0, failed: 1 });
     expect(mockMarkFailed).toHaveBeenCalledWith("evt-1", expect.stringContaining("ECONNREFUSED"));
@@ -129,7 +131,7 @@ describe("dispatchToEmpeo — failure path", () => {
   test("skips events that have reached MAX_ATTEMPTS (5)", async () => {
     mockFindMany.mockResolvedValue([makeEvent({ attempts: 5 })]);
 
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
 
     expect(result).toMatchObject({ skipped: 1, consumed: 0, failed: 0 });
     expect(mockSendEnvelope).not.toHaveBeenCalled();
@@ -147,7 +149,7 @@ describe("dispatchToEmpeo — mixed batch", () => {
       .mockResolvedValueOnce({ ok: true, status: 200, body: "ok" })
       .mockResolvedValueOnce({ ok: false, status: 500, body: "error" });
 
-    const result = await dispatchToEmpeo();
+    const result = await dispatchToEmpeo(mockPrismaClient);
 
     expect(result).toMatchObject({ processed: 3, consumed: 1, failed: 1, skipped: 1 });
     expect(mockWriteAuditLog).toHaveBeenCalledTimes(1);

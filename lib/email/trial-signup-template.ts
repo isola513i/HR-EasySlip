@@ -78,7 +78,7 @@ export function trialSignupConfirmationHtml(params: TrialSignupEmailParams): str
       style="background-color:${BG};border:1px solid ${BORDER};border-radius:8px;padding:16px;margin-bottom:24px;">
       <tbody>
         ${detailRow("บริษัท / Company", companyName)}
-        ${detailRow("URL ของคุณ", `${desiredSlug}.easyslip.app`)}
+        ${detailRow("URL ของคุณ", `/${desiredSlug}/dashboard`)}
         ${teamSize ? detailRow("ขนาดทีม / Team", teamSize) : ""}
       </tbody>
     </table>
@@ -101,6 +101,7 @@ export function trialSignupConfirmationHtml(params: TrialSignupEmailParams): str
 export function trialSignupNotificationHtml(params: TrialSignupEmailParams): string {
   const { companyName, contactName, contactEmail, desiredSlug, teamSize } = params;
   const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const content = `
     <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:${PRIMARY};text-transform:uppercase;letter-spacing:0.5px;">New Trial Request</p>
     <p style="margin:0 0 24px;font-size:20px;font-weight:700;color:${TEXT};">${companyName}</p>
@@ -110,7 +111,7 @@ export function trialSignupNotificationHtml(params: TrialSignupEmailParams): str
         ${detailRow("Company", companyName)}
         ${detailRow("Contact", contactName)}
         ${detailRow("Email", contactEmail)}
-        ${detailRow("Slug", `${desiredSlug}.easyslip.app`)}
+        ${detailRow("Slug", `/${desiredSlug}/dashboard`)}
         ${teamSize ? detailRow("Team size", teamSize) : ""}
         ${detailRow("Received", timestamp)}
       </tbody>
@@ -118,9 +119,9 @@ export function trialSignupNotificationHtml(params: TrialSignupEmailParams): str
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
       <tr>
         <td style="border-radius:8px;background-color:${PRIMARY};">
-          <a href="https://admin.easyslip.app/trials" target="_blank"
+          <a href="${appUrl}/platform/trials" target="_blank"
             style="display:inline-block;padding:10px 24px;font-size:13px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">
-            Review at admin.easyslip.app/trials
+            Review at /platform/trials
           </a>
         </td>
       </tr>

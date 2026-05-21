@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { ExpenseListFilters } from "./schemas";
 
 const EMPLOYEE_MINI = {
@@ -14,6 +14,7 @@ async function paginated(
   filters: ExpenseListFilters,
   withEmployee: boolean,
 ) {
+  const prisma = await getPrisma();
   const [items, total] = await Promise.all([
     prisma.expenseClaim.findMany({
       where,
@@ -45,6 +46,7 @@ export function listAllForHR(filters: ExpenseListFilters) {
 }
 
 export async function listPendingForApprover(employeeId: string) {
+  const prisma = await getPrisma();
   return prisma.expenseClaim.findMany({
     where: { status: "PENDING", employee: { managerId: employeeId } },
     include: { employee: { select: EMPLOYEE_MINI } },

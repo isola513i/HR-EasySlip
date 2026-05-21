@@ -2,7 +2,7 @@
 // Cashout Service — list / export annual leave cashout data
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
@@ -10,6 +10,7 @@ import type { Caller, RequestMeta } from "@/lib/api/types";
 const CSV_HEADER = "﻿รหัสพนักงาน,ชื่อ-สกุล,ปี,จำนวนวันที่เหลือ,ประเภท";
 
 export async function listCashouts(year: number) {
+  const prisma = await getPrisma();
   return prisma.annualLeaveCashOut.findMany({
     where: { year },
     include: {
@@ -26,6 +27,7 @@ export async function markCashoutExported(
   cashoutId: string,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const record = await tx.annualLeaveCashOut.findUnique({ where: { id: cashoutId } });
     if (!record) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -54,6 +56,7 @@ export async function markCashoutExported(
 }
 
 export async function exportCashout(year: number): Promise<string> {
+  const prisma = await getPrisma();
   const cashOuts = await prisma.annualLeaveCashOut.findMany({
     where: { year },
     include: {

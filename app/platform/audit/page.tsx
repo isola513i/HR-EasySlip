@@ -53,7 +53,7 @@ export default async function AuditPage({ searchParams }: Props) {
     if (actionFilter) params.set("action", actionFilter);
     if (tenantSlug) params.set("tenantSlug", tenantSlug);
     params.set("page", String(p));
-    return `/audit?${params.toString()}`;
+    return `/platform/audit?${params.toString()}`;
   };
 
   return (
@@ -113,7 +113,7 @@ export default async function AuditPage({ searchParams }: Props) {
                     <td className="px-4 py-3">
                       {log.tenant ? (
                         <Link
-                          href={`/tenants?q=${log.tenant.slug}`}
+                          href={`/platform/tenants?q=${log.tenant.slug}`}
                           className="font-mono text-xs text-muted-foreground hover:text-primary transition-colors"
                         >
                           {log.tenant.slug}

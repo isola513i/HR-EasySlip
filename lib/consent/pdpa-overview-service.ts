@@ -2,7 +2,8 @@
 // PDPA Overview Service — HR-side aggregation for /hr/pdpa dashboard
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { CONSENT_PURPOSE, getCurrentConsentVersion } from "./consent-service";
 import {
   CONSENT_CATEGORIES,
@@ -56,6 +57,7 @@ export interface PdpaOverview {
 }
 
 export async function getPdpaOverview(): Promise<PdpaOverview> {
+  const prisma = await getPrisma();
   const consentVersion = await getCurrentConsentVersion();
   const employees = await prisma.employee.findMany({
     where: {
@@ -70,12 +72,16 @@ export async function getPdpaOverview(): Promise<PdpaOverview> {
       firstNameEn: true,
       lastNameEn: true,
       userId: true,
-      user: { select: { email: true } },
     },
     orderBy: { employeeCode: "asc" },
   });
 
-  const userIds = employees.map((e) => e.userId);
+  const userIds = employees.map((e) => e.userId).filter((id): id is string => !!id);
+
+  // Batch-fetch emails from CP
+  const cp = getControlPlane();
+  const cpUsers = await cp.user.findMany({ where: { id: { in: userIds } }, select: { id: true, email: true } });
+  const emailById = new Map(cpUsers.map((u) => [u.id, u.email]));
   const consents = await prisma.consentRecord.findMany({
     where: {
       userId: { in: userIds },
@@ -114,7 +120,7 @@ export async function getPdpaOverview(): Promise<PdpaOverview> {
       lastNameTh: emp.lastNameTh,
       firstNameEn: emp.firstNameEn,
       lastNameEn: emp.lastNameEn,
-      email: emp.user?.email ?? null,
+      email: (emp.userId ? emailById.get(emp.userId) : null) ?? null,
       status,
       consentType,
       grantedAt,

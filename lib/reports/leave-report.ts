@@ -1,8 +1,9 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { LeaveStatus } from "@prisma/client";
 import type { ReportFilters } from "./report-types";
 
 export async function generateLeaveReport(filters: ReportFilters) {
+  const prisma = await getPrisma();
   const where = {
     startDate: { gte: new Date(filters.dateFrom) },
     endDate: { lte: new Date(filters.dateTo) },

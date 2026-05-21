@@ -193,44 +193,46 @@ html {
 }
 
 .dark {
-  --background: #10151e;
-  --foreground: #f5f7fa;
-  --card: #1d2430;
-  --card-foreground: #f5f7fa;
-  --popover: #1d2430;
-  --popover-foreground: #f5f7fa;
-  --primary: #6b7cf7;
-  --primary-foreground: #ffffff;
-  --secondary: #2f3844;
-  --secondary-foreground: #f5f7fa;
-  --muted: #2f3844;
-  --muted-foreground: #9aa4b2;
-  --accent: #242b82;
-  --accent-foreground: #bcc7ff;
-  --destructive: #dc2626;
-  --border: #2a3240;
-  --input: #2a3240;
-  --ring: rgba(148, 163, 255, 0.4);
-  --sidebar: #1d2430;
-  --sidebar-foreground: #f5f7fa;
-  --sidebar-primary: #6b7cf7;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #2f3844;
-  --sidebar-accent-foreground: #f5f7fa;
-  --sidebar-border: #2a3240;
-  --sidebar-ring: rgba(148, 163, 255, 0.4);
+  /* M2 dark theme — base surfaces: dark grey with minimal brand tint (not pure black,
+     not over-saturated navy). Elevation via progressive lightness, not shadows. */
+  --background:         oklch(0.13 0.010 263); /* base surface — ~#14161f */
+  --foreground:         oklch(0.96 0.005 265); /* primary text — near-white, M2 100% */
+  --card:               oklch(0.17 0.009 263); /* +1–2dp overlay — ~#1b1d26 */
+  --card-foreground:    oklch(0.96 0.005 265);
+  --popover:            oklch(0.20 0.009 263); /* +4dp overlay — menus/dropdowns */
+  --popover-foreground: oklch(0.96 0.005 265);
+  --primary:            oklch(0.70 0.175 265); /* desaturated from light #3d46cc — M2 lightened primary */
+  --primary-foreground: oklch(0.13 0.010 263);
+  --secondary:          oklch(0.22 0.009 263); /* +6dp overlay — secondary surfaces */
+  --secondary-foreground: oklch(0.96 0.005 265);
+  --muted:              oklch(0.22 0.009 263); /* same level as secondary */
+  --muted-foreground:   oklch(0.68 0.008 265); /* M2 secondary text — ~70% white opacity */
+  --accent:             oklch(0.27 0.010 263);
+  --accent-foreground:  oklch(0.80 0.130 265);
+  --destructive:        oklch(0.60 0.185 22);  /* M2 lightened error for dark bg */
+  --border:             oklch(0.22 0.009 263); /* matches muted — visible but not loud */
+  --input:              oklch(0.20 0.009 263); /* slightly deeper than border */
+  --ring:               oklch(0.70 0.175 265 / 0.40);
+  --sidebar:            oklch(0.17 0.009 263);
+  --sidebar-foreground: oklch(0.96 0.005 265);
+  --sidebar-primary:    oklch(0.70 0.175 265);
+  --sidebar-primary-foreground: oklch(0.13 0.010 263);
+  --sidebar-accent:     oklch(0.22 0.009 263);
+  --sidebar-accent-foreground: oklch(0.96 0.005 265);
+  --sidebar-border:     oklch(0.22 0.009 263);
+  --sidebar-ring:       oklch(0.70 0.175 265 / 0.40);
 
   /* ═══ EasySlip palette — dark overrides ═══ */
   /* Neutrals: invert SURFACES (0–300) but keep TEXT/HERO ranges (700–900) dark
      so hero cards using bg-[var(--es-neutral-900)] still render dark with white text. */
-  --es-neutral-0: #10151e;
-  --es-neutral-25: #141a25;
-  --es-neutral-50: #1a212d;
-  --es-neutral-100: #232b39;
-  --es-neutral-200: #2a3240;
-  --es-neutral-300: #3a4453;
-  --es-neutral-400: #6b7684;
-  --es-neutral-500: #9aa4b2;
+  --es-neutral-0:   oklch(0.13 0.010 263); /* base background */
+  --es-neutral-25:  oklch(0.15 0.009 263); /* subtle step */
+  --es-neutral-50:  oklch(0.17 0.009 263); /* card surface */
+  --es-neutral-100: oklch(0.20 0.009 263); /* popover level */
+  --es-neutral-200: oklch(0.22 0.009 263); /* muted / border */
+  --es-neutral-300: oklch(0.29 0.009 263); /* hover states */
+  --es-neutral-400: oklch(0.48 0.008 265); /* placeholder icons */
+  --es-neutral-500: oklch(0.68 0.008 265); /* secondary text */
   /* 600–900 left at light-mode values so hero/dark surfaces stay dark in dark mode */
 
   /* Accent — shift to lighter shades for readable contrast */

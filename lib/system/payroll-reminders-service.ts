@@ -1,5 +1,5 @@
-import type { NotificationKind } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import type { NotificationKind, PrismaClient } from "@prisma/client";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
 import { sendNotificationEmail } from "@/lib/email/notification-service";
@@ -50,7 +50,7 @@ interface PendingCounts {
  * time. Filtering by `payrollCycleId = currentCycle` here would silently
  * return zero on the days HR most needs the visibility.
  */
-async function gatherPending(): Promise<PendingCounts> {
+async function gatherPending(prisma: PrismaClient): Promise<PendingCounts> {
   const [pendingOt, pendingLeave, pendingExpense, missingSalary] = await Promise.all([
     prisma.overtimeRequest.count({ where: { status: "PENDING" } }),
     prisma.leaveRequest.count({ where: { status: "PENDING" } }),
@@ -65,18 +65,25 @@ interface RecipientRow {
   email: string;
 }
 
-async function listHrRecipients(): Promise<RecipientRow[]> {
+async function listHrRecipients(prisma: PrismaClient): Promise<RecipientRow[]> {
   const employees = await prisma.employee.findMany({
     where: {
       employmentStatus: { in: ["ACTIVE", "PROBATION"] },
       roles: { hasSome: [...SENSITIVE_DATA_ROLES] },
-      user: { isDisabled: false },
     },
-    select: { userId: true, user: { select: { email: true } } },
+    select: { userId: true },
   });
-  return employees
-    .map((e) => (e.user ? { userId: e.userId, email: e.user.email } : null))
-    .filter((r): r is RecipientRow => r !== null);
+
+  const userIds = employees.map((e) => e.userId).filter((id): id is string => !!id);
+  if (userIds.length === 0) return [];
+
+  const cp = getControlPlane();
+  const cpUsers = await cp.user.findMany({
+    where: { id: { in: userIds }, isDisabled: false },
+    select: { id: true, email: true },
+  });
+
+  return cpUsers.map((u) => ({ userId: u.id, email: u.email }));
 }
 
 export interface PayrollRemindersResult {
@@ -94,7 +101,7 @@ export interface PayrollRemindersResult {
  * level via the unique index on (userId, kind, refId=cycleId) — the
  * cron can safely re-run without spamming.
  */
-export async function runPayrollReminders(now = new Date()): Promise<PayrollRemindersResult> {
+export async function runPayrollReminders(prisma: PrismaClient, now = new Date()): Promise<PayrollRemindersResult> {
   const ranAt = now.toISOString();
 
   // Pick the cycle that *should* be active for today: prefer the cycle
@@ -119,14 +126,14 @@ export async function runPayrollReminders(now = new Date()): Promise<PayrollRemi
     return { ranAt, cycleId: cycle.id, kind: null, recipients: 0, emailsSent: 0, notificationsCreated: 0, reason: "Not a reminder day" };
   }
 
-  const [counts, recipients] = await Promise.all([gatherPending(), listHrRecipients()]);
+  const [counts, recipients] = await Promise.all([gatherPending(prisma), listHrRecipients(prisma)]);
   if (recipients.length === 0) {
     return { ranAt, cycleId: cycle.id, kind: plan.kind, recipients: 0, emailsSent: 0, notificationsCreated: 0, reason: "No HR recipients" };
   }
 
   const cutoffDateLabel = bangkokDateOnly(cycle.cutOffAt).toISOString().slice(0, 10);
   const monthLabel = `${cycle.year}-${String(cycle.month).padStart(2, "0")}`;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://easyslip.app";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   const meta = {
     cycleId: cycle.id,
@@ -174,7 +181,7 @@ export async function runPayrollReminders(now = new Date()): Promise<PayrollRemi
     entityType: "PayrollCycle",
     entityId: cycle.id,
     after: { kind: plan.kind, recipients: recipients.length, emailsSent, emailsFailed, notificationsCreated, counts },
-  });
+  }, prisma);
 
   return { ranAt, cycleId: cycle.id, kind: plan.kind, recipients: recipients.length, emailsSent, notificationsCreated };
 }

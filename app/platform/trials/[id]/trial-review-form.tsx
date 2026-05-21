@@ -45,9 +45,9 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
         <TabsContent value="approve">
           <form action={approveDispatch} className="space-y-4 mt-4">
             <div className="space-y-2">
-              <Label className="text-sm">Slug (subdomain)</Label>
+              <Label className="text-sm">Slug</Label>
               <Input name="slug" defaultValue={desiredSlug} required className="font-mono text-sm" placeholder="acme" />
-              <p className="text-xs text-muted-foreground">{desiredSlug}.easyslip.app</p>
+              <p className="text-xs text-muted-foreground">/{desiredSlug}/dashboard</p>
             </div>
             <div className="space-y-2">
               <Label className="text-sm">Company name</Label>

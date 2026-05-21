@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { getBangkokDayBounds } from "@/lib/attendance/clock-validation";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -18,6 +18,7 @@ export interface DashboardSummary {
 }
 
 export async function getDashboardSummary(now: Date = new Date()): Promise<DashboardSummary> {
+  const prisma = await getPrisma();
   const { todayStart, todayEnd } = getBangkokDayBounds(now);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * DAY_MS);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * DAY_MS);

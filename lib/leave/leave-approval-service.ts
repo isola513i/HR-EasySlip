@@ -2,7 +2,7 @@
 // Leave Approval Service — approve, reject, bulk (Manager ops)
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
@@ -12,6 +12,7 @@ export async function getPendingForApprover(
   page: number,
   perPage: number,
 ) {
+  const prisma = await getPrisma();
   const where = { approverId: caller.employeeId, status: "PENDING" as const };
 
   const [rows, total] = await Promise.all([
@@ -59,6 +60,7 @@ export async function approveLeaveRequest(
   meta: RequestMeta,
   opts: DecideOptions = {},
 ) {
+  const prisma = await getPrisma();
   const result = await prisma.$transaction(async (tx) => {
     const request = await tx.leaveRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -114,6 +116,7 @@ export async function rejectLeaveRequest(
   meta: RequestMeta,
   opts: DecideOptions = {},
 ) {
+  const prisma = await getPrisma();
   const result = await prisma.$transaction(async (tx) => {
     const request = await tx.leaveRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

@@ -3,8 +3,11 @@
 // ════════════════════════════════════════════════════════════════
 
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { getTenantPrisma } from "@/lib/db/tenant";
+import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 import type { Role } from "@prisma/client";
 
 /** Roles that can access HR-level features */
@@ -47,6 +50,17 @@ export const CUTOFF_OVERRIDE_ROLES: readonly Role[] = [
   "HR_AUTHORIZED",
 ] as const;
 
+/** Roles that redirect to /hr/overview (vs /employee/today) in workspace picker */
+export const HR_LANDING_ROLES = new Set<string>([
+  "TENANT_ADMIN",
+  "HR_AUTHORIZED",
+  "HRMG",
+  "CEO",
+  "CTO",
+  "COO",
+  "ADMIN",
+]);
+
 export { SENSITIVE_DATA_ROLES, isSensitiveDataRole } from "./role-helpers";
 
 export interface AuthResult {
@@ -59,88 +73,118 @@ export interface AuthResult {
   lastNameTh: string | undefined;
 }
 
+async function resolveEmployee(tenantId: string, employeeRecordId: string) {
+  const tp = await getTenantPrisma(tenantId);
+  return tp.employee.findUnique({
+    where: { id: employeeRecordId },
+    select: {
+      id: true,
+      employeeCode: true,
+      roles: true,
+      firstNameTh: true,
+      lastNameTh: true,
+      employmentStatus: true,
+    },
+  });
+}
+
 /**
- * Require authentication and check that the user has at least one
- * of the specified roles. Redirects to /signin or shows 403 on failure.
- *
- * Usage in Server Components:
- *   const user = await requireRoles(["HRMG", "HR_AUTHORIZED"]);
+ * Require authentication and role. Redirects on failure.
+ * Reads tenant context from middleware-injected headers.
  */
 export async function requireRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult> {
-  const session = await auth();
+  const [session, h] = await Promise.all([auth(), headers()]);
+  const tenantId = h.get("x-tenant-id") ?? "";
+  const tenantSlug = h.get("x-tenant-slug") ?? "";
 
   if (!session?.user?.id) {
-    redirect("/signin");
+    redirect(tenantSlug ? `/${tenantSlug}/signin` : "/workspaces");
   }
 
-  const emp = session.user.employee;
-  const roles = (emp?.roles ?? []) as Role[];
-
-  const hasRole = roles.some((r) => allowedRoles.includes(r));
-  if (!hasRole) {
-    redirect("/forbidden");
+  const membership = session.user.memberships?.find(
+    (m) => m.tenantId === tenantId,
+  );
+  if (!membership || membership.status !== "ACTIVE") {
+    redirect("/workspaces?error=no_access");
   }
 
-  // Force password change before accessing any protected page
   if (session.user.mustChangePassword) {
-    redirect("/change-password");
+    redirect(`/${tenantSlug}/change-password`);
+  }
+
+  if (!membership.employeeRecordId) {
+    redirect(`/${tenantSlug}/forbidden`);
+  }
+
+  const emp = await resolveEmployee(tenantId, membership.employeeRecordId);
+  if (!emp) redirect(`/${tenantSlug}/forbidden`);
+
+  if (
+    BLOCKED_EMPLOYMENT_STATUSES.includes(
+      emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number],
+    )
+  ) {
+    redirect(`/${tenantSlug}/forbidden?reason=suspended`);
+  }
+
+  const roles = emp.roles as Role[];
+  if (!roles.some((r) => allowedRoles.includes(r))) {
+    redirect(`/${tenantSlug}/forbidden`);
   }
 
   return {
     userId: session.user.id,
     email: session.user.email ?? undefined,
     roles,
-    employeeId: emp?.id,
-    employeeCode: emp?.employeeCode,
-    firstNameTh: emp?.firstNameTh,
-    lastNameTh: emp?.lastNameTh,
+    employeeId: emp.id,
+    employeeCode: emp.employeeCode,
+    firstNameTh: emp.firstNameTh,
+    lastNameTh: emp.lastNameTh,
   };
 }
 
 /**
  * Check roles without redirecting — returns null if unauthorized.
- * Useful for conditional rendering or non-critical checks.
  */
 export async function checkRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult | null> {
-  const session = await auth();
+  const [session, h] = await Promise.all([auth(), headers()]);
   if (!session?.user?.id) return null;
 
-  const emp = session.user.employee;
-  const roles = (emp?.roles ?? []) as Role[];
+  const tenantId = h.get("x-tenant-id") ?? "";
+  const membership = session.user.memberships?.find(
+    (m) => m.tenantId === tenantId,
+  );
+  if (!membership || membership.status !== "ACTIVE") return null;
+  if (!membership.employeeRecordId) return null;
 
+  const emp = await resolveEmployee(tenantId, membership.employeeRecordId);
+  if (!emp) return null;
+
+  const roles = emp.roles as Role[];
   if (!roles.some((r) => allowedRoles.includes(r))) return null;
 
   return {
     userId: session.user.id,
     email: session.user.email ?? undefined,
     roles,
-    employeeId: emp?.id,
-    employeeCode: emp?.employeeCode,
-    firstNameTh: emp?.firstNameTh,
-    lastNameTh: emp?.lastNameTh,
+    employeeId: emp.id,
+    employeeCode: emp.employeeCode,
+    firstNameTh: emp.firstNameTh,
+    lastNameTh: emp.lastNameTh,
   };
 }
 
 /**
- * Guard for API Route Handlers (app/api/.../route.ts).
- * Returns JSON 401/403 on failure instead of HTML redirect.
- *
- * Usage:
- *   export async function GET() {
- *     const result = await requireApiRoles(HR_ROLES);
- *     if (result instanceof NextResponse) return result; // 401 or 403
- *     const { userId, roles } = result;
- *     // ... handle request
- *   }
+ * Guard for API Route Handlers. Returns JSON 401/403 on failure.
  */
 export async function requireApiRoles(
   allowedRoles: readonly Role[],
 ): Promise<AuthResult | NextResponse> {
-  const session = await auth();
+  const [session, h] = await Promise.all([auth(), headers()]);
 
   if (!session?.user?.id) {
     return NextResponse.json(
@@ -149,9 +193,33 @@ export async function requireApiRoles(
     );
   }
 
-  const emp = session.user.employee;
-  const roles = (emp?.roles ?? []) as Role[];
+  const tenantId = h.get("x-tenant-id") ?? "";
+  const membership = session.user.memberships?.find(
+    (m) => m.tenantId === tenantId,
+  );
+  if (!membership || membership.status !== "ACTIVE") {
+    return NextResponse.json(
+      { error: "Forbidden", message: "No active membership in this workspace" },
+      { status: 403 },
+    );
+  }
 
+  if (!membership.employeeRecordId) {
+    return NextResponse.json(
+      { error: "Forbidden", message: "No employee record" },
+      { status: 403 },
+    );
+  }
+
+  const emp = await resolveEmployee(tenantId, membership.employeeRecordId);
+  if (!emp) {
+    return NextResponse.json(
+      { error: "Forbidden", message: "Employee record not found" },
+      { status: 403 },
+    );
+  }
+
+  const roles = emp.roles as Role[];
   if (!roles.some((r) => allowedRoles.includes(r))) {
     return NextResponse.json(
       { error: "Forbidden", message: "Insufficient permissions" },
@@ -163,10 +231,10 @@ export async function requireApiRoles(
     userId: session.user.id,
     email: session.user.email ?? undefined,
     roles,
-    employeeId: emp?.id,
-    employeeCode: emp?.employeeCode,
-    firstNameTh: emp?.firstNameTh,
-    lastNameTh: emp?.lastNameTh,
+    employeeId: emp.id,
+    employeeCode: emp.employeeCode,
+    firstNameTh: emp.firstNameTh,
+    lastNameTh: emp.lastNameTh,
   };
 }
 
@@ -174,7 +242,6 @@ export type EmployeeAuthResult = AuthResult & { employeeId: string };
 
 /**
  * Stricter guard: requires both valid roles AND an employee record.
- * Eliminates the need for manual `if (!caller.employeeId)` checks in routes.
  */
 export async function requireApiEmployee(
   allowedRoles: readonly Role[],

@@ -79,7 +79,7 @@ export default async function TenantsPage({ searchParams }: Props) {
       label: "Company",
       cell: (t: TenantRow) => (
         <div>
-          <Link href={`/tenants/${t.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+          <Link href={`/platform/tenants/${t.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
             {t.companyName}
           </Link>
           <div className="flex items-center gap-1 mt-0.5">
@@ -134,7 +134,7 @@ export default async function TenantsPage({ searchParams }: Props) {
         title="Tenants"
         subtitle={`${total} workspace${total !== 1 ? "s" : ""}`}
         action={
-          <Link href="/tenants/new" className={buttonVariants({ size: "sm" })}>
+          <Link href="/platform/tenants/new" className={buttonVariants({ size: "sm" })}>
             <Plus className="size-4 mr-1.5" />New tenant
           </Link>
         }
@@ -143,7 +143,7 @@ export default async function TenantsPage({ searchParams }: Props) {
       <div className="flex items-center gap-1 mb-4 border-b border-border pb-4">
         {STATUS_TABS.map((tab) => {
           const isActive = (tab.value === "" && !status) || tab.value === status;
-          const href = tab.value ? `/tenants?status=${tab.value}` : "/tenants";
+          const href = tab.value ? `/platform/tenants?status=${tab.value}` : "/platform/tenants";
           return (
             <Link
               key={tab.value}
@@ -182,7 +182,7 @@ export default async function TenantsPage({ searchParams }: Props) {
           <div className="flex gap-2">
             {page > 1 && (
               <Link
-                href={`/tenants?${new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { status } : {}), ...(plan ? { plan } : {}), page: String(page - 1) })}`}
+                href={`/platform/tenants?${new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { status } : {}), ...(plan ? { plan } : {}), page: String(page - 1) })}`}
                 className="px-3 py-1.5 rounded-md bg-card border border-border hover:bg-muted/60 transition-colors text-xs"
               >
                 Previous
@@ -190,7 +190,7 @@ export default async function TenantsPage({ searchParams }: Props) {
             )}
             {page < totalPages && (
               <Link
-                href={`/tenants?${new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { status } : {}), ...(plan ? { plan } : {}), page: String(page + 1) })}`}
+                href={`/platform/tenants?${new URLSearchParams({ ...(q ? { q } : {}), ...(status ? { status } : {}), ...(plan ? { plan } : {}), page: String(page + 1) })}`}
                 className="px-3 py-1.5 rounded-md bg-card border border-border hover:bg-muted/60 transition-colors text-xs"
               >
                 Next

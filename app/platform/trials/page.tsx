@@ -125,11 +125,11 @@ export default async function TrialsPage({ searchParams }: Props) {
       className: "w-16",
       cell: (s: SignupRow) =>
         s.status === "PENDING" ? (
-          <Link href={`/trials/${s.id}`} className="text-xs text-primary hover:underline font-medium">
+          <Link href={`/platform/trials/${s.id}`} className="text-xs text-primary hover:underline font-medium">
             Review
           </Link>
         ) : (
-          <Link href={`/trials/${s.id}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <Link href={`/platform/trials/${s.id}`} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
             View
           </Link>
         ),
@@ -150,7 +150,7 @@ export default async function TrialsPage({ searchParams }: Props) {
           return (
             <Link
               key={t.value}
-              href={`/trials?tab=${t.value}`}
+              href={`/platform/trials?tab=${t.value}`}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors duration-150",
                 isActive

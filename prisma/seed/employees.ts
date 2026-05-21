@@ -11,6 +11,7 @@
 
 import bcrypt from 'bcryptjs';
 import type { EmploymentStatus, PrismaClient, Role } from '@prisma/client';
+import type { PrismaClient as CpPrismaClient } from '@/lib/db/generated/control-plane';
 import type { OrgMap } from './organization';
 
 type SeedEmployee = {
@@ -322,9 +323,12 @@ export type EmployeeRecord = {
   employmentStatus: EmploymentStatus;
 };
 
+type CpOpts = { cp: CpPrismaClient; tenantId: string };
+
 export async function seedEmployees(
   prisma: PrismaClient,
   org: OrgMap,
+  cpOpts?: CpOpts,
 ): Promise<Map<string, EmployeeRecord>> {
   const result = new Map<string, EmployeeRecord>();
 
@@ -342,27 +346,45 @@ export async function seedEmployees(
       ? await bcrypt.hash(seed.plainPassword, 12)
       : undefined;
 
-    const user = await prisma.user.upsert({
-      where: { email: seed.email },
-      create: {
-        email: seed.email,
-        emailVerified: new Date(),
-        ...(passwordHash ? { passwordHash } : {}),
-      },
-      update: passwordHash ? { passwordHash } : {},
-    });
+    let userId: string;
+    if (cpOpts) {
+      // Phase 2+: users live in Control Plane DB
+      const cpUser = await cpOpts.cp.user.upsert({
+        where: { email: seed.email },
+        create: {
+          email: seed.email,
+          emailVerified: new Date(),
+          ...(passwordHash ? { passwordHash } : {}),
+        },
+        update: passwordHash ? { passwordHash } : {},
+        select: { id: true },
+      });
+      userId = cpUser.id;
+    } else {
+      // Legacy fallback (single-tenant / pre-migration)
+      const user = await (prisma as unknown as { user: { upsert: (args: unknown) => Promise<{ id: string }> } }).user.upsert({
+        where: { email: seed.email },
+        create: {
+          email: seed.email,
+          emailVerified: new Date(),
+          ...(passwordHash ? { passwordHash } : {}),
+        },
+        update: passwordHash ? { passwordHash } : {},
+      });
+      userId = user.id;
+    }
 
     // If a stale Employee record claims this userId under a different code, re-key it
     // so the upsert below (keyed on employeeCode) doesn't hit the unique constraint.
     await prisma.employee.updateMany({
-      where: { userId: user.id, NOT: { employeeCode: seed.code } },
+      where: { userId, NOT: { employeeCode: seed.code } },
       data: { employeeCode: seed.code },
     });
 
     const employee = await prisma.employee.upsert({
       where: { employeeCode: seed.code },
       create: {
-        userId: user.id,
+        userId,
         employeeCode: seed.code,
         firstNameTh: seed.firstNameTh,
         lastNameTh: seed.lastNameTh,
@@ -377,6 +399,7 @@ export async function seedEmployees(
         employmentStatus: seed.employmentStatus,
       },
       update: {
+        userId,
         roles: seed.roles,
         departmentId,
         positionId,
@@ -385,9 +408,30 @@ export async function seedEmployees(
       },
     });
 
+    // Phase 2+: create TenantMembership in CP for each seeded employee
+    if (cpOpts) {
+      const primaryRole = (seed.roles[0] ?? "EMPLOYEE") as string;
+      await cpOpts.cp.tenantMembership.upsert({
+        where: { userId_tenantId: { userId, tenantId: cpOpts.tenantId } },
+        create: {
+          userId,
+          tenantId: cpOpts.tenantId,
+          role: primaryRole,
+          employeeRecordId: employee.id,
+          status: seed.employmentStatus === "TERMINATED" || seed.employmentStatus === "RESIGNED"
+            ? "SUSPENDED"
+            : "ACTIVE",
+        },
+        update: {
+          role: primaryRole,
+          employeeRecordId: employee.id,
+        },
+      });
+    }
+
     result.set(seed.code, {
       id: employee.id,
-      userId: user.id,
+      userId,
       code: seed.code,
       hireDate: new Date(seed.hireDate),
       roles: seed.roles,

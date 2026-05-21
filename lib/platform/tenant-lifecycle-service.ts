@@ -57,9 +57,10 @@ async function anonymiseAllEmployees(tenantId: string): Promise<number> {
           isAnonymized: true, anonymizedAt: now,
         },
       });
-      // Delete user account so login is no longer possible
+      // Disable CP user so login is no longer possible (hard-delete is forbidden — cross-silo ref)
       if (emp.userId) {
-        await tx.user.deleteMany({ where: { id: emp.userId } });
+        const cp = getControlPlane();
+        await cp.user.update({ where: { id: emp.userId }, data: { isDisabled: true } });
       }
     });
   }

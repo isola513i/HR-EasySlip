@@ -1,8 +1,8 @@
 // Mirrors the leave approval flow; APPROVED claims emit a payroll
 // outbox event so Empeo can reimburse on payday.
 import { Decimal } from "@prisma/client/runtime/library";
-import { ExpenseStatus, type Role } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { ExpenseStatus, type Role, type PrismaClient } from "@prisma/client";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { logger } from "@/lib/observability/logger";
@@ -17,6 +17,7 @@ export async function createExpenseClaim(
   input: ExpenseCreateInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     if (input.receiptDocumentId) {
       const doc = await tx.document.findUnique({
@@ -54,6 +55,7 @@ export async function createExpenseClaim(
 }
 
 export async function cancelExpenseClaim(caller: Caller, id: string, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const claim = await tx.expenseClaim.findUnique({ where: { id } });
     if (!claim) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -91,6 +93,7 @@ export async function decideExpenseClaim(
   meta: RequestMeta,
 ) {
   const hrOverride = isSensitiveDataRole(caller.roles);
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const claim = await tx.expenseClaim.findUnique({
       where: { id },
@@ -138,7 +141,7 @@ export async function decideExpenseClaim(
   });
 }
 
-type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+type TxClient = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 
 async function emitApprovedOutbox(
   tx: TxClient,

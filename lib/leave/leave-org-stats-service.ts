@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import type { LeaveType } from "@prisma/client";
+import type { LeaveType, PrismaClient } from "@prisma/client";
 
 const TRACKED: LeaveType[] = ["ANNUAL", "SICK", "PERSONAL"];
 
@@ -16,7 +15,7 @@ export interface LeaveTypeStats {
  * Org-wide leave quota aggregate for the current calendar year, per type.
  * Sums across active employees only.
  */
-export async function getOrgLeaveStats(year: number = new Date().getFullYear()): Promise<LeaveTypeStats[]> {
+export async function getOrgLeaveStats(prisma: PrismaClient, year: number = new Date().getFullYear()): Promise<LeaveTypeStats[]> {
   const grouped = await prisma.leaveQuota.groupBy({
     by: ["leaveType"],
     where: {
@@ -64,7 +63,7 @@ export interface PendingLeaveRow {
 }
 
 /** All pending leave requests org-wide. HR scope only. */
-export async function getAllPendingLeaves(): Promise<PendingLeaveRow[]> {
+export async function getAllPendingLeaves(prisma: PrismaClient): Promise<PendingLeaveRow[]> {
   const rows = await prisma.leaveRequest.findMany({
     where: { status: "PENDING" },
     include: {

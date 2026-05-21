@@ -6,8 +6,17 @@ import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
 import { encryptUrl } from "@/lib/db/url-encryption";
 import { provisionTenantDb } from "@/lib/tenant/provision";
+import {
+  createBranch,
+  waitForBranchReady,
+  getConnectionUri,
+  deleteBranch,
+  NeonError,
+} from "@/lib/neon/client";
 
-const CREATABLE_STATUSES = ["ACTIVE", "TRIAL", "PENDING"] as const;
+const NEON_ROLE = process.env.NEON_BRANCH_ROLE_NAME ?? "neondb_owner";
+const NEON_PARENT_BRANCH_ID = process.env.NEON_PARENT_BRANCH_ID ?? "";
+const CREATABLE_STATUSES = ["ACTIVE", "TRIAL"] as const;
 
 type ActionResult = { error: string } | null;
 
@@ -18,47 +27,88 @@ export async function createTenant(_prev: ActionResult, formData: FormData): Pro
   const companyName = (formData.get("companyName") as string).trim();
   const contactEmail = (formData.get("contactEmail") as string).trim();
   const contactName = (formData.get("contactName") as string).trim();
-  const databaseUrl = (formData.get("databaseUrl") as string).trim();
-  const directUrl = (formData.get("directUrl") as string | null)?.trim() || null;
   const status = ((formData.get("status") as string) || "ACTIVE") as (typeof CREATABLE_STATUSES)[number];
 
-  if (!slug || !companyName || !contactEmail || !databaseUrl) {
-    return { error: "slug, companyName, contactEmail, and databaseUrl are required." };
+  if (!slug || !companyName || !contactEmail || !contactName) {
+    return { error: "All fields are required." };
   }
   if (!CREATABLE_STATUSES.includes(status)) {
     return { error: `Invalid status. Allowed: ${CREATABLE_STATUSES.join(", ")}.` };
+  }
+  if (!NEON_PARENT_BRANCH_ID) {
+    return { error: "NEON_PARENT_BRANCH_ID is not configured." };
   }
 
   const cp = getControlPlane();
   const slugTaken = await cp.tenant.findUnique({ where: { slug }, select: { id: true } });
   if (slugTaken) return { error: `Slug "${slug}" is already taken.` };
 
-  // Create the CP record first so the tenant is tracked even if provision fails.
-  const databaseUrlEnc = encryptUrl(databaseUrl);
-  const directUrlEnc = directUrl ? encryptUrl(directUrl) : null;
-  const now = new Date();
-
   const tenant = await cp.tenant.create({
-    data: { slug, companyName, status: "PENDING", databaseUrlEnc, directUrlEnc, provisionedAt: now },
+    data: { slug, companyName, status: "PENDING", provisioningStatus: "RUNNING" },
   });
 
-  const provision = await provisionTenantDb({ databaseUrl, directUrl, companyName, adminEmail: contactEmail, adminName: contactName });
-  if (!provision.success) {
-    await cp.tenant.delete({ where: { id: tenant.id } });
-    return { error: provision.error ?? "Provisioning failed." };
+  let neonBranchId: string | null = null;
+  try {
+    const { branch, endpoint } = await createBranch({
+      name: `tenant-${slug}`,
+      parentId: NEON_PARENT_BRANCH_ID,
+    });
+    neonBranchId = branch.id;
+
+    await waitForBranchReady(branch.id);
+
+    const [pooledUri, directUri] = await Promise.all([
+      getConnectionUri({ branchId: branch.id, role: NEON_ROLE, pooled: true }),
+      getConnectionUri({ branchId: branch.id, role: NEON_ROLE, pooled: false }),
+    ]);
+
+    await cp.tenant.update({
+      where: { id: tenant.id },
+      data: {
+        databaseUrlEnc: encryptUrl(pooledUri),
+        directUrlEnc: encryptUrl(directUri),
+        neonProjectId: process.env.NEON_PROJECT_ID,
+        neonBranchId: branch.id,
+        neonBranchEndpointId: endpoint.id,
+        provisionedAt: new Date(),
+      },
+    });
+
+    const provision = await provisionTenantDb({
+      databaseUrl: pooledUri,
+      directUrl: directUri,
+      companyName,
+      adminEmail: contactEmail,
+      adminName: contactName,
+      tenantId: tenant.id,
+    });
+
+    if (!provision.success) throw new Error(provision.error ?? "provisionTenantDb failed");
+
+    await Promise.all([
+      cp.tenant.update({ where: { id: tenant.id }, data: { status, provisioningStatus: "READY" } }),
+      cp.platformAuditLog.create({
+        data: {
+          actorId: session.userId,
+          tenantId: tenant.id,
+          action: "tenant.create_manual",
+          metadata: { slug, companyName, status },
+        },
+      }),
+    ]);
+  } catch (err) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    if (neonBranchId) {
+      deleteBranch(neonBranchId).catch((e) => {
+        if (!(e instanceof NeonError)) console.error("[create-tenant] branch cleanup failed:", e);
+      });
+    }
+    await cp.tenant.update({
+      where: { id: tenant.id },
+      data: { provisioningStatus: "FAILED", provisioningError: errorMsg },
+    }).catch(() => {});
+    return { error: `Provisioning failed: ${errorMsg}` };
   }
 
-  await Promise.all([
-    cp.tenant.update({ where: { id: tenant.id }, data: { status } }),
-    cp.platformAuditLog.create({
-      data: {
-        actorId: session.userId,
-        tenantId: tenant.id,
-        action: "tenant.create_manual",
-        metadata: { slug, companyName, status },
-      },
-    }),
-  ]);
-
-  redirect(`/tenants/${tenant.id}`);
+  redirect(`/platform/tenants/${tenant.id}`);
 }

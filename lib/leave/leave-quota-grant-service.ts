@@ -1,12 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { computeAnnualLeaveGrant } from "./annual-quota-engine";
 import { loadLeavePolicy } from "./policy";
 
-type TxClient = Omit<
-  typeof prisma,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
->;
+type TxClient = Prisma.TransactionClient;
 
 /**
  * Grant initial leave quotas for a new employee. Thai law: พนักงานวันแรก
@@ -23,7 +21,7 @@ export async function grantInitialLeaveQuota(
   tx?: TxClient,
   quotaYearOverride?: number,
 ): Promise<void> {
-  const client = tx ?? prisma;
+  const client = tx ?? (await getPrisma());
   const quotaYear = quotaYearOverride ?? hireDate.getFullYear();
   const policy = await loadLeavePolicy();
 
@@ -54,6 +52,7 @@ export async function grantInitialLeaveQuota(
 }
 
 export async function resetYearEnd(year: number) {
+  const prisma = await getPrisma();
   const quotas = await prisma.leaveQuota.findMany({
     where: { leaveType: "ANNUAL", quotaYear: year },
     include: { employee: { select: { id: true } } },
@@ -84,6 +83,7 @@ export async function resetYearEnd(year: number) {
 }
 
 export async function grantAnniversaryLeave() {
+  const prisma = await getPrisma();
   const today = new Date();
   const [employees, policy] = await Promise.all([
     prisma.employee.findMany({

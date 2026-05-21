@@ -18,12 +18,14 @@ const mockTransaction = mock(async (fn: (tx: any) => Promise<any>) => {
   return fn(txClient);
 });
 
+const mockPrismaClient = {
+  attendanceRecord: { findMany: mockFindMany, count: mockCount, create: mockCreate },
+  systemConfig: { findMany: mock(() => Promise.resolve([])) },
+  $transaction: mockTransaction,
+};
+
 mock.module("@/lib/prisma", () => ({
-  prisma: {
-    attendanceRecord: { findMany: mockFindMany, count: mockCount, create: mockCreate },
-    systemConfig: { findMany: mock(() => Promise.resolve([])) },
-    $transaction: mockTransaction,
-  },
+  getPrisma: async () => mockPrismaClient,
 }));
 
 mock.module("@/lib/audit/logger", () => ({

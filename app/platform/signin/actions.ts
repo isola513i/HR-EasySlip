@@ -54,11 +54,11 @@ export async function platformSignIn(_prev: ActionResult, formData: FormData): P
   const h = await headers();
   const host = h.get("host") ?? "admin.localhost:3000";
   const protocol = host.includes("localhost") ? "http" : "https";
-  return { redirectUrl: `${protocol}://${host}/overview` };
+  return { redirectUrl: `${protocol}://${host}/platform/overview` };
 }
 
 export async function platformSignOut() {
   const jar = await cookies();
   jar.delete(PLATFORM_COOKIE_NAME);
-  redirect("/signin");
+  redirect("/platform/signin");
 }

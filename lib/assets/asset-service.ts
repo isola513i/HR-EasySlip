@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { AssetCreateInput, AssetUpdateInput, AssetAssignInput, AssetReturnInput, AssetRetireInput } from "./schemas";
 
 export async function listAssets(filters: { status?: string; type?: string }) {
+  const prisma = await getPrisma();
   return prisma.asset.findMany({
     where: {
       ...(filters.status ? { status: filters.status as never } : {}),
@@ -26,6 +27,7 @@ export async function listAssets(filters: { status?: string; type?: string }) {
 }
 
 export async function listMyAssignments(employeeId: string) {
+  const prisma = await getPrisma();
   return prisma.assetAssignment.findMany({
     where: { employeeId, returnedAt: null },
     include: {
@@ -38,6 +40,7 @@ export async function listMyAssignments(employeeId: string) {
 }
 
 export async function createAsset(caller: Caller, input: AssetCreateInput, meta: RequestMeta) {
+  const prisma = await getPrisma();
   const asset = await prisma.asset.create({
     data: {
       type: input.type,
@@ -63,6 +66,7 @@ export async function createAsset(caller: Caller, input: AssetCreateInput, meta:
 }
 
 export async function updateAsset(caller: Caller, id: string, input: AssetUpdateInput, meta: RequestMeta) {
+  const prisma = await getPrisma();
   const before = await prisma.asset.findUnique({ where: { id } });
   if (!before) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
 
@@ -95,6 +99,7 @@ export async function updateAsset(caller: Caller, id: string, input: AssetUpdate
 }
 
 export async function assignAsset(caller: Caller, assetId: string, input: AssetAssignInput, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const asset = await tx.asset.findUnique({
       where: { id: assetId },
@@ -134,6 +139,7 @@ export async function assignAsset(caller: Caller, assetId: string, input: AssetA
 }
 
 export async function retireAsset(caller: Caller, assetId: string, input: AssetRetireInput, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const asset = await tx.asset.findUnique({
       where: { id: assetId },
@@ -171,6 +177,7 @@ export async function retireAsset(caller: Caller, assetId: string, input: AssetR
 }
 
 export async function returnAsset(caller: Caller, assetId: string, input: AssetReturnInput, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const open = await tx.assetAssignment.findFirst({
       where: { assetId, returnedAt: null },

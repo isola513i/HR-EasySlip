@@ -2,11 +2,12 @@
 // Outbox Service — retry failed outbox events
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { writeAuditLog } from "@/lib/audit/logger";
 
 export async function retryEvent(eventId: string) {
+  const prisma = await getPrisma();
   const event = await prisma.payrollOutboxEvent.findUnique({
     where: { id: eventId },
   });
@@ -40,6 +41,7 @@ const EXHAUSTED_THRESHOLD = 3;
  * Sends alert email to HR if any found.
  */
 export async function alertOnExhaustedOutboxEvents(): Promise<void> {
+  const prisma = await getPrisma();
   const events = await prisma.payrollOutboxEvent.findMany({
     where: { status: "FAILED", attempts: { gte: EXHAUSTED_THRESHOLD } },
     select: { id: true, eventType: true, lastError: true, attempts: true },

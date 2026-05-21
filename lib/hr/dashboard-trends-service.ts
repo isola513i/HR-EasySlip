@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 interface DailyAttendance { date: string; count: number; rate: number }
 interface MonthlyLeave { month: string; ANNUAL: number; SICK: number; PERSONAL: number; LWP: number }
@@ -10,6 +10,7 @@ function toBkkDateStr(d: Date): string {
 }
 
 export async function getAttendanceTrend(days = 30): Promise<DailyAttendance[]> {
+  const prisma = await getPrisma();
   const now = new Date();
   const startDate = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
@@ -47,6 +48,7 @@ export async function getAttendanceTrend(days = 30): Promise<DailyAttendance[]> 
 const TRACKED_LEAVE_TYPES = new Set(["ANNUAL", "SICK", "PERSONAL", "LEAVE_WITHOUT_PAY"]);
 
 export async function getLeaveTrendByMonth(months = 6): Promise<MonthlyLeave[]> {
+  const prisma = await getPrisma();
   const now = new Date();
   const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1);
 

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export interface OrgChartNode {
   id: string;
@@ -48,6 +48,7 @@ function toNode(row: FlatRow, children: OrgChartNode[]): OrgChartNode {
 
 /** Build a forest of OrgChartNode rooted at employees with no manager. */
 export async function getOrgChart(): Promise<OrgChartNode[]> {
+  const prisma = await getPrisma();
   const rows = await prisma.employee.findMany({
     where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] }, isAnonymized: false, positionId: { not: null } },
     select: {

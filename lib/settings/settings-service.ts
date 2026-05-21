@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { getDefinition, validateSettingValue, SETTINGS_REGISTRY } from "./registry";
@@ -6,6 +6,7 @@ import { assertCrossFieldValid } from "./cross-field-rules";
 import type { SettingUpdateInput, SettingBatchUpdateInput } from "./schemas";
 
 async function loadAllValues(): Promise<Record<string, string | number | boolean>> {
+  const prisma = await getPrisma();
   const rows = await prisma.systemConfig.findMany();
   const result: Record<string, string | number | boolean> = {};
   for (const row of rows) {
@@ -22,6 +23,7 @@ interface AuditMeta {
 }
 
 export async function listSettings() {
+  const prisma = await getPrisma();
   return prisma.systemConfig.findMany({ orderBy: { key: "asc" } });
 }
 
@@ -30,6 +32,7 @@ export async function updateSetting(
   userId: string,
   meta?: AuditMeta,
 ) {
+  const prisma = await getPrisma();
   const def = getDefinition(input.key);
   if (!def) {
     throw new DomainError("UNKNOWN_SETTING_KEY", { key: input.key }, 400);
@@ -75,6 +78,7 @@ export async function updateSettingsBatch(
   userId: string,
   meta?: AuditMeta,
 ) {
+  const prisma = await getPrisma();
   // Pre-validate ALL entries first — atomic semantics: reject the whole batch on any error
   const coerced = input.updates.map((u) => {
     const def = getDefinition(u.key);
@@ -148,6 +152,7 @@ export async function resetSettingToDefault(
 export async function getSettingValue<T extends string | number | boolean>(
   key: string,
 ): Promise<T> {
+  const prisma = await getPrisma();
   const def = getDefinition(key);
   if (!def) {
     throw new Error(`UNKNOWN_SETTING_KEY:${key}`);
@@ -165,6 +170,7 @@ export async function getSettingValue<T extends string | number | boolean>(
 export async function getSettingValues(
   keys: string[],
 ): Promise<Record<string, string | number | boolean>> {
+  const prisma = await getPrisma();
   const rows = await prisma.systemConfig.findMany({ where: { key: { in: keys } } });
   const map = new Map(rows.map((r) => [r.key, r.value]));
   const result: Record<string, string | number | boolean> = {};

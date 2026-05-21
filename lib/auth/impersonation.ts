@@ -20,6 +20,23 @@ export async function createImpersonationToken(session: ImpersonationSession): P
     .sign(getJwtSecret());
 }
 
+/**
+ * Sets the impersonation JWT cookie.
+ * Requires a Server Action / Route Handler context (next/headers cookies()).
+ */
+export async function setImpersonationCookie(
+  cookieStore: Awaited<ReturnType<typeof import("next/headers").cookies>>,
+  token: string,
+): Promise<void> {
+  cookieStore.set(IMPERSONATION_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60,
+  });
+}
+
 export async function verifyImpersonationToken(token: string): Promise<ImpersonationSession | null> {
   try {
     const { payload } = await jwtVerify(token, getJwtSecret());

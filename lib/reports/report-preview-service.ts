@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { ReportType, ReportFilters } from "./report-types";
 
 export interface KpiTile { label: string; value: number; format?: "number" | "hours" | "days" }
@@ -16,6 +16,7 @@ function bangkokDateKey(d: Date): string {
 }
 
 async function attendancePreview(filters: ReportFilters): Promise<ReportPreview> {
+  const prisma = await getPrisma();
   const fromUtc = new Date(`${filters.dateFrom}T00:00:00.000+07:00`);
   const toUtc = new Date(`${filters.dateTo}T23:59:59.999+07:00`);
   const records = await prisma.attendanceRecord.findMany({
@@ -54,6 +55,7 @@ async function attendancePreview(filters: ReportFilters): Promise<ReportPreview>
 }
 
 async function leavePreview(filters: ReportFilters): Promise<ReportPreview> {
+  const prisma = await getPrisma();
   const from = new Date(filters.dateFrom);
   const to = new Date(filters.dateTo + "T23:59:59.999Z");
   const requests = await prisma.leaveRequest.findMany({
@@ -85,6 +87,7 @@ async function leavePreview(filters: ReportFilters): Promise<ReportPreview> {
 }
 
 async function otPreview(filters: ReportFilters): Promise<ReportPreview> {
+  const prisma = await getPrisma();
   const from = new Date(filters.dateFrom);
   const to = new Date(filters.dateTo + "T23:59:59.999Z");
   const requests = await prisma.overtimeRequest.findMany({
@@ -116,6 +119,7 @@ async function otPreview(filters: ReportFilters): Promise<ReportPreview> {
 }
 
 async function employeePreview(filters: ReportFilters): Promise<ReportPreview> {
+  const prisma = await getPrisma();
   const [total, active, byDept] = await Promise.all([
     prisma.employee.count(),
     prisma.employee.count({ where: { terminationDate: null } }),

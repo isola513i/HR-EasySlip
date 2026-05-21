@@ -45,10 +45,10 @@ export default async function PlatformOverviewPage() {
   ]);
 
   const attentionItems = [
-    { label: "Pending trial signups", count: pendingSignups, href: "/trials?status=PENDING" },
-    { label: "Tenants without plan", count: unassignedCount, href: "/tenants?plan=__none__" },
-    { label: "Expired trials", count: expiredCount, href: "/tenants?status=TRIAL_EXPIRED" },
-    { label: "Pending provisioning", count: failedProvisioning, href: "/tenants?status=PENDING" },
+    { label: "Pending trial signups", count: pendingSignups, href: "/platform/trials?status=PENDING" },
+    { label: "Tenants without plan", count: unassignedCount, href: "/platform/tenants?plan=__none__" },
+    { label: "Expired trials", count: expiredCount, href: "/platform/tenants?status=TRIAL_EXPIRED" },
+    { label: "Pending provisioning", count: failedProvisioning, href: "/platform/tenants?status=PENDING" },
   ].filter((i) => i.count > 0);
 
   return (
@@ -59,23 +59,23 @@ export default async function PlatformOverviewPage() {
         <MetricCard
           label="Active tenants"
           value={totalActive}
-          href="/tenants?status=ACTIVE"
+          href="/platform/tenants?status=ACTIVE"
         />
         <MetricCard
           label="On trial"
           value={trialCount}
-          href="/tenants?status=TRIAL"
+          href="/platform/tenants?status=TRIAL"
         />
         <MetricCard
           label="Pending signups"
           value={pendingSignups}
-          href="/trials?status=PENDING"
+          href="/platform/trials?status=PENDING"
           alert={pendingSignups > 0}
         />
         <MetricCard
           label="Trial expired"
           value={expiredCount}
-          href="/tenants?status=TRIAL_EXPIRED"
+          href="/platform/tenants?status=TRIAL_EXPIRED"
           alert={expiredCount > 0}
         />
       </div>
@@ -105,7 +105,7 @@ export default async function PlatformOverviewPage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-medium text-foreground">Recent trial signups</h2>
-            <Link href="/trials" className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+            <Link href="/platform/trials" className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
               View all <ArrowRight className="size-3" />
             </Link>
           </div>
@@ -130,7 +130,7 @@ export default async function PlatformOverviewPage() {
                       )}
                       <StatusBadge status={s.status} />
                       {s.status === "PENDING" && (
-                        <Link href={`/trials/${s.id}`} className="text-xs text-primary hover:underline">
+                        <Link href={`/platform/trials/${s.id}`} className="text-xs text-primary hover:underline">
                           Review
                         </Link>
                       )}
@@ -145,7 +145,7 @@ export default async function PlatformOverviewPage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-medium text-foreground">Recent activity</h2>
-            <Link href="/audit" className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+            <Link href="/platform/audit" className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
               View audit <ArrowRight className="size-3" />
             </Link>
           </div>

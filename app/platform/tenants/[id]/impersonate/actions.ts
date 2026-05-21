@@ -1,9 +1,10 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { requirePlatformSession } from "@/lib/auth/platform";
 import { PLATFORM_ADMIN_ROLES } from "@/lib/security/platform-rbac";
-import { createImpersonationToken } from "@/lib/auth/impersonation";
+import { createImpersonationToken, setImpersonationCookie } from "@/lib/auth/impersonation";
 import {
   createApprovalToken,
   hashApprovalToken,
@@ -13,11 +14,10 @@ import {
 import { notifyImpersonationRequest } from "@/lib/email/impersonation-request-sender";
 import { writePlatformAuditToTenant } from "@/lib/audit/platform-audit";
 
-const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? "localhost:3000";
-const IS_LOCAL = ROOT_DOMAIN.startsWith("localhost") || ROOT_DOMAIN.includes("lvh.me");
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 function tenantBase(slug: string): string {
-  return IS_LOCAL ? `http://${slug}.lvh.me:3000` : `https://${slug}.${ROOT_DOMAIN}`;
+  return `${APP_URL}/${slug}`;
 }
 
 // ─── Request Access (consent flow) ────────────────────────────────────────────
@@ -125,7 +125,9 @@ async function _launchDirectly(
     tenantSlug: tenant.slug,
     expiresAt,
   });
-  return { redirectUrl: `${tenantBase(tenant.slug)}/impersonation/handoff?token=${token}` };
+  // Same-origin (path-based routing) — set cookie directly, no handoff redirect needed.
+  await setImpersonationCookie(await cookies(), token);
+  return { redirectUrl: `${tenantBase(tenant.slug)}/impersonation` };
 }
 
 // ─── Launch Session (after tenant approval) ────────────────────────────────────
@@ -191,8 +193,9 @@ export async function launchImpersonation(requestId: string): Promise<LaunchResu
     tenantSlug: request.tenant.slug,
     expiresAt,
   });
-
-  return { redirectUrl: `${tenantBase(request.tenant.slug)}/impersonation/handoff?token=${token}` };
+  // Same-origin (path-based routing) — set cookie directly, no handoff redirect needed.
+  await setImpersonationCookie(await cookies(), token);
+  return { redirectUrl: `${tenantBase(request.tenant.slug)}/impersonation` };
 }
 
 // ─── Cancel Request ─────────────────────────────────────────────────────────
@@ -216,5 +219,3 @@ export async function cancelImpersonationRequest(requestId: string): Promise<{ e
   return { success: true };
 }
 
-// Legacy export: kept for backwards compatibility during transition
-export { requestImpersonation as startImpersonation };

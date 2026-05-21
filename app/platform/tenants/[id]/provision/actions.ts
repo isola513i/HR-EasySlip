@@ -73,5 +73,5 @@ export async function provisionTenant(
     }),
   ]);
 
-  redirect(`/tenants/${tenantId}`);
+  redirect(`/platform/tenants/${tenantId}`);
 }

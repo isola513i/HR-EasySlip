@@ -5,6 +5,7 @@ import { parseSearchParams } from "@/lib/api/validate";
 import { requireApiRoles } from "@/lib/security/rbac";
 import { CycleListSchema } from "@/lib/payroll/schemas";
 import { listCycles } from "@/lib/payroll/payroll-service";
+import { getPrisma } from "@/lib/prisma";
 
 const CYCLE_ROLES = ["HRMG", "HR_AUTHORIZED", "CEO", "CTO", "COO"] as const;
 
@@ -13,7 +14,8 @@ export const GET = withApiHandler(async (req) => {
   if (caller instanceof NextResponse) return caller;
 
   const { year, status } = parseSearchParams(req, CycleListSchema);
-  const cycles = await listCycles(year, status);
+  const prisma = await getPrisma();
+  const cycles = await listCycles(prisma, year, status);
 
   return apiOk(cycles);
 });

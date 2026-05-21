@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk, apiError } from "@/lib/api/response";
 import { requireApiEmployee, HR_ROLES } from "@/lib/security/rbac";
@@ -16,6 +17,8 @@ export const POST = withApiHandler(async (_req, ctx) => {
 
   const employeeId = ctx.params.employeeId as string;
 
+  // Employee lookup stays in tenant DB
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { userId: true, employeeCode: true },
@@ -27,8 +30,9 @@ export const POST = withApiHandler(async (_req, ctx) => {
 
   const tempPassword = generateTempPassword();
   const passwordHash = await hashPassword(tempPassword);
+  const cp = getControlPlane();
 
-  await prisma.user.update({
+  await cp.user.update({
     where: { id: employee.userId },
     data: { passwordHash, mustChangePassword: true },
   });

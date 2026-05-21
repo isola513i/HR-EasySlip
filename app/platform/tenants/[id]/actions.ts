@@ -37,8 +37,8 @@ export async function updateTenantStatus(
     },
   });
 
-  revalidatePath(`/tenants/${tenantId}`);
-  revalidatePath("/tenants");
+  revalidatePath(`/platform/tenants/${tenantId}`);
+  revalidatePath("/platform/tenants");
   return null;
 }
 
@@ -68,8 +68,8 @@ export async function suspendTenant(
     },
   });
 
-  revalidatePath(`/tenants/${tenantId}`);
-  revalidatePath("/tenants");
+  revalidatePath(`/platform/tenants/${tenantId}`);
+  revalidatePath("/platform/tenants");
   return null;
 }
 
@@ -103,8 +103,8 @@ export async function reactivateTenant(
     },
   });
 
-  revalidatePath(`/tenants/${tenantId}`);
-  revalidatePath("/tenants");
+  revalidatePath(`/platform/tenants/${tenantId}`);
+  revalidatePath("/platform/tenants");
   return null;
 }
 
@@ -144,8 +144,8 @@ export async function expireTenant(
     },
   });
 
-  revalidatePath(`/tenants/${tenantId}`);
-  revalidatePath("/tenants");
+  revalidatePath(`/platform/tenants/${tenantId}`);
+  revalidatePath("/platform/tenants");
   return null;
 }
 
@@ -175,7 +175,7 @@ export async function updateTenantPlan(
     },
   });
 
-  revalidatePath(`/tenants/${tenantId}`);
-  revalidatePath("/plans");
+  revalidatePath(`/platform/tenants/${tenantId}`);
+  revalidatePath("/platform/plans");
   return null;
 }

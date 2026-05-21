@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 
 export async function GET() {
   let db: "ok" | "error" = "ok";
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    const cp = getControlPlane();
+    await cp.$queryRaw`SELECT 1`;
   } catch {
     db = "error";
   }

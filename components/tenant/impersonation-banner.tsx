@@ -2,7 +2,7 @@
 
 import { useTransition, useState, useEffect } from "react";
 import { ShieldOff, Clock, Lock } from "lucide-react";
-import { endImpersonation } from "@/app/(tenant)/impersonation/end-action";
+import { endImpersonation } from "@/app/[slug]/impersonation/end-action";
 
 interface Props {
   platformEmail: string;

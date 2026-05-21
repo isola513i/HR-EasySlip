@@ -2,6 +2,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
+import { PrismaClient as CpPrismaClient } from "@/lib/db/generated/control-plane";
 import { hashPassword, generateTempPassword } from "@/lib/auth/password-utils";
 
 const execAsync = promisify(exec);
@@ -18,13 +19,12 @@ export async function provisionTenantDb(opts: {
   companyName: string;
   adminEmail: string;
   adminName: string;
+  tenantId?: string;
 }): Promise<ProvisionResult> {
-  const { databaseUrl, directUrl, adminEmail, adminName } = opts;
+  const { databaseUrl, directUrl, adminEmail, adminName, tenantId } = opts;
 
   try {
     const schemaPath = path.resolve(process.cwd(), "prisma/schema.prisma");
-    // Spawn the local prisma binary directly — avoids relying on `bun`/`npx`
-    // being in PATH on Vercel's Node.js runtime.
     const prismaBin = path.resolve(process.cwd(), "node_modules/.bin/prisma");
     const { stderr } = await execAsync(
       `"${prismaBin}" migrate deploy --schema="${schemaPath}"`,
@@ -43,32 +43,62 @@ export async function provisionTenantDb(opts: {
 
   const client = new PrismaClient({ datasources: { db: { url: databaseUrl } } });
   try {
-    const existing = await client.user.findUnique({ where: { email: adminEmail } });
-    if (existing) return { success: true };
-
     const tempPassword = generateTempPassword(12);
     const passwordHash = await hashPassword(tempPassword);
 
     const [firstName, ...rest] = adminName.trim().split(" ");
     const lastNameTh = rest.join(" ") || "-";
 
-    await client.user.create({
+    // Create CP user (global auth identity)
+    const cpUrl = process.env.CONTROL_PLANE_DATABASE_URL;
+    let cpUserId: string | null = null;
+    if (cpUrl) {
+      const cp = new CpPrismaClient({ datasources: { db: { url: cpUrl } } });
+      try {
+        const cpUser = await cp.user.upsert({
+          where: { email: adminEmail },
+          create: { email: adminEmail, emailVerified: new Date(), passwordHash, mustChangePassword: true },
+          update: {},
+          select: { id: true },
+        });
+        cpUserId = cpUser.id;
+      } finally {
+        await cp.$disconnect();
+      }
+    }
+
+    // Check if employee already exists in tenant DB
+    const existingEmp = cpUserId
+      ? await client.employee.findFirst({ where: { userId: cpUserId }, select: { id: true } })
+      : null;
+    if (existingEmp) return { success: true };
+
+    const employee = await client.employee.create({
       data: {
-        email: adminEmail,
-        passwordHash,
-        mustChangePassword: true,
-        employee: {
-          create: {
-            employeeCode: "ADM001",
-            firstNameTh: firstName,
-            lastNameTh,
-            hireDate: new Date(),
-            employmentStatus: "ACTIVE",
-            roles: ["TENANT_ADMIN"],
-          },
-        },
+        userId: cpUserId ?? adminEmail, // fallback to email string if CP not wired
+        employeeCode: "ADM001",
+        firstNameTh: firstName,
+        lastNameTh,
+        hireDate: new Date(),
+        employmentStatus: "ACTIVE",
+        roles: ["TENANT_ADMIN"],
       },
+      select: { id: true },
     });
+
+    // Create TenantMembership in CP if we have the tenantId
+    if (cpUserId && tenantId && cpUrl) {
+      const cp = new CpPrismaClient({ datasources: { db: { url: cpUrl } } });
+      try {
+        await cp.tenantMembership.upsert({
+          where: { userId_tenantId: { userId: cpUserId, tenantId } },
+          create: { userId: cpUserId, tenantId, role: "TENANT_ADMIN", employeeRecordId: employee.id, status: "ACTIVE" },
+          update: { employeeRecordId: employee.id },
+        });
+      } finally {
+        await cp.$disconnect();
+      }
+    }
 
     return { success: true, tempPassword };
   } catch (err) {

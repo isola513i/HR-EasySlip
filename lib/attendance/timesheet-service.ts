@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { loadEmployeeAttendancePolicy } from "./policy";
 
 export interface TimesheetEntry {
@@ -34,6 +34,7 @@ export async function getEmployeeTimesheet(
   const fromUtc = new Date(`${from}T00:00:00.000+07:00`);
   const toUtc = new Date(`${to}T23:59:59.999+07:00`);
 
+  const prisma = await getPrisma();
   const [records, policy] = await Promise.all([
     prisma.attendanceRecord.findMany({
       where: { employeeId, clockedAt: { gte: fromUtc, lte: toUtc } },

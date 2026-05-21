@@ -12,7 +12,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { list } from "@vercel/blob";
-import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 import { deleteBlob } from "@/lib/storage/blob";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
@@ -45,7 +45,7 @@ interface CleanupOptions {
  * Both `Document.blobPath` and `Employee.profilePicturePath` store the
  * full Vercel Blob URL (see lib/storage/blob.ts header).
  */
-async function loadReferencedUrls(): Promise<Set<string>> {
+async function loadReferencedUrls(prisma: PrismaClient): Promise<Set<string>> {
   const [docs, employees] = await Promise.all([
     prisma.document.findMany({ select: { blobPath: true } }),
     prisma.employee.findMany({
@@ -59,9 +59,9 @@ async function loadReferencedUrls(): Promise<Set<string>> {
   return refs;
 }
 
-export async function cleanupOrphanBlobs(opts: CleanupOptions = {}): Promise<CleanupResult> {
+export async function cleanupOrphanBlobs(prisma: PrismaClient, opts: CleanupOptions = {}): Promise<CleanupResult> {
   const dryRun = !!opts.dryRun;
-  const referenced = await loadReferencedUrls();
+  const referenced = await loadReferencedUrls(prisma);
   const now = Date.now();
   const result: CleanupResult = {
     scanned: 0,
@@ -119,7 +119,7 @@ export async function cleanupOrphanBlobs(opts: CleanupOptions = {}): Promise<Cle
     entityType: "Blob",
     entityId: `cleanup-${new Date().toISOString().slice(0, 10)}`,
     after: result,
-  });
+  }, prisma);
 
   return result;
 }

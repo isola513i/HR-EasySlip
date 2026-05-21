@@ -23,13 +23,13 @@ export default async function ImpersonatePage({ params }: Props) {
   return (
     <>
       <div className="mb-6">
-        <Link href={`/tenants/${id}`} className="text-gray-400 hover:text-white text-sm">
+        <Link href={`/platform/tenants/${id}`} className="text-gray-400 hover:text-white text-sm">
           ← Back to {tenant.companyName}
         </Link>
         <h1 className="text-2xl font-bold mt-3">Impersonate Tenant</h1>
         <p className="text-gray-400 text-sm mt-1">
           You will be redirected to{" "}
-          <span className="font-mono text-blue-400">{tenant.slug}.easyslip.app</span> as an observer.
+          <span className="font-mono text-blue-400">/{tenant.slug}/impersonation</span> as an observer.
           Session expires after 1 hour.
         </p>
       </div>

@@ -2,7 +2,7 @@
 // Working Days Calculator — skip weekends + public holidays
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import {
   addDays,
   isWeekend,
@@ -23,6 +23,7 @@ export async function calculateWorkingDays(
   const end = startOfDay(endDate);
   const totalCalendarDays = differenceInCalendarDays(end, start) + 1;
 
+  const prisma = await getPrisma();
   // Fetch public holidays in range
   const holidays = await prisma.publicHoliday.findMany({
     where: { date: { gte: start, lte: end } },

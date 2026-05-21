@@ -1,11 +1,13 @@
 import type { SalaryAdjustmentType } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 
 export async function listSalaryAdjustments(
   employeeId: string,
   filter?: { type?: "salary" | "bonus" },
 ) {
+  const prisma = await getPrisma();
   const exists = await prisma.employee.findUnique({
     where: { id: employeeId }, select: { id: true },
   });
@@ -28,25 +30,20 @@ export async function listSalaryAdjustments(
     include: { employee: { select: { id: true } } },
   });
 
-  // Resolve actorId → human-readable name in one round-trip.
+  // Resolve actorId → human-readable name in one round-trip (CP DB).
   const actorIds = [...new Set(rows.map((r) => r.actorId))];
-  const actors = actorIds.length > 0
-    ? await prisma.user.findMany({
+  const cp = getControlPlane();
+  const cpUsers = actorIds.length > 0
+    ? await cp.user.findMany({
         where: { id: { in: actorIds } },
-        select: {
-          id: true,
-          email: true,
-          employee: { select: { firstNameTh: true, lastNameTh: true } },
-        },
+        select: { id: true, email: true },
       })
     : [];
-  const actorMap = new Map(actors.map((a) => [a.id, a]));
+  const userMap = new Map(cpUsers.map((u) => [u.id, u]));
 
   return rows.map((r) => {
-    const a = actorMap.get(r.actorId);
-    const actorName = a?.employee
-      ? `${a.employee.firstNameTh} ${a.employee.lastNameTh}`
-      : a?.email ?? "—";
+    const a = userMap.get(r.actorId);
+    const actorName = a?.email ?? "—";
     return { ...r, actorName };
   });
 }

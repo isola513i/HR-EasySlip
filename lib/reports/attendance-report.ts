@@ -1,7 +1,8 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import type { ReportFilters } from "./report-types";
 
 export async function generateAttendanceReport(filters: ReportFilters) {
+  const prisma = await getPrisma();
   const where = {
     clockedAt: {
       gte: new Date(filters.dateFrom),

@@ -1,8 +1,7 @@
 // Apply-step (write to Employee, link payslip, etc.) is deferred to
 // Phase 4 once Empeo's payload schema is finalized — for now we
 // persist the envelope verbatim so it can be replayed.
-import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
 
@@ -17,7 +16,7 @@ export type InboundOutcome =
   | { ok: true; eventId: string; deduped: boolean }
   | { ok: false; reason: "INVALID_PAYLOAD" };
 
-export async function recordInbound(env: InboundEnvelope): Promise<InboundOutcome> {
+export async function recordInbound(prisma: PrismaClient, env: InboundEnvelope): Promise<InboundOutcome> {
   if (!env.eventType || !env.idempotencyKey) {
     return { ok: false, reason: "INVALID_PAYLOAD" };
   }
@@ -39,7 +38,7 @@ export async function recordInbound(env: InboundEnvelope): Promise<InboundOutcom
       entityType: "EmpeoInboundEvent",
       entityId: event.id,
       after: { eventType: env.eventType, externalId: env.externalId ?? null },
-    });
+    }, prisma);
 
     logger.info("Empeo inbound event recorded", {
       eventId: event.id,

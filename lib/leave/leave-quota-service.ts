@@ -3,12 +3,13 @@
 // Grant/reset functions are in leave-quota-grant-service.ts
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
 export async function getMyQuota(employeeId: string, year?: number) {
+  const prisma = await getPrisma();
   const quotaYear = year ?? new Date().getFullYear();
 
   const quotas = await prisma.leaveQuota.findMany({
@@ -23,6 +24,7 @@ export async function getMyQuota(employeeId: string, year?: number) {
 }
 
 export async function getEmployeeQuota(employeeId: string, year?: number) {
+  const prisma = await getPrisma();
   const exists = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { id: true },
@@ -37,6 +39,7 @@ export async function adjustQuota(
   input: { employeeId: string; leaveType: string; quotaYear: number; adjustDays: number; reason: string },
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const quota = await prisma.leaveQuota.findFirst({
     where: {
       employeeId: input.employeeId,

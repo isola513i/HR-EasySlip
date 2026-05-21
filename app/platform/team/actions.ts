@@ -39,7 +39,7 @@ export async function createPlatformUser(
     },
   });
 
-  revalidatePath("/team");
+  revalidatePath("/platform/team");
   return { tempPassword };
 }
 
@@ -66,7 +66,7 @@ export async function changePlatformUserRole(
     },
   });
 
-  revalidatePath("/team");
+  revalidatePath("/platform/team");
   return null;
 }
 
@@ -93,7 +93,7 @@ export async function removePlatformUser(
     },
   });
 
-  revalidatePath("/team");
+  revalidatePath("/platform/team");
   return null;
 }
 
@@ -120,6 +120,6 @@ export async function togglePlatformUserDisabled(
     },
   });
 
-  revalidatePath("/team");
+  revalidatePath("/platform/team");
   return null;
 }

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { DomainError } from "@/lib/api/errors";
 import type { DocumentCategory, DocumentEntityType } from "./types";
 
@@ -13,6 +13,7 @@ export async function resolveEntityOwner(
   entityId: string,
 ): Promise<string> {
   if (entityType === "Employee") return entityId;
+  const prisma = await getPrisma();
   if (entityType === "LeaveRequest") {
     const lr = await prisma.leaveRequest.findUnique({
       where: { id: entityId },

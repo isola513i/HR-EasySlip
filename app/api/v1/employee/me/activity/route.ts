@@ -3,7 +3,7 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiPaginated } from "@/lib/api/response";
 import { parseSearchParams } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { z } from "zod";
 
 const QuerySchema = z.object({
@@ -18,6 +18,7 @@ export const GET = withApiHandler(async (req) => {
   const { page, perPage } = parseSearchParams(req, QuerySchema);
   const where = { actorId: caller.userId };
 
+  const prisma = await getPrisma();
   const [items, total] = await Promise.all([
     prisma.auditLog.findMany({
       where,

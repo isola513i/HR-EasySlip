@@ -1,5 +1,5 @@
 import { Decimal } from "@prisma/client/runtime/library";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
@@ -26,6 +26,7 @@ export async function submitLeaveRequest(
   const days = await calculateWorkingDays(startDate, endDate, input.halfDay);
   const daysDecimal = new Decimal(days);
 
+  const prisma = await getPrisma();
   const result = await prisma.$transaction(async (tx) => {
     // LWP has no quota — skip check entirely
     if (input.leaveType === "LEAVE_WITHOUT_PAY") {
@@ -100,6 +101,7 @@ export async function withdrawLeaveRequest(
   id: string,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const request = await tx.leaveRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

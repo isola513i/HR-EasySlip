@@ -1,4 +1,3 @@
-import type { EmploymentStatus, Role } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
@@ -6,14 +5,16 @@ declare module "next-auth" {
     user: {
       id: string;
       mustChangePassword: boolean;
-      employee: {
-        id: string;
-        employeeCode: string;
-        roles: Role[];
-        firstNameTh: string;
-        lastNameTh: string;
-        employmentStatus: EmploymentStatus;
-      } | null;
+      /** Active TenantMemberships for this user. Populated by session callback. */
+      memberships: Array<{
+        tenantId: string;
+        tenantSlug: string;
+        /** Primary role string e.g. "TENANT_ADMIN" | "HRMG" | "EMPLOYEE" */
+        role: string;
+        /** Employee.id in tenant DB (loose cross-silo reference) */
+        employeeRecordId: string;
+        status: string;
+      }>;
     } & DefaultSession["user"];
   }
 }

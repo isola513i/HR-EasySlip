@@ -22,7 +22,7 @@ type SignupDict = Dictionary["marketing"]["signup"]
 
 interface SignupFormProps {
   dict: SignupDict
-  rootDomain: string
+  rootDomain?: string
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -188,7 +188,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
           <p className="text-xs text-muted-foreground">
             {d.slugHint}{" "}
             <span className="font-mono font-medium">
-              {slug ? `${slug}.${rootDomain}` : `your-team.${rootDomain}`}
+              {slug ? `/${slug}/dashboard` : `/your-team/dashboard`}
             </span>
           </p>
           {!errors.slug && slugHintText && (

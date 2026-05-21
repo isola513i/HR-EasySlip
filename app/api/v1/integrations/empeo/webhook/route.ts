@@ -11,6 +11,9 @@ import { apiOk, apiError } from "@/lib/api/response";
 import { logger } from "@/lib/observability/logger";
 import { verifySignature } from "@/lib/integrations/empeo/empeo-client";
 import { recordInbound } from "@/lib/integrations/empeo/inbound-service";
+import { getControlPlane } from "@/lib/db/control-plane";
+import { getTenantPrisma } from "@/lib/db/tenant";
+import { runWithTenantContext } from "@/lib/db/tenant-context";
 
 const SIGNATURE_HEADER = "x-empeo-signature";
 
@@ -46,11 +49,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return apiError("EMPEO_BAD_PAYLOAD", "Missing eventType or idempotencyKey", 400);
   }
 
-  const result = await recordInbound({
-    eventType: env.eventType,
-    externalId: env.externalId,
-    idempotencyKey: env.idempotencyKey,
-    payload: env.payload ?? null,
+  // TODO: Step 4 — webhook has no tenant slug in the URL; resolve the
+  // owning tenant from a header or signed payload claim. For now we
+  // fall back to the first ACTIVE tenant so the route compiles and
+  // local dev keeps working.
+  const cp = getControlPlane();
+  const tenant = await cp.tenant.findFirst({
+    where: { status: { in: ["TRIAL", "ACTIVE"] } },
+    select: { id: true },
+  });
+  if (!tenant) {
+    return apiError("EMPEO_NO_TENANT", "No active tenant available", 503);
+  }
+
+  const result = await runWithTenantContext(tenant.id, async () => {
+    const prisma = await getTenantPrisma(tenant.id);
+    return recordInbound(prisma, {
+      eventType: env.eventType!,
+      externalId: env.externalId,
+      idempotencyKey: env.idempotencyKey!,
+      payload: env.payload ?? null,
+    });
   });
 
   if (!result.ok) {

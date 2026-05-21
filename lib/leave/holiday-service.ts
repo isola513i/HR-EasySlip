@@ -1,9 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { HolidayCreateInput, HolidayUpdateInput } from "./holiday-schemas";
 
 export async function listHolidays(year?: number) {
+  const prisma = await getPrisma();
   return prisma.publicHoliday.findMany({
     where: year ? { year } : undefined,
     orderBy: { date: "asc" },
@@ -13,6 +14,7 @@ export async function listHolidays(year?: number) {
 export async function createHoliday(input: HolidayCreateInput, userId: string) {
   const date = new Date(input.date);
   const year = date.getFullYear();
+  const prisma = await getPrisma();
 
   const holiday = await prisma.publicHoliday.create({
     data: {
@@ -42,6 +44,7 @@ export async function updateHoliday(
   input: HolidayUpdateInput,
   userId: string,
 ) {
+  const prisma = await getPrisma();
   const existing = await prisma.publicHoliday.findUnique({ where: { id } });
   if (!existing) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
 
@@ -71,6 +74,7 @@ export async function updateHoliday(
 }
 
 export async function deleteHoliday(id: string, userId: string) {
+  const prisma = await getPrisma();
   const existing = await prisma.publicHoliday.findUnique({ where: { id } });
   if (!existing) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
 

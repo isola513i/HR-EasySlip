@@ -12,7 +12,7 @@ import { ChangePlanForm } from "./change-plan-form";
 import { getPlans } from "@/lib/platform/plan-catalog";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Database, CheckCircle2, ShieldOff } from "lucide-react";
+import { ArrowLeft, Database, CheckCircle2, ShieldOff, GitBranch, AlertCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -39,6 +39,8 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
         trialEndsAt: true, provisionedAt: true, createdAt: true, updatedAt: true, databaseUrlEnc: true,
         impersonationEnabled: true, impersonationDisabledByEmail: true, impersonationDisabledAt: true,
         expiredAt: true, gracePeriodEndsAt: true, softDeleteAt: true, hardDeleteAt: true, softDeletedAt: true,
+        neonProjectId: true, neonBranchId: true, neonBranchEndpointId: true,
+        provisioningStatus: true, provisioningError: true,
       },
     }),
     cp.platformAuditLog.findMany({
@@ -53,7 +55,8 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
   if (!tenant) notFound();
 
   const isAdmin = PLATFORM_ADMIN_ROLES.includes(session.role);
-  const domainSlug = `${tenant.slug}.easyslip.app`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const domainSlug = `${appUrl}/${tenant.slug}`;
 
   const metadata = { title: `${tenant.companyName} — EasySlip Platform` };
   void metadata;
@@ -62,7 +65,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
     <>
       <div className="mb-6">
         <Link
-          href="/tenants"
+          href="/platform/tenants"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="size-3" /> Tenants
@@ -84,7 +87,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
           <div className="flex items-center gap-3 shrink-0">
             {isAdmin && tenant.impersonationEnabled && (
               <Link
-                href={`/tenants/${tenant.id}/impersonate`}
+                href={`/platform/tenants/${tenant.id}/impersonate`}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 transition-colors"
               >
                 Impersonate
@@ -113,7 +116,7 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
           return (
             <Link
               key={key}
-              href={`/tenants/${id}?tab=${key}`}
+              href={`/platform/tenants/${id}?tab=${key}`}
               className={cn(
                 "px-3 py-1.5 rounded-md text-sm transition-colors duration-150",
                 isActive
@@ -169,9 +172,10 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-6">
-              <h2 className="text-sm font-medium text-foreground mb-4">Provisioning</h2>
-              <div className="flex items-center gap-2.5 mb-4">
+            <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+              <h2 className="text-sm font-medium text-foreground">Provisioning</h2>
+
+              <div className="flex items-center gap-2.5">
                 {tenant.databaseUrlEnc ? (
                   <>
                     <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
@@ -183,15 +187,39 @@ export default async function TenantDetailPage({ params, searchParams }: Props) 
                     <span className="text-sm text-muted-foreground">Database not configured</span>
                   </>
                 )}
+                {isAdmin && !tenant.databaseUrlEnc && (
+                  <Link
+                    href={`/platform/tenants/${tenant.id}/provision`}
+                    className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+                  >
+                    Provision database
+                  </Link>
+                )}
               </div>
-              {isAdmin && !tenant.databaseUrlEnc && (
-                <Link
-                  href={`/tenants/${tenant.id}/provision`}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
-                >
-                  Provision database
-                </Link>
-              )}
+
+              {/* Neon branch info */}
+              <div className="border-t border-border pt-4 space-y-2">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <GitBranch className="size-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Neon branch</span>
+                  {tenant.provisioningStatus === "RUNNING" && (
+                    <Loader2 className="size-3 animate-spin text-muted-foreground ml-1" />
+                  )}
+                  {tenant.provisioningStatus === "FAILED" && (
+                    <AlertCircle className="size-3 text-destructive ml-1" />
+                  )}
+                </div>
+                <DetailRow label="Status" value={tenant.provisioningStatus ?? "—"} mono />
+                <DetailRow label="Branch ID" value={tenant.neonBranchId ?? "—"} mono />
+                <DetailRow label="Endpoint ID" value={tenant.neonBranchEndpointId ?? "—"} mono />
+                <DetailRow label="Project ID" value={tenant.neonProjectId ?? "—"} mono />
+                {tenant.provisioningError && (
+                  <div className="mt-2 rounded-md bg-destructive/10 border border-destructive/20 p-3">
+                    <p className="text-xs font-medium text-destructive mb-1">Provisioning error</p>
+                    <p className="text-xs text-destructive/80 font-mono break-all">{tenant.provisioningError}</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

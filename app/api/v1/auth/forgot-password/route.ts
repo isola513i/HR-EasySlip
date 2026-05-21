@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 import { parseBody } from "@/lib/api/validate";
 import { apiOk } from "@/lib/api/response";
@@ -14,20 +14,21 @@ const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
 export const POST = withApiHandler(async (req, ctx) => {
   const { email } = await parseBody(req, ForgotPasswordSchema);
   const emailLower = email.toLowerCase();
+  const cp = getControlPlane();
 
   // Always return success to not reveal if email exists
   const successResponse = apiOk({ message: "ถ้ามีบัญชีอยู่ในระบบ จะได้รับอีเมลสำหรับรีเซ็ตรหัสผ่าน" });
 
-  const user = await prisma.user.findUnique({ where: { email: emailLower } });
+  const user = await cp.user.findUnique({ where: { email: emailLower } });
   if (!user) return successResponse;
 
   const token = crypto.randomUUID();
   const expires = new Date(Date.now() + TOKEN_EXPIRY_MS);
 
   // Atomic replace: delete existing + create new in a single batched transaction
-  await prisma.$transaction([
-    prisma.verificationToken.deleteMany({ where: { identifier: `reset:${emailLower}` } }),
-    prisma.verificationToken.create({
+  await cp.$transaction([
+    cp.verificationToken.deleteMany({ where: { identifier: `reset:${emailLower}` } }),
+    cp.verificationToken.create({
       data: { identifier: `reset:${emailLower}`, token, expires },
     }),
   ]);

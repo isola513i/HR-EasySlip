@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 import { parseBody } from "@/lib/api/validate";
 import { apiOk, apiError } from "@/lib/api/response";
@@ -16,13 +16,14 @@ const ResetPasswordSchema = z.object({
 export const POST = withApiHandler(async (req, ctx) => {
   const { token, email, newPassword } = await parseBody(req, ResetPasswordSchema);
   const emailLower = email.toLowerCase();
+  const cp = getControlPlane();
 
   // Parallel: fetch token + user at the same time
   const [record, user] = await Promise.all([
-    prisma.verificationToken.findFirst({
+    cp.verificationToken.findFirst({
       where: { identifier: `reset:${emailLower}`, token },
     }),
-    prisma.user.findUnique({ where: { email: emailLower } }),
+    cp.user.findUnique({ where: { email: emailLower } }),
   ]);
 
   if (!record || record.expires < new Date() || !user) {
@@ -31,8 +32,8 @@ export const POST = withApiHandler(async (req, ctx) => {
 
   const passwordHash = await hashPassword(newPassword);
 
-  // Update password, delete token, and audit — all in one transaction
-  await prisma.$transaction(async (tx) => {
+  // Update password and delete token in CP transaction; audit log goes to tenant DB separately
+  await cp.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: user.id },
       data: { passwordHash, mustChangePassword: false },
@@ -40,14 +41,15 @@ export const POST = withApiHandler(async (req, ctx) => {
     await tx.verificationToken.deleteMany({
       where: { identifier: `reset:${emailLower}` },
     });
-    await writeAuditLog({
-      actorId: user.id,
-      action: "user.reset_password_self",
-      entityType: "User",
-      entityId: user.id,
-      ipAddress: ctx.ip,
-      userAgent: ctx.userAgent,
-    }, tx);
+  });
+
+  await writeAuditLog({
+    actorId: user.id,
+    action: "user.reset_password_self",
+    entityType: "User",
+    entityId: user.id,
+    ipAddress: ctx.ip,
+    userAgent: ctx.userAgent,
   });
 
   return apiOk({ ok: true });

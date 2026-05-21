@@ -3,11 +3,13 @@ import { describe, test, expect, mock, beforeEach } from "bun:test";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockUpsert = mock((): Promise<any> => Promise.resolve({ id: "q-1" }));
 
+const mockPrismaClient = {
+  leaveQuota: { upsert: mockUpsert },
+  systemConfig: { findMany: mock(() => Promise.resolve([])) },
+};
+
 mock.module("@/lib/prisma", () => ({
-  prisma: {
-    leaveQuota: { upsert: mockUpsert },
-    systemConfig: { findMany: mock(() => Promise.resolve([])) },
-  },
+  getPrisma: async () => mockPrismaClient,
 }));
 
 mock.module("@/lib/audit/logger", () => ({

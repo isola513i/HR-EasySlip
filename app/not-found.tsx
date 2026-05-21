@@ -4,23 +4,24 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { getLocale } from "@/lib/i18n/get-locale";
-import { extractSubdomain } from "@/lib/db/tenant-resolver";
-
-const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? "localhost:3000";
+import { TENANT_SLUG_RE, RESERVED_SLUGS } from "@/lib/tenant/reserved-slugs";
 
 export default async function NotFoundPage() {
   const locale = await getLocale();
   const t = getDictionary(locale);
 
-  // Detect whether this 404 came from an unknown tenant subdomain.
-  // Middleware rewrites unknown-slug.* → /tenant-not-found → notFound(),
-  // so the original host header is still present.
+  // Detect whether this 404 came from an unknown workspace slug.
+  // Middleware rewrites unknown slugs → /_not-found with the original URL intact.
   const headersList = await headers();
-  const host = headersList.get("host") ?? "";
-  const workspaceSlug = extractSubdomain(host, ROOT_DOMAIN);
+  const urlHeader = headersList.get("x-invoke-path") ?? "";
+  const firstSeg = urlHeader.split("/")[1] ?? "";
+  const isWorkspaceNotFound =
+    firstSeg &&
+    !RESERVED_SLUGS.has(firstSeg) &&
+    firstSeg !== "platform" &&
+    TENANT_SLUG_RE.test(firstSeg);
 
-  if (workspaceSlug) {
-    const proto = process.env.NODE_ENV === "production" ? "https" : "http";
+  if (isWorkspaceNotFound) {
     const tw = t.tenantNotFound;
     return (
       <main
@@ -38,18 +39,12 @@ export default async function NotFoundPage() {
           <h1 className="text-xl font-semibold tracking-tight text-foreground">{tw.title}</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{tw.message}</p>
           <div className="mt-8 flex flex-col gap-2.5 w-full">
-            <a
-              href={`${proto}://${ROOT_DOMAIN}/login`}
-              className={cn(buttonVariants(), "w-full")}
-            >
+            <Link href="/signin" className={cn(buttonVariants(), "w-full")}>
               {tw.backToLogin}
-            </a>
-            <a
-              href={`${proto}://${ROOT_DOMAIN}/signup`}
-              className={cn(buttonVariants({ variant: "outline" }), "w-full")}
-            >
+            </Link>
+            <Link href="/signup" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
               {tw.createWorkspace}
-            </a>
+            </Link>
           </div>
         </div>
         <p className="absolute bottom-8 text-xs text-muted-foreground/50">

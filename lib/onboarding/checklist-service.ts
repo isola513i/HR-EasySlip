@@ -1,9 +1,10 @@
-import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { RequestMeta } from "@/lib/api/types";
 
-type TxClient = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+type TxClient = Prisma.TransactionClient;
 
 /**
  * Create onboarding checklist for a new employee from the default (or specified) template.
@@ -14,6 +15,7 @@ export async function createChecklistForEmployee(
   templateId?: string,
   tx?: TxClient,
 ) {
+  const prisma = await getPrisma();
   const client = tx ?? prisma;
 
   const template = templateId
@@ -40,6 +42,7 @@ export async function createChecklistForEmployee(
 }
 
 export async function getEmployeeChecklist(employeeId: string) {
+  const prisma = await getPrisma();
   const checklist = await prisma.onboardingChecklist.findUnique({
     where: { employeeId },
     include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -54,6 +57,7 @@ export async function getEmployeeChecklist(employeeId: string) {
 
 /** Lightweight query for layout banner — avoids fetching all items */
 export async function getOnboardingRemainingCount(employeeId: string): Promise<number> {
+  const prisma = await getPrisma();
   const checklist = await prisma.onboardingChecklist.findUnique({
     where: { employeeId },
     select: { completedAt: true },
@@ -68,6 +72,7 @@ export async function getOnboardingRemainingCount(employeeId: string): Promise<n
 }
 
 export async function listChecklistsWithProgress(filter?: { completed?: boolean }) {
+  const prisma = await getPrisma();
   const where = filter?.completed !== undefined
     ? { completedAt: filter.completed ? { not: null } : null }
     : {};
@@ -103,6 +108,7 @@ interface ToggleOptions {
 
 export async function toggleChecklistItem(opts: ToggleOptions) {
   const { itemId, isDone, actorUserId, ownerEmployeeId, meta, skipOwnerCheck } = opts;
+  const prisma = await getPrisma();
 
   const result = await prisma.$transaction(async (tx) => {
     const item = await tx.onboardingChecklistItem.findUnique({
@@ -143,6 +149,7 @@ export async function toggleChecklistItem(opts: ToggleOptions) {
 }
 
 export async function isOnboardingComplete(employeeId: string): Promise<boolean> {
+  const prisma = await getPrisma();
   const checklist = await prisma.onboardingChecklist.findUnique({
     where: { employeeId },
     select: { completedAt: true },

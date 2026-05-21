@@ -1,9 +1,9 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { writeAuditLog } from "@/lib/audit/logger";
-import type { LeaveHalfDay } from "@prisma/client";
+import type { LeaveHalfDay, Prisma } from "@prisma/client";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 
-type TxClient = Parameters<Parameters<typeof import("@/lib/prisma").prisma.$transaction>[0]>[0];
+type TxClient = Prisma.TransactionClient;
 
 interface OverflowInput {
   startDate: Date;

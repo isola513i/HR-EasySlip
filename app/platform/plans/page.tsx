@@ -50,7 +50,7 @@ export default async function PlatformPlansPage() {
             </span>
           </div>
           <Link
-            href="/tenants?plan=__none__"
+            href="/platform/tenants?plan=__none__"
             className="text-xs text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors"
           >
             View tenants →
@@ -79,7 +79,7 @@ export default async function PlatformPlansPage() {
                   )}
                 </div>
                 <Link
-                  href={`/tenants?plan=${plan.code}`}
+                  href={`/platform/tenants?plan=${plan.code}`}
                   className="text-xs tabular-nums text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5"
                 >
                   {count} {count === 1 ? "tenant" : "tenants"}

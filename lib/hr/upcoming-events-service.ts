@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -12,6 +12,7 @@ export interface UpcomingEvent {
 
 /** Returns public holidays falling within the next `daysAhead` days. */
 export async function getUpcomingEvents(daysAhead = 30): Promise<UpcomingEvent[]> {
+  const prisma = await getPrisma();
   const now = new Date();
   // Normalize to start-of-today UTC so holidays whose date is today (00:00 UTC)
   // aren't filtered out by the time-of-day on `now`.

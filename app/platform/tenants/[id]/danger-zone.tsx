@@ -58,7 +58,7 @@ export function DangerZone({ tenantId, companyName, status }: Props) {
             </div>
           </div>
           <Link
-            href={`/tenants/${tenantId}/impersonate`}
+            href={`/platform/tenants/${tenantId}/impersonate`}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:text-amber-300")}
           >
             Impersonate

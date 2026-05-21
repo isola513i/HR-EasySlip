@@ -10,7 +10,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import type { Document, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { putBlob, deleteBlob, fetchBlob, DOC_ALLOWED_MIME, type DocMime } from "@/lib/storage/blob";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError } from "@/lib/api/errors";
@@ -72,6 +72,7 @@ export async function uploadDocument(input: UploadInput): Promise<PublicDocument
     throw new DomainError("FORBIDDEN", {}, 403);
   }
 
+  const prisma = await getPrisma();
   const owner = await prisma.employee.findUnique({
     where: { id: ownerEmployeeId },
     select: { id: true, isAnonymized: true },
@@ -125,6 +126,7 @@ export async function uploadDocument(input: UploadInput): Promise<PublicDocument
 
 export async function deleteDocument(input: MutateInput): Promise<void> {
   const { caller, documentId, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const doc = await prisma.document.findUnique({ where: { id: documentId } });
   if (!doc) throw new DomainError("DOCUMENT_NOT_FOUND", {}, 404);
   if (!canWrite(caller, doc.ownerEmployeeId, doc.category as DocumentCategory)) {
@@ -152,6 +154,7 @@ export async function deleteDocument(input: MutateInput): Promise<void> {
 
 export async function streamDocument(input: MutateInput) {
   const { caller, documentId, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const doc = await prisma.document.findUnique({ where: { id: documentId } });
   if (!doc) throw new DomainError("DOCUMENT_NOT_FOUND", {}, 404);
   if (!(await canRead(caller, doc))) throw new DomainError("FORBIDDEN", {}, 403);
@@ -179,6 +182,7 @@ export async function streamDocument(input: MutateInput) {
 
 export async function getDocument(input: MutateInput): Promise<PublicDocument> {
   const { caller, documentId, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const doc = await prisma.document.findUnique({ where: { id: documentId } });
   if (!doc) throw new DomainError("DOCUMENT_NOT_FOUND", {}, 404);
   if (!(await canRead(caller, doc))) throw new DomainError("FORBIDDEN", {}, 403);
@@ -216,6 +220,7 @@ interface ListByEntityInput {
  */
 export async function listDocumentsByEntity(input: ListByEntityInput): Promise<PublicDocument[]> {
   const { caller, entityType, entityId, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const ownerEmployeeId = await resolveEntityOwner(entityType, entityId);
   const owner = isOwner(caller, ownerEmployeeId);
   const hr = isHr(caller);
@@ -243,6 +248,7 @@ export async function listDocumentsByEntity(input: ListByEntityInput): Promise<P
 
 export async function listDocuments(input: ListInput): Promise<PublicDocument[]> {
   const { caller, ownerEmployeeId, category, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const owner = isOwner(caller, ownerEmployeeId);
   const hr = isHr(caller);
   const mgr = !owner && !hr ? await isManagerOfOwner(caller, ownerEmployeeId) : false;

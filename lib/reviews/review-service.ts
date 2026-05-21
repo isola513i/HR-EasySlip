@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
@@ -6,6 +6,7 @@ import type { ReviewSubmitInput, ReviewSaveDraftInput } from "./schemas";
 
 /** Reviews that the caller is responsible for completing (SELF + MANAGER). */
 export async function listMyReviews(reviewerId: string) {
+  const prisma = await getPrisma();
   return prisma.review.findMany({
     where: {
       reviewerId,
@@ -21,6 +22,7 @@ export async function listMyReviews(reviewerId: string) {
 
 /** Reviews about the caller (e.g. own self-review + manager review of them). */
 export async function listReviewsAboutMe(employeeId: string) {
+  const prisma = await getPrisma();
   return prisma.review.findMany({
     where: { revieweeId: employeeId },
     include: {
@@ -32,6 +34,7 @@ export async function listReviewsAboutMe(employeeId: string) {
 }
 
 export async function getReview(reviewId: string, caller: Caller) {
+  const prisma = await getPrisma();
   const review = await prisma.review.findUnique({
     where: { id: reviewId },
     include: {
@@ -56,6 +59,7 @@ export async function saveDraft(
   input: ReviewSaveDraftInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const review = await prisma.review.findUnique({ where: { id: reviewId } });
   if (!review) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
   if (review.reviewerId !== caller.employeeId) {
@@ -93,6 +97,7 @@ export async function submitReview(
   input: ReviewSubmitInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const review = await tx.review.findUnique({
       where: { id: reviewId },

@@ -12,6 +12,7 @@
  */
 
 import { PrismaClient } from "@prisma/client";
+import { PrismaClient as CpPrismaClient } from "../lib/db/generated/control-plane";
 import bcrypt from "bcryptjs";
 import { createDecipheriv } from "node:crypto";
 
@@ -36,6 +37,10 @@ async function hash(plain: string): Promise<string> {
 // ── main ─────────────────────────────────────────────────────────────────────
 
 const controlDb = new PrismaClient({
+  datasources: { db: { url: process.env.CONTROL_PLANE_DATABASE_URL } },
+  log: ["warn", "error"],
+});
+const cpDb = new CpPrismaClient({
   datasources: { db: { url: process.env.CONTROL_PLANE_DATABASE_URL } },
   log: ["warn", "error"],
 });
@@ -131,18 +136,21 @@ async function main() {
 
   for (const u of USERS) {
     const passwordHash = await hash(u.password);
-    const user = await db.user.create({
-      data: {
+    const cpUser = await cpDb.user.upsert({
+      where: { email: u.email },
+      create: {
         email:           u.email,
         emailVerified:   new Date(),
         passwordHash,
         mustChangePassword: false,
       },
+      update: {},
+      select: { id: true },
     });
 
     await db.employee.create({
       data: {
-        userId:           user.id,
+        userId:           cpUser.id,
         employeeCode:     u.code,
         firstNameTh:      u.firstNameTh,
         lastNameTh:       u.lastNameTh,
@@ -163,6 +171,7 @@ async function main() {
 
   await db.$disconnect();
   await controlDb.$disconnect();
+  await cpDb.$disconnect();
   console.log("\n✅ Done — easyslip tenant seeded");
 }
 

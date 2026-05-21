@@ -2,31 +2,33 @@ import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { env } from "@/lib/env";
 import {
   magicLinkHtml,
   magicLinkText,
 } from "@/lib/email/magic-link-template";
-import { logAuthEvent } from "@/lib/audit/logger";
 import { signInAttemptLimiter } from "@/lib/security/rate-limit";
-import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 
-const adapter = {
-  ...PrismaAdapter(prisma),
-  // The default Prisma adapter uses `session.delete()` which throws when
-  // the record doesn't exist. This happens when the signIn callback rejects
-  // a user (e.g. SUSPENDED) after NextAuth already attempted session creation.
-  // Using `deleteMany` avoids the "record not found" error.
-  deleteSession: async (sessionToken: string) => {
-    await prisma.session.deleteMany({ where: { sessionToken } });
-    return null;
-  },
-};
+function getCpAdapter() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cp = getControlPlane() as any;
+  return {
+    ...PrismaAdapter(cp),
+    // deleteSession via deleteMany avoids "record not found" when signIn callback rejects
+    // after NextAuth already attempted session creation.
+    deleteSession: async (sessionToken: string) => {
+      await cp.session.deleteMany({ where: { sessionToken } });
+      return null;
+    },
+  };
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  adapter,
+  get adapter() {
+    return getCpAdapter();
+  },
   providers: [
     Resend({
       id: "email",
@@ -58,12 +60,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: {
     strategy: "database",
-    // Session expires after 8 hours of inactivity (1 work day).
-    // NextAuth refreshes the expiry on every request, so active
-    // users stay signed in. Idle sessions are cleaned up.
-    maxAge: 8 * 60 * 60, // 8 hours in seconds
-    // Refresh session expiry every 30 minutes of activity
-    updateAge: 30 * 60, // 30 minutes in seconds
+    maxAge: 8 * 60 * 60,
+    updateAge: 30 * 60,
   },
   pages: {
     signIn: "/signin",
@@ -75,79 +73,87 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       try {
         const target = new URL(url);
-        const rootDomain = process.env.ROOT_DOMAIN ?? "localhost:3000";
-        // Allow exact root domain or any subdomain (e.g. easyslip.localhost:3000)
-        if (target.host === rootDomain || target.host.endsWith(`.${rootDomain}`)) {
-          return url;
-        }
+        const appHost = new URL(baseUrl).host;
+        if (target.host === appHost) return url;
       } catch {}
       return baseUrl;
     },
     async signIn({ user }) {
       if (!user?.id) return true;
 
-      // Account lockout: peek (check without counting) — only record on actual failures
       const lockout = signInAttemptLimiter.peek(user.id);
       if (!lockout.success) {
-        logAuthEvent("auth.blocked", user.id, {
-          reason: "Account locked: too many failed sign-in attempts",
-        }).catch((err) => console.error("[auth audit]", err));
-        return "/signin?error=AccessDenied";
+        logCPAuthEvent("auth.blocked", user.id, { reason: "Account locked" }).catch(() => {});
+        return false;
       }
 
-      const full = await prisma.user.findUnique({
+      const cp = getControlPlane();
+      const full = await cp.user.findUnique({
         where: { id: user.id },
-        include: { employee: true },
+        select: { isDisabled: true },
       });
       if (!full) return true;
 
       if (full.isDisabled) {
-        signInAttemptLimiter.record(user.id); // count this failure
-        logAuthEvent("auth.blocked", user.id, {
-          reason: "Account disabled",
-        }).catch((err) => console.error("[auth audit]", err));
-        return "/signin?error=AccessDenied";
-      }
-      const emp = full.employee;
-      if (
-        emp &&
-        BLOCKED_EMPLOYMENT_STATUSES.includes(
-          emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number],
-        )
-      ) {
-        signInAttemptLimiter.record(user.id); // count this failure
-        logAuthEvent("auth.blocked", user.id, {
-          reason: `Employment status: ${emp.employmentStatus}`,
-        }).catch((err) => console.error("[auth audit]", err));
-        return "/signin?error=AccessDenied";
+        signInAttemptLimiter.record(user.id);
+        logCPAuthEvent("auth.blocked", user.id, { reason: "Account disabled" }).catch(() => {});
+        return false;
       }
 
-      // Success — log sign-in (fire-and-forget)
-      logAuthEvent("auth.signin", user.id).catch((err) => console.error("[auth audit]", err));
+      logCPAuthEvent("auth.signin", user.id).catch(() => {});
       return true;
     },
     async session({ session, user }) {
       if (!user?.id) return session;
-      const full = await prisma.user.findUnique({
+
+      const cp = getControlPlane();
+      const full = await cp.user.findUnique({
         where: { id: user.id },
         select: {
           mustChangePassword: true,
-          employee: {
+          memberships: {
+            where: { status: "ACTIVE" },
             select: {
-              id: true,
-              employeeCode: true,
-              roles: true,
-              firstNameTh: true,
-              lastNameTh: true,
-              employmentStatus: true,
+              tenantId: true,
+              role: true,
+              employeeRecordId: true,
+              status: true,
+              tenant: { select: { slug: true } },
             },
           },
         },
       });
+
       session.user.id = user.id;
-      session.user.employee = full?.employee ?? null;
       session.user.mustChangePassword = full?.mustChangePassword ?? false;
+      session.user.memberships =
+        full?.memberships?.map((m) => ({
+          tenantId: m.tenantId,
+          tenantSlug: m.tenant.slug,
+          role: m.role,
+          employeeRecordId: m.employeeRecordId ?? "",
+          status: m.status,
+        })) ?? [];
+
       return session;
     },
   },
 });
+
+async function logCPAuthEvent(
+  action: string,
+  userId: string,
+  meta?: { reason?: string },
+): Promise<void> {
+  const cp = getControlPlane();
+  await cp.platformAuditLog.create({
+    data: {
+      actorId: null,
+      tenantId: null,
+      action,
+      targetType: "CpUser",
+      targetId: userId,
+      metadata: meta ?? undefined,
+    },
+  });
+}

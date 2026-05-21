@@ -1,6 +1,7 @@
 import Papa from "papaparse";
 import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { hashPassword, generateInitialPassword } from "@/lib/auth/password-utils";
 import { grantInitialLeaveQuota } from "@/lib/leave/leave-quota-grant-service";
@@ -41,6 +42,7 @@ interface LookupMaps {
 }
 
 async function buildLookupMaps(rows: ImportRow[]): Promise<LookupMaps> {
+  const prisma = await getPrisma();
   const deptCodes = new Set(rows.map((r) => r.departmentCode).filter((v): v is string => !!v));
   const positionNames = new Set(rows.map((r) => r.positionTitle).filter((v): v is string => !!v));
   const managerCodes = new Set(rows.map((r) => r.managerEmployeeCode).filter((v): v is string => !!v));
@@ -69,6 +71,7 @@ export async function bulkImportEmployees(
   caller: Caller,
   meta: RequestMeta,
 ): Promise<BulkImportResult> {
+  const prisma = await getPrisma();
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true,
     skipEmptyLines: true,
@@ -137,12 +140,21 @@ export async function bulkImportEmployees(
     return { created: [], errors, totalRows: parsed.data.length };
   }
 
-  // Pre-hash all passwords before entering the transaction
+  // Pre-hash all passwords + create CP users before the tenant transaction
+  const cp = getControlPlane();
   const passwordMap = new Map<string, { plain: string; hash: string }>();
+  const cpUserMap = new Map<string, string>(); // employeeCode → cpUserId
   await Promise.all(rows.map(async (row) => {
     const plain = generateInitialPassword(row.employeeCode);
     const hash = await hashPassword(plain);
     passwordMap.set(row.employeeCode, { plain, hash });
+    const cpUser = await cp.user.upsert({
+      where: { email: row.email },
+      create: { email: row.email, emailVerified: new Date(), passwordHash: hash, mustChangePassword: true },
+      update: {},
+      select: { id: true },
+    });
+    cpUserMap.set(row.employeeCode, cpUser.id);
   }));
 
   const created: BulkImportResult["created"] = [];
@@ -150,14 +162,11 @@ export async function bulkImportEmployees(
   await prisma.$transaction(async (tx) => {
     for (const row of rows) {
       const pw = passwordMap.get(row.employeeCode)!;
-
-      const user = await tx.user.create({
-        data: { email: row.email, emailVerified: new Date(), passwordHash: pw.hash, mustChangePassword: true },
-      });
+      const cpUserId = cpUserMap.get(row.employeeCode)!;
 
       const employee = await tx.employee.create({
         data: {
-          userId: user.id, employeeCode: row.employeeCode,
+          userId: cpUserId, employeeCode: row.employeeCode,
           firstNameTh: row.firstNameTh, lastNameTh: row.lastNameTh,
           firstNameEn: row.firstNameEn, lastNameEn: row.lastNameEn,
           phone: row.phone, hireDate: new Date(row.hireDate),

@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import { Decimal } from "@prisma/client/runtime/library";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { assertCycleOpen } from "@/lib/api/cycle-guard";
@@ -20,6 +20,7 @@ export async function submitWeekdayOT(
   input: OTSubmitWeekdayInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const date = new Date(input.date);
 
   await assertCycleOpen(date, caller.roles);
@@ -93,6 +94,7 @@ export async function submitHolidayOT(
   input: OTSubmitHolidayInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const date = new Date(input.date);
   const assignedStart = new Date(input.assignedStart);
   const assignedEnd = new Date(input.assignedEnd);
@@ -176,6 +178,7 @@ export async function submitHolidayOT(
 }
 
 export async function getMyOTRequests(employeeId: string, filters: OTFilters) {
+  const prisma = await getPrisma();
   const where = {
     employeeId,
     ...(filters.status ? { status: filters.status } : {}),
@@ -196,6 +199,7 @@ export async function getMyOTRequests(employeeId: string, filters: OTFilters) {
 
 /** HR org-wide aggregate over the full filtered set (not paginated). */
 export async function getOTSummaryForHR(filters: Pick<OTFilters, "status">) {
+  const prisma = await getPrisma();
   const where = {
     ...(filters.status ? { status: filters.status } : {}),
   };
@@ -214,6 +218,7 @@ export async function getOTSummaryForHR(filters: Pick<OTFilters, "status">) {
 
 /** HR org-wide listing of OT requests (no approver scoping). */
 export async function getAllOTForHR(filters: OTFilters) {
+  const prisma = await getPrisma();
   const where = {
     ...(filters.status ? { status: filters.status } : {}),
   };

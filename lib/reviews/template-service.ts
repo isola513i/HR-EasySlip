@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ReviewTemplateCreateInput } from "./schemas";
 
 export async function listTemplates() {
+  const prisma = await getPrisma();
   return prisma.reviewTemplate.findMany({
     orderBy: { createdAt: "desc" },
   });
@@ -15,6 +16,7 @@ export async function createTemplate(
   input: ReviewTemplateCreateInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const created = await prisma.reviewTemplate.create({
     data: {
       name: input.name,
@@ -36,6 +38,7 @@ export async function createTemplate(
 }
 
 export async function getTemplate(id: string) {
+  const prisma = await getPrisma();
   const tmpl = await prisma.reviewTemplate.findUnique({ where: { id } });
   if (!tmpl) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
   return tmpl;

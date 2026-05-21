@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
 import { parseBody } from "@/lib/api/validate";
@@ -22,8 +22,9 @@ export const PUT = withApiHandler(async (req, ctx) => {
   if (caller instanceof NextResponse) return caller;
 
   const { currentPassword, newPassword } = await parseBody(req, ChangePasswordSchema);
+  const cp = getControlPlane();
 
-  const user = await prisma.user.findUnique({
+  const user = await cp.user.findUnique({
     where: { id: caller.userId },
     select: { passwordHash: true },
   });
@@ -38,7 +39,7 @@ export const PUT = withApiHandler(async (req, ctx) => {
   }
 
   const newHash = await hashPassword(newPassword);
-  await prisma.user.update({
+  await cp.user.update({
     where: { id: caller.userId },
     data: { passwordHash: newHash, mustChangePassword: false },
   });

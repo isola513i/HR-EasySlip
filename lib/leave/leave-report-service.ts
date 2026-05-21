@@ -2,7 +2,7 @@
 // Leave Report Service — HR leave summary reports
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 interface ReportFilters {
   year: number;
@@ -11,6 +11,7 @@ interface ReportFilters {
 }
 
 export async function generateReport(filters: ReportFilters) {
+  const prisma = await getPrisma();
   const where = {
     startDate: {
       gte: new Date(`${filters.year}-01-01`),

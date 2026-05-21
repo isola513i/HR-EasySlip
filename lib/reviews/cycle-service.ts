@@ -1,10 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
 import type { ReviewCycleCreateInput } from "./schemas";
 
 export async function listCycles(status?: "DRAFT" | "ACTIVE" | "CLOSED") {
+  const prisma = await getPrisma();
   return prisma.reviewCycle.findMany({
     where: status ? { status } : undefined,
     include: {
@@ -16,6 +17,7 @@ export async function listCycles(status?: "DRAFT" | "ACTIVE" | "CLOSED") {
 }
 
 export async function getCycle(id: string) {
+  const prisma = await getPrisma();
   const cycle = await prisma.reviewCycle.findUnique({
     where: { id },
     include: {
@@ -37,6 +39,7 @@ export async function createCycle(
   input: ReviewCycleCreateInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const template = await prisma.reviewTemplate.findUnique({ where: { id: input.templateId } });
   if (!template) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, { entity: "ReviewTemplate" }, 404);
 
@@ -72,6 +75,7 @@ export async function activateCycle(
   cycleId: string,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const cycle = await tx.reviewCycle.findUnique({ where: { id: cycleId } });
     if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -125,6 +129,7 @@ export async function activateCycle(
 }
 
 export async function closeCycle(caller: Caller, cycleId: string, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const cycle = await tx.reviewCycle.findUnique({ where: { id: cycleId } });
     if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

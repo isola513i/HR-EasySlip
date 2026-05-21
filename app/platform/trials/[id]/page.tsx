@@ -28,7 +28,7 @@ export default async function TrialDetailPage({ params }: Props) {
     <>
       <div className="mb-6">
         <Link
-          href="/trials"
+          href="/platform/trials"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
           <ArrowLeft className="size-3" /> Trials
@@ -87,7 +87,7 @@ export default async function TrialDetailPage({ params }: Props) {
               </p>
             )}
             {signup.status === "APPROVED" && signup.tenantId && (
-              <Link href={`/tenants/${signup.tenantId}`} className="text-xs text-primary hover:underline mt-2">
+              <Link href={`/platform/tenants/${signup.tenantId}`} className="text-xs text-primary hover:underline mt-2">
                 View tenant →
               </Link>
             )}

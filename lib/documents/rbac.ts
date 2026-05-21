@@ -1,5 +1,5 @@
 import type { Document } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { HR_ROLES } from "@/lib/security/rbac";
 import type { Caller, DocumentCategory } from "./types";
 
@@ -11,6 +11,7 @@ export const isOwner = (caller: Caller, ownerEmployeeId: string): boolean =>
 
 export async function isManagerOfOwner(caller: Caller, ownerEmployeeId: string): Promise<boolean> {
   if (!caller.employeeId) return false;
+  const prisma = await getPrisma();
   const owner = await prisma.employee.findUnique({
     where: { id: ownerEmployeeId },
     select: { managerId: true },

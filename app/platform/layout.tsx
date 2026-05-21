@@ -9,14 +9,13 @@ export const metadata = { title: "EasySlip Platform" };
 // the /signin page can render without recursive auth checks.
 export default async function PlatformLayout({ children }: { children: React.ReactNode }) {
   const session = await getPlatformSession();
+
+  if (!session) return <>{children}</>;
+
   return (
     <div className="dark">
       <DarkModeHtml />
-      {session ? (
-        <PlatformShell email={session.email}>{children}</PlatformShell>
-      ) : (
-        children
-      )}
+      <PlatformShell email={session.email}>{children}</PlatformShell>
     </div>
   );
 }

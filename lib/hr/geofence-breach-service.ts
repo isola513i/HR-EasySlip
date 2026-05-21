@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export interface GeofenceBreach {
   recordId: string;
@@ -30,6 +30,7 @@ export async function listRecentBreaches(
   to: Date,
   limit = 100,
 ): Promise<GeofenceBreach[]> {
+  const prisma = await getPrisma();
   const records = await prisma.attendanceRecord.findMany({
     where: {
       clockedAt: { gte: from, lte: to },
@@ -69,6 +70,7 @@ export async function listRecentBreaches(
 }
 
 export async function countBreachesForToday(now = new Date()): Promise<number> {
+  const prisma = await getPrisma();
   const start = new Date(now);
   start.setUTCHours(0, 0, 0, 0);
   const end = new Date(now);

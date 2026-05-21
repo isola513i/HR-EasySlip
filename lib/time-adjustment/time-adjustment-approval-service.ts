@@ -3,7 +3,7 @@
 // Enforces: no self-approval, manager-subordinate check
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import type { Caller, RequestMeta } from "@/lib/api/types";
@@ -14,6 +14,7 @@ export async function approveRequest(
   id: string,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const request = await tx.timeAdjustmentRequest.findUnique({
       where: { id },
@@ -86,6 +87,7 @@ export async function rejectRequest(
   input: TimeAdjReject,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const request = await tx.timeAdjustmentRequest.findUnique({
       where: { id },

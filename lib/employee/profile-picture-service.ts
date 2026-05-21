@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { putBlob, deleteBlob, fetchBlob, IMAGE_ONLY_MIME, type ImageMime } from "@/lib/storage/blob";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError } from "@/lib/api/errors";
@@ -25,6 +25,7 @@ export async function uploadProfilePicture(input: UploadInput) {
     throw new DomainError("UNSUPPORTED_MEDIA_TYPE", { mime: file.contentType }, 415);
   }
 
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { id: true, profilePicturePath: true, isAnonymized: true },
@@ -90,6 +91,7 @@ interface DeleteInput {
 
 export async function deleteProfilePicture(input: DeleteInput) {
   const { actorUserId, employeeId, ipAddress, userAgent } = input;
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { profilePicturePath: true },
@@ -147,6 +149,7 @@ interface StreamInput {
 export async function streamProfilePicture(input: StreamInput) {
   const { employeeId, caller, ipAddress, userAgent } = input;
 
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { profilePicturePath: true, profilePictureMime: true, managerId: true },

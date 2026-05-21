@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { notifyOTDecision } from "@/lib/email/ot-notification-sender";
@@ -11,6 +11,7 @@ export async function getPendingOTForApprover(
 ) {
   const where = { approverId: caller.employeeId, status: "PENDING" as const };
 
+  const prisma = await getPrisma();
   const [items, total] = await Promise.all([
     prisma.overtimeRequest.findMany({
       where,
@@ -49,6 +50,7 @@ async function decideOT(
 ) {
   const { reason, hrOverride = false } = opts;
 
+  const prisma = await getPrisma();
   const result = await prisma.$transaction(async (tx) => {
     const request = await tx.overtimeRequest.findUnique({ where: { id } });
     if (!request) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

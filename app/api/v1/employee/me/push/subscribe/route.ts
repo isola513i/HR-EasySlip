@@ -3,7 +3,7 @@ import { withApiHandler } from "@/lib/api/with-api-handler";
 import { apiOk } from "@/lib/api/response";
 import { parseBody } from "@/lib/api/validate";
 import { requireApiEmployee, EMPLOYEE_ROLES } from "@/lib/security/rbac";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { PushSubscribeSchema } from "@/lib/push/schemas";
 import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
@@ -16,6 +16,7 @@ export const POST = withApiHandler(async (req, ctx) => {
 
   const input = await parseBody(req, PushSubscribeSchema);
 
+  const prisma = await getPrisma();
   const sub = await prisma.pushSubscription.upsert({
     where: { endpoint: input.endpoint },
     create: {

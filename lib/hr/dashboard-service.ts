@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 
-export async function getDashboardData() {
+export async function getDashboardData(prisma: PrismaClient) {
   const today = new Date();
   // Set today start/end in Bangkok time (UTC+7)
   const bangkokOffset = 7 * 60 * 60 * 1000;

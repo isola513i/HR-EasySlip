@@ -1,5 +1,5 @@
 import { Prisma, type NotificationKind } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export interface CreateNotificationInput {
   userId: string;
@@ -21,10 +21,11 @@ export interface CreateNotificationInput {
  */
 export async function createNotification(
   input: CreateNotificationInput,
-  tx: Prisma.TransactionClient | typeof prisma = prisma,
+  tx?: Prisma.TransactionClient,
 ) {
+  const client = tx ?? (await getPrisma());
   try {
-    return await tx.notification.create({
+    return await client.notification.create({
       data: {
         userId: input.userId,
         kind: input.kind,
@@ -49,6 +50,7 @@ export interface ListOptions {
 }
 
 export async function listNotifications(userId: string, opts: ListOptions = {}) {
+  const prisma = await getPrisma();
   const where: Prisma.NotificationWhereInput = { userId };
   if (opts.unreadOnly) where.readAt = null;
   return prisma.notification.findMany({
@@ -59,10 +61,12 @@ export async function listNotifications(userId: string, opts: ListOptions = {}) 
 }
 
 export async function countUnread(userId: string): Promise<number> {
+  const prisma = await getPrisma();
   return prisma.notification.count({ where: { userId, readAt: null } });
 }
 
 export async function markRead(userId: string, notificationId: string) {
+  const prisma = await getPrisma();
   return prisma.notification.updateMany({
     where: { id: notificationId, userId, readAt: null },
     data: { readAt: new Date() },
@@ -70,6 +74,7 @@ export async function markRead(userId: string, notificationId: string) {
 }
 
 export async function markAllRead(userId: string) {
+  const prisma = await getPrisma();
   return prisma.notification.updateMany({
     where: { userId, readAt: null },
     data: { readAt: new Date() },

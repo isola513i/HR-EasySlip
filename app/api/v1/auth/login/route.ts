@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
+import { getTenantPrisma } from "@/lib/db/tenant";
 import { withApiHandler } from "@/lib/api/with-api-handler";
 import { parseBody } from "@/lib/api/validate";
 import { apiOk, apiError } from "@/lib/api/response";
@@ -18,8 +19,9 @@ const LoginSchema = z.object({
 export const POST = withApiHandler(async (req, ctx) => {
   const { email, password } = await parseBody(req, LoginSchema);
   const emailLower = email.toLowerCase();
+  const cp = getControlPlane();
 
-  const user = await prisma.user.findUnique({
+  const user = await cp.user.findUnique({
     where: { email: emailLower },
     select: { id: true, passwordHash: true, isDisabled: true, mustChangePassword: true },
   });
@@ -48,22 +50,26 @@ export const POST = withApiHandler(async (req, ctx) => {
     return apiError("ACCOUNT_DISABLED", "บัญชีถูกระงับ กรุณาติดต่อ HR", 403);
   }
 
-  // Fetch employment status only after password verified
-  const emp = await prisma.employee.findUnique({
-    where: { userId: user.id },
-    select: { employmentStatus: true },
-  });
-
-  if (emp && BLOCKED_EMPLOYMENT_STATUSES.includes(emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number])) {
-    signInAttemptLimiter.record(user.id);
-    logAuthEvent("auth.blocked", user.id, { ipAddress: ctx.ip, userAgent: ctx.userAgent, reason: `Employment: ${emp.employmentStatus}` }).catch(() => {});
-    return apiError("EMPLOYMENT_BLOCKED", "สถานะพนักงานไม่สามารถเข้าสู่ระบบได้ กรุณาติดต่อ HR", 403);
+  // Employment check — only applies when called from a tenant context (x-tenant-id present)
+  // Global /signin calls have no tenant context; the check is deferred to workspace selection.
+  const tenantId = req.headers.get("x-tenant-id");
+  if (tenantId) {
+    const tp = await getTenantPrisma(tenantId);
+    const emp = await tp.employee.findUnique({
+      where: { userId: user.id },
+      select: { employmentStatus: true },
+    });
+    if (emp && BLOCKED_EMPLOYMENT_STATUSES.includes(emp.employmentStatus as (typeof BLOCKED_EMPLOYMENT_STATUSES)[number])) {
+      signInAttemptLimiter.record(user.id);
+      logAuthEvent("auth.blocked", user.id, { ipAddress: ctx.ip, userAgent: ctx.userAgent, reason: `Employment: ${emp.employmentStatus}` }).catch(() => {});
+      return apiError("EMPLOYMENT_BLOCKED", "สถานะพนักงานไม่สามารถเข้าสู่ระบบได้ กรุณาติดต่อ HR", 403);
+    }
   }
 
   const sessionToken = crypto.randomUUID();
   const expires = new Date(Date.now() + SESSION_MAX_AGE_MS);
 
-  await prisma.session.create({
+  await cp.session.create({
     data: { sessionToken, userId: user.id, expires },
   });
 

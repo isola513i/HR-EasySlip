@@ -1,9 +1,11 @@
 import { test as base, expect } from "@playwright/test";
 import { test } from "./helpers/fixtures";
+import { TENANT_SLUG } from "./helpers/auth";
 
 base.describe("unauthenticated", () => {
   base("redirects to signin page", async ({ page }) => {
-    await page.goto("/employee/today");
+    // Path-based routing: tenant paths require /{slug}/ prefix.
+    await page.goto(`/${TENANT_SLUG}/employee/today`);
     await expect(page).toHaveURL(/\/signin/);
   });
 });

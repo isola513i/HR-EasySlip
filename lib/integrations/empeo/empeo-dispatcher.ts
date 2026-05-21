@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import type { PrismaClient } from "@prisma/client";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { logger } from "@/lib/observability/logger";
 import { markOutboxConsumed, markOutboxFailed } from "@/lib/payroll/outbox-processor";
@@ -17,7 +17,7 @@ export interface DispatchResult {
   skipped: number;
 }
 
-export async function dispatchToEmpeo(): Promise<DispatchResult> {
+export async function dispatchToEmpeo(prisma: PrismaClient): Promise<DispatchResult> {
   if (!isEmpeoEnabled()) {
     return { enabled: false, processed: 0, consumed: 0, failed: 0, skipped: 0 };
   }
@@ -77,7 +77,7 @@ export async function dispatchToEmpeo(): Promise<DispatchResult> {
       entityType: "PayrollOutboxEvent",
       entityId: `batch-${new Date().toISOString()}`,
       after: { consumed, failed, skipped, batchSize: events.length },
-    });
+    }, prisma);
   }
 
   return { enabled: true, processed: events.length, consumed, failed, skipped };

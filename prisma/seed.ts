@@ -53,7 +53,20 @@ async function main() {
     `  ✓ Organization: ${orgMap.departments.size} depts, ${orgMap.positions.size} positions`,
   );
 
-  const employeeMap = await seedEmployees(prisma, orgMap);
+  // Optionally wire CP client for TenantMembership creation
+  const cpUrl = process.env.CONTROL_PLANE_DATABASE_URL;
+  const seedTenantId = process.env.SEED_TENANT_ID;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let cpOpts: { cp: any; tenantId: string } | undefined;
+  if (cpUrl && seedTenantId) {
+    const { getControlPlane } = await import('../lib/db/control-plane');
+    cpOpts = { cp: getControlPlane(), tenantId: seedTenantId };
+    console.log(`  ℹ  CP wired — TenantMemberships will be seeded (tenantId=${seedTenantId})`);
+  } else {
+    console.log('  ℹ  CONTROL_PLANE_DATABASE_URL or SEED_TENANT_ID not set — skipping TenantMembership seeding');
+  }
+
+  const employeeMap = await seedEmployees(prisma, orgMap, cpOpts);
   console.log(`  ✓ Employees: ${employeeMap.size} seeded\n`);
 
   await seedLeaveQuotas(prisma, employeeMap);

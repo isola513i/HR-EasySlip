@@ -9,7 +9,7 @@
 // Phase 1 MVP: lightweight — no Workbox dependency.
 // ════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = "easyslip-v4";
+const CACHE_NAME = "easyslip-v5";
 const OFFLINE_URL = "/offline.html";
 
 const APP_SHELL = [
@@ -112,9 +112,10 @@ self.addEventListener("fetch", (event) => {
   // Skip other API routes
   if (url.pathname.startsWith("/api/")) return;
 
-  // PDPA: Never cache auth-required pages — prevents data leak on shared devices
-  const PROTECTED_PATHS = ["/hr", "/employee", "/manager", "/profile"];
-  const isProtected = PROTECTED_PATHS.some((p) => url.pathname.startsWith(p));
+  // PDPA: Never cache auth-required pages — prevents data leak on shared devices.
+  // Path-based multi-tenancy: protected paths are at /{slug}/hr, /{slug}/employee, etc.
+  const PROTECTED_RE = /^\/[^/]+\/(hr|employee|manager|profile)(?:\/|$)/;
+  const isProtected = PROTECTED_RE.test(url.pathname);
 
   // Navigation requests: network first → cache fallback (skip protected paths)
   if (request.mode === "navigate") {

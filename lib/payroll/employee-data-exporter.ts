@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 
 const HEADERS = [
   "รหัสพนักงาน", "วันเริ่มงาน", "คำนำหน้า", "เพศ",
@@ -26,16 +27,21 @@ function fmtDate(d: Date | null): string {
 }
 
 export async function generateEmployeeDataExcel(): Promise<ArrayBuffer> {
+  const prisma = await getPrisma();
   const employees = await prisma.employee.findMany({
     where: { employmentStatus: { in: ["ACTIVE", "PROBATION"] } },
     include: {
-      user: { select: { email: true } },
       department: { select: { name: true } },
       position: { select: { name: true } },
       manager: { select: { employeeCode: true } },
     },
     orderBy: { employeeCode: "asc" },
   });
+
+  const userIds = employees.map((e) => e.userId).filter((id): id is string => !!id);
+  const cp = getControlPlane();
+  const cpUsers = await cp.user.findMany({ where: { id: { in: userIds } }, select: { id: true, email: true } });
+  const emailById = new Map(cpUsers.map((u) => [u.id, u.email]));
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet("พนักงาน");
@@ -51,7 +57,7 @@ export async function generateEmployeeDataExcel(): Promise<ArrayBuffer> {
     ws.addRow([
       e.employeeCode, fmtDate(e.hireDate), e.prefix ?? "", e.gender ?? "",
       e.firstNameTh, e.lastNameTh, e.firstNameEn ?? "", e.lastNameEn ?? "",
-      e.nicknameTh ?? "", e.nicknameEn ?? "", e.nationalId ?? "", e.user?.email ?? "",
+      e.nicknameTh ?? "", e.nicknameEn ?? "", e.nationalId ?? "", (e.userId ? emailById.get(e.userId) : null) ?? "",
       e.level ?? "", e.position?.name ?? "", "บริษัท โกไฟว์ จำกัด", e.department?.name ?? "",
       STATUS_MAP[e.employmentStatus] ?? e.employmentStatus, e.employmentType ?? "",
       e.manager?.employeeCode ?? "", e.workShift,

@@ -5,11 +5,10 @@ import { impersonationRequestHtml, impersonationRequestText } from "./impersonat
 import { logger } from "@/lib/observability/logger";
 import type { Role } from "@prisma/client";
 
-const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? "localhost:3000";
-const IS_LOCAL = ROOT_DOMAIN.startsWith("localhost") || ROOT_DOMAIN.includes("lvh.me");
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
 function tenantBase(slug: string): string {
-  return IS_LOCAL ? `http://${slug}.lvh.me:3000` : `https://${slug}.${ROOT_DOMAIN}`;
+  return `${APP_URL}/${slug}`;
 }
 
 // Tenant admin roles that should receive approval notifications
@@ -48,14 +47,15 @@ export async function notifyImpersonationRequest(requestId: string): Promise<{ s
         roles: { hasSome: TENANT_ADMIN_ROLE_VALUES },
         employmentStatus: { in: ["ACTIVE", "PROBATION"] },
       },
-      include: {
-        user: { select: { email: true } },
-      },
+      select: { userId: true },
     });
 
-    const recipients = adminEmployees
-      .map((e) => e.user?.email)
-      .filter((email): email is string => !!email);
+    const userIds = adminEmployees.map((e) => e.userId).filter((id): id is string => !!id);
+    const cpUsers = await cp.user.findMany({
+      where: { id: { in: userIds } },
+      select: { email: true },
+    });
+    const recipients = cpUsers.map((u) => u.email);
 
     if (recipients.length === 0) {
       return { sent: 0, error: "No admin contacts found in tenant" };

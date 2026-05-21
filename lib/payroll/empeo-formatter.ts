@@ -4,7 +4,7 @@
 // Columns: ชื่อบริษัท, รหัสพนักงาน, วันที่ (d/M/yyyy), เวลา (H:mm)
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 
@@ -19,6 +19,7 @@ interface TimestampRecord {
 }
 
 export async function getTimestampRecords(cycleId: string): Promise<TimestampRecord[]> {
+  const prisma = await getPrisma();
   const cycle = await prisma.payrollCycle.findUnique({
     where: { id: cycleId },
     select: { cycleStart: true, cycleEnd: true },

@@ -6,7 +6,7 @@
 // ════════════════════════════════════════════════════════════════
 
 import webpush from "web-push";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { logger } from "@/lib/observability/logger";
 
 let configured = false;
@@ -36,6 +36,7 @@ export interface PushPayload {
  * (404/410 from the push endpoint) are pruned automatically. */
 export async function sendPushToUser(userId: string, payload: PushPayload): Promise<void> {
   if (!ensureConfigured()) return;
+  const prisma = await getPrisma();
   const subs = await prisma.pushSubscription.findMany({ where: { userId } });
   if (subs.length === 0) return;
 

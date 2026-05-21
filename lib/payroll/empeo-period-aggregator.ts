@@ -4,7 +4,7 @@
 // baht via empeo-amounts helpers.
 import { Decimal } from "@prisma/client/runtime/library";
 import type { EmploymentType } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import {
   computeAbsentDeduction,
@@ -59,6 +59,7 @@ type EmpRow = {
 async function getOtHoursByType(
   cycleId: string,
 ): Promise<Map<string, { weekday: Decimal; holiday: Decimal; holidayWork: Decimal }>> {
+  const prisma = await getPrisma();
   const rows = await prisma.overtimeRequest.findMany({
     where: { status: "APPROVED", payrollCycleId: cycleId },
     select: { employeeId: true, overtimeType: true, hoursApproved: true },
@@ -76,6 +77,7 @@ async function getOtHoursByType(
 }
 
 async function getLwpDays(cycleId: string): Promise<Map<string, Decimal>> {
+  const prisma = await getPrisma();
   const rows = await prisma.leaveRequest.findMany({
     where: { leaveType: "LEAVE_WITHOUT_PAY", status: "APPROVED", payrollCycleId: cycleId },
     select: { employeeId: true, daysRequested: true },
@@ -88,6 +90,7 @@ async function getLwpDays(cycleId: string): Promise<Map<string, Decimal>> {
 }
 
 async function getCashoutDays(year: number): Promise<Map<string, Decimal>> {
+  const prisma = await getPrisma();
   const rows = await prisma.annualLeaveCashOut.findMany({
     where: { year, exportStatus: "PENDING" },
     select: { employeeId: true, unusedDays: true },
@@ -96,6 +99,7 @@ async function getCashoutDays(year: number): Promise<Map<string, Decimal>> {
 }
 
 async function getExpenseAmounts(cycleId: string): Promise<Map<string, Decimal>> {
+  const prisma = await getPrisma();
   const rows = await prisma.expenseClaim.findMany({
     where: { status: "APPROVED", payrollCycleId: cycleId },
     select: { employeeId: true, amountTHB: true },
@@ -120,6 +124,7 @@ async function getAbsentDays(
   const empIds = employees.map((e) => e.id);
   if (empIds.length === 0) return new Map();
 
+  const prisma = await getPrisma();
   const [attendance, leaves, holidays] = await Promise.all([
     prisma.attendanceRecord.findMany({
       where: { employeeId: { in: empIds }, clockType: "IN", clockedAt: { gte: cycleStart, lte: cycleEnd } },
@@ -174,6 +179,7 @@ function isoDate(d: Date): string {
 }
 
 export async function aggregatePeriod(cycleId: string): Promise<PeriodAggregation> {
+  const prisma = await getPrisma();
   const cycle = await prisma.payrollCycle.findUnique({ where: { id: cycleId } });
   if (!cycle) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
 

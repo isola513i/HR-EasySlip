@@ -2,7 +2,7 @@
 // Time Adjustment Service — submit, withdraw, list, detail
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { isSensitiveDataRole } from "@/lib/security/role-helpers";
@@ -14,6 +14,7 @@ export async function submitRequest(
   input: TimeAdjSubmit,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const request = await prisma.timeAdjustmentRequest.create({
     data: {
       employeeId: caller.employeeId,
@@ -40,6 +41,7 @@ export async function getMyRequests(
   employeeId: string,
   filters: TimeAdjFilters,
 ) {
+  const prisma = await getPrisma();
   const where = {
     employeeId,
     ...(filters.status && { status: filters.status }),
@@ -59,6 +61,7 @@ export async function getMyRequests(
 }
 
 export async function getDetail(id: string, caller: Caller) {
+  const prisma = await getPrisma();
   const request = await prisma.timeAdjustmentRequest.findUnique({
     where: { id },
     include: {
@@ -98,6 +101,7 @@ export async function withdrawRequest(
   id: string,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   const request = await prisma.timeAdjustmentRequest.findUnique({
     where: { id },
   });
@@ -133,6 +137,7 @@ export async function getPendingForApprover(
   caller: Caller,
   filters: TimeAdjFilters,
 ) {
+  const prisma = await getPrisma();
   const subordinates = await prisma.employee.findMany({
     where: { managerId: caller.employeeId },
     select: { id: true },

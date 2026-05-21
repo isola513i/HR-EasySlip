@@ -1,5 +1,5 @@
 import { Prisma, type EmploymentStatus } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { computeResignationAnnualProrate } from "@/lib/leave/annual-quota-engine";
@@ -50,6 +50,7 @@ interface StartInput {
 export async function startOffboarding(caller: Caller, input: StartInput, meta: RequestMeta) {
   const policy = await loadLeavePolicy();
   const lastDay = new Date(input.lastDay);
+  const prisma = await getPrisma();
 
   return prisma.$transaction(async (tx) => {
     const employee = await tx.employee.findUnique({
@@ -125,6 +126,7 @@ export async function startOffboarding(caller: Caller, input: StartInput, meta: 
 }
 
 export async function listOffboarding(status?: "IN_PROGRESS" | "COMPLETED" | "CANCELLED") {
+  const prisma = await getPrisma();
   return prisma.offboardingChecklist.findMany({
     where: status ? { status } : undefined,
     include: {
@@ -137,6 +139,7 @@ export async function listOffboarding(status?: "IN_PROGRESS" | "COMPLETED" | "CA
 }
 
 export async function getOffboardingForEmployee(employeeId: string) {
+  const prisma = await getPrisma();
   return prisma.offboardingChecklist.findUnique({
     where: { employeeId },
     include: {
@@ -154,6 +157,7 @@ export async function toggleItem(
   completed: boolean,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const checklist = await tx.offboardingChecklist.findUnique({ where: { id: checklistId } });
     if (!checklist) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);
@@ -192,6 +196,7 @@ export async function toggleItem(
 }
 
 export async function completeOffboarding(caller: Caller, checklistId: string, meta: RequestMeta) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const checklist = await tx.offboardingChecklist.findUnique({ where: { id: checklistId } });
     if (!checklist) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

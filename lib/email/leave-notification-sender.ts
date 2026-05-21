@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { sendNotificationEmail } from "./notification-service";
 import { leaveSubmittedHtml, leaveSubmittedText } from "./leave-submitted-template";
 import { leaveDecisionHtml, leaveDecisionText } from "./leave-decision-template";
@@ -9,18 +10,27 @@ import { formatLeaveType } from "@/lib/utils";
 
 const APP_URL = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 
+async function getUserEmail(userId: string): Promise<string | null> {
+  const cp = getControlPlane();
+  const u = await cp.user.findUnique({ where: { id: userId }, select: { email: true } });
+  return u?.email ?? null;
+}
+
 export async function notifyLeaveSubmitted(requestId: string): Promise<void> {
   try {
+    const prisma = await getPrisma();
     const req = await prisma.leaveRequest.findUnique({
       where: { id: requestId },
       include: {
         employee: { select: { firstNameTh: true, lastNameTh: true, employeeCode: true } },
-        approver: { select: { notifyLeave: true, user: { select: { email: true } } } },
+        approver: { select: { userId: true, notifyLeave: true } },
       },
     });
-    if (!req?.approver?.user?.email) return;
+    if (!req?.approver?.userId) return;
     if (req.approver.notifyLeave === false) return;
-    const approverEmail = req.approver.user.email;
+
+    const approverEmail = await getUserEmail(req.approver.userId);
+    if (!approverEmail) return;
 
     const params = {
       employeeName: `${req.employee.firstNameTh} ${req.employee.lastNameTh}`,
@@ -49,17 +59,20 @@ export async function notifyLeaveDecision(
   decision: "APPROVED" | "REJECTED",
 ): Promise<void> {
   try {
+    const prisma = await getPrisma();
     const req = await prisma.leaveRequest.findUnique({
       where: { id: requestId },
       include: {
         employee: {
-          select: { firstNameTh: true, lastNameTh: true, notifyApproval: true, userId: true, user: { select: { email: true } } },
+          select: { firstNameTh: true, lastNameTh: true, notifyApproval: true, userId: true },
         },
       },
     });
-    if (!req?.employee?.user?.email) return;
+    if (!req?.employee?.userId) return;
     if (req.employee.notifyApproval === false) return;
-    const employeeEmail = req.employee.user.email;
+
+    const employeeEmail = await getUserEmail(req.employee.userId);
+    if (!employeeEmail) return;
 
     // Fire-and-forget push (best-effort; falls through if VAPID not set).
     sendPushToUser(req.employee.userId, {

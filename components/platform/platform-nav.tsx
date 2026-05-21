@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
-  { key: "overview", label: "Overview", href: "/overview" },
-  { key: "trials",   label: "Trials",   href: "/trials" },
-  { key: "tenants",  label: "Tenants",  href: "/tenants" },
-  { key: "plans",    label: "Plans",    href: "/plans" },
-  { key: "team",     label: "Team",     href: "/team" },
-  { key: "audit",    label: "Audit",    href: "/audit" },
+  { key: "overview", label: "Overview", href: "/platform/overview" },
+  { key: "trials",   label: "Trials",   href: "/platform/trials" },
+  { key: "tenants",  label: "Tenants",  href: "/platform/tenants" },
+  { key: "plans",    label: "Plans",    href: "/platform/plans" },
+  { key: "team",     label: "Team",     href: "/platform/team" },
+  { key: "audit",    label: "Audit",    href: "/platform/audit" },
 ] as const;
 
 export type PlatformNavKey = (typeof NAV_ITEMS)[number]["key"];

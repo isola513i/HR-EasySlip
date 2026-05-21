@@ -59,7 +59,7 @@ export async function approveTrialSignup(signupId: string, _prev: ActionResult, 
     return { error: provision.error ?? "Provisioning failed. Check DB credentials and retry." };
   }
 
-  const portalUrl = `https://${slug}.${process.env.ROOT_DOMAIN ?? "easyslip.app"}/signin`;
+  const portalUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/${slug}/signin`;
   const passwordLine = provision.tempPassword
     ? `<p>Temporary password: <strong>${provision.tempPassword}</strong><br>You will be prompted to change it on first login.</p>`
     : "";

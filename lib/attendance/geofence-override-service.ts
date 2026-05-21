@@ -1,5 +1,5 @@
 import { Prisma, GeofenceOverrideStatus, type Role } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { DomainError, ErrorCodes } from "@/lib/api/errors";
 import { isSensitiveDataRole } from "@/lib/security/role-helpers";
@@ -21,6 +21,7 @@ export async function createOverrideRequest(
   input: CreateInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const pending = await tx.geofenceOverrideRequest.findFirst({
       where: { employeeId: input.employeeId, status: GeofenceOverrideStatus.PENDING },
@@ -55,6 +56,7 @@ export async function createOverrideRequest(
 }
 
 export async function listPendingOverrides() {
+  const prisma = await getPrisma();
   return prisma.geofenceOverrideRequest.findMany({
     where: { status: GeofenceOverrideStatus.PENDING },
     include: {
@@ -67,6 +69,7 @@ export async function listPendingOverrides() {
 }
 
 export async function listMyOverrides(employeeId: string, limit = 20) {
+  const prisma = await getPrisma();
   return prisma.geofenceOverrideRequest.findMany({
     where: { employeeId },
     orderBy: { requestedAt: "desc" },
@@ -80,6 +83,7 @@ export async function decideOverride(
   input: GeofenceOverrideDecisionInput,
   meta: RequestMeta,
 ) {
+  const prisma = await getPrisma();
   return prisma.$transaction(async (tx) => {
     const req = await tx.geofenceOverrideRequest.findUnique({ where: { id: requestId } });
     if (!req) throw new DomainError(ErrorCodes.RECORD_NOT_FOUND, {}, 404);

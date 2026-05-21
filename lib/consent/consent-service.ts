@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit/logger";
 import { getSettingValue } from "@/lib/settings/settings-service";
 
@@ -18,6 +18,7 @@ export async function getCurrentConsentVersion(): Promise<string> {
 
 export async function hasActiveConsent(userId: string): Promise<boolean> {
   const version = await getCurrentConsentVersion();
+  const prisma = await getPrisma();
   const record = await prisma.consentRecord.findFirst({
     where: {
       userId,
@@ -32,6 +33,7 @@ export async function hasActiveConsent(userId: string): Promise<boolean> {
 
 export async function getConsentStatus(userId: string) {
   const version = await getCurrentConsentVersion();
+  const prisma = await getPrisma();
   const record = await prisma.consentRecord.findFirst({
     where: {
       userId,
@@ -54,6 +56,7 @@ export async function getConsentStatus(userId: string) {
 
 export async function grantConsent(userId: string, meta: RequestMeta) {
   const version = await getCurrentConsentVersion();
+  const prisma = await getPrisma();
   const existing = await prisma.consentRecord.findFirst({
     where: {
       userId,
@@ -92,6 +95,7 @@ export async function grantConsent(userId: string, meta: RequestMeta) {
 }
 
 export async function withdrawConsent(userId: string, meta: RequestMeta) {
+  const prisma = await getPrisma();
   const consent = await prisma.consentRecord.findFirst({
     where: { userId, purpose: CONSENT_PURPOSE, granted: true, withdrawnAt: null },
     orderBy: { grantedAt: "desc" },

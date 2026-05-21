@@ -1,5 +1,5 @@
 import { getSettingValues } from "@/lib/settings/settings-service";
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
 
 export type WorkShift = "MORNING" | "EVENING";
 
@@ -79,6 +79,7 @@ export async function loadAttendancePolicy(shift: WorkShift = "MORNING"): Promis
 
 /** Load attendance policy scoped to a specific employee's WorkShift. */
 export async function loadEmployeeAttendancePolicy(employeeId: string): Promise<AttendancePolicy> {
+  const prisma = await getPrisma();
   const employee = await prisma.employee.findUnique({
     where: { id: employeeId },
     select: { workShift: true },

@@ -14,7 +14,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "test": "bun test lib/",
     "test:e2e": "bunx playwright test",
     "test:e2e:multitenant": "bunx playwright test --config playwright.multitenant.config.ts"

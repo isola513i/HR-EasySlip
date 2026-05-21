@@ -10,7 +10,7 @@ export default defineConfig({
   retries: 1,
   workers: process.env.CI ? 2 : 3,
   use: {
-    baseURL: process.env.E2E_BASE_URL ?? `http://${process.env.E2E_TENANT_SLUG ?? "demo"}.localhost:3000`,
+    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
     trace: "on-first-retry",
   },
   projects: [

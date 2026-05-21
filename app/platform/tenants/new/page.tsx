@@ -17,7 +17,7 @@ export default async function NewTenantPage() {
           className="flex items-center gap-1.5 text-xs text-muted-foreground"
         >
           <Link
-            href="/tenants"
+            href="/platform/tenants"
             className="hover:text-foreground transition-colors"
           >
             Tenants

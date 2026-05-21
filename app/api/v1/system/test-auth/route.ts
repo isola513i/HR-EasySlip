@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 
 const IS_DEV = ["development", "test"].includes(process.env.NODE_ENV ?? "");
 // Fall back to "test-secret-dev" in dev so E2E_TEST_SECRET is optional locally
@@ -19,7 +19,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "email required" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const cp = getControlPlane();
+  const user = await cp.user.findUnique({ where: { email } });
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
   const token = crypto.randomUUID();
   const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-  await prisma.session.create({
+  await cp.session.create({
     data: { sessionToken: token, userId: user.id, expires },
   });
 

@@ -21,8 +21,10 @@ const mockTransaction = mock(async (fn: (tx: any) => Promise<any>) => {
   return fn(tx);
 });
 
+const mockPrismaClient = { $transaction: mockTransaction };
+
 mock.module("@/lib/prisma", () => ({
-  prisma: { $transaction: mockTransaction },
+  getPrisma: async () => mockPrismaClient,
 }));
 
 mock.module("@/lib/audit/logger", () => ({

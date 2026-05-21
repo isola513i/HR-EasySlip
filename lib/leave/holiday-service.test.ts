@@ -11,16 +11,18 @@ const mockUpdate = mock((): Promise<unknown> =>
 );
 const mockDelete = mock((): Promise<unknown> => Promise.resolve({ id: "h-1" }));
 
-mock.module("@/lib/prisma", () => ({
-  prisma: {
-    publicHoliday: {
-      findMany: mockFindMany,
-      findUnique: mockFindUnique,
-      create: mockCreate,
-      update: mockUpdate,
-      delete: mockDelete,
-    },
+const mockPrismaClient = {
+  publicHoliday: {
+    findMany: mockFindMany,
+    findUnique: mockFindUnique,
+    create: mockCreate,
+    update: mockUpdate,
+    delete: mockDelete,
   },
+};
+
+mock.module("@/lib/prisma", () => ({
+  getPrisma: async () => mockPrismaClient,
 }));
 
 // ── Mock Audit Logger ────────────────────────────────────────

@@ -2,7 +2,8 @@
 // Audit Service — query logs and entity timelines
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getPrisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import type { AuditQuery } from "./schemas";
 import { categorizeAction, moduleForEntity, type AuditCategory } from "./categories";
 import { ACTION_LABELS_EN, ACTION_LABELS_TH } from "./action-labels";
@@ -67,14 +68,12 @@ function buildWhere(filters: AuditQuery) {
 }
 
 export async function queryLogs(filters: AuditQuery) {
+  const prisma = await getPrisma();
   const where = buildWhere(filters);
 
-  const [items, total] = await Promise.all([
+  const [rawItems, total] = await Promise.all([
     prisma.auditLog.findMany({
       where,
-      include: {
-        actor: { select: { id: true, email: true } },
-      },
       orderBy: { createdAt: "desc" },
       skip: (filters.page - 1) * filters.perPage,
       take: filters.perPage,
@@ -82,10 +81,12 @@ export async function queryLogs(filters: AuditQuery) {
     prisma.auditLog.count({ where }),
   ]);
 
+  const items = await enrichWithActorEmails(rawItems);
   return { items, total, page: filters.page, perPage: filters.perPage };
 }
 
 export async function getAuditSummary(filters: AuditQuery) {
+  const prisma = await getPrisma();
   const where = buildWhere(filters);
 
   const [actions, total] = await Promise.all([
@@ -129,12 +130,12 @@ export async function getEntityTimeline(
   page = 1,
   perPage = 50,
 ) {
+  const prisma = await getPrisma();
   const where = { entityType, entityId };
 
-  const [items, total] = await Promise.all([
+  const [rawItems, total] = await Promise.all([
     prisma.auditLog.findMany({
       where,
-      include: { actor: { select: { id: true, email: true } } },
       orderBy: { createdAt: "asc" },
       skip: (page - 1) * perPage,
       take: perPage,
@@ -142,5 +143,25 @@ export async function getEntityTimeline(
     prisma.auditLog.count({ where }),
   ]);
 
+  const items = await enrichWithActorEmails(rawItems);
   return { items, total, page, perPage };
+}
+
+async function enrichWithActorEmails<T extends { actorId: string | null }>(
+  items: T[],
+): Promise<(T & { actor: { id: string; email: string } | null })[]> {
+  const actorIds = [...new Set(items.map((i) => i.actorId).filter((id): id is string => !!id))];
+  if (actorIds.length === 0) return items.map((i) => ({ ...i, actor: null }));
+
+  const cp = getControlPlane();
+  const users = await cp.user.findMany({
+    where: { id: { in: actorIds } },
+    select: { id: true, email: true },
+  });
+  const byId = new Map(users.map((u) => [u.id, u]));
+
+  return items.map((i) => ({
+    ...i,
+    actor: i.actorId ? (byId.get(i.actorId) ?? null) : null,
+  }));
 }

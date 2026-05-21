@@ -6,7 +6,7 @@
 // Deleting all sessions forces the user to re-authenticate.
 // ════════════════════════════════════════════════════════════════
 
-import { prisma } from "@/lib/prisma";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { writeAuditLog } from "@/lib/audit/logger";
 
 /**
@@ -18,7 +18,8 @@ export async function invalidateUserSessions(
   reason: string,
   actorId: string | null,
 ): Promise<number> {
-  const { count } = await prisma.session.deleteMany({
+  const cp = getControlPlane();
+  const { count } = await cp.session.deleteMany({
     where: { userId },
   });
 

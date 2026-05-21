@@ -5,13 +5,15 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { generateTenantExport } from "@/lib/tenant-export/tenant-exporter";
 import { getControlPlane } from "@/lib/db/control-plane";
 import { getTenantId } from "@/lib/db/tenant-context";
+import { getPrisma } from "@/lib/prisma";
 
 export const GET = withApiHandler(async () => {
   const caller = await requireApiRoles(TENANT_ADMIN_ROLES);
   if (caller instanceof NextResponse) return caller;
 
   const tenantId = await getTenantId();
-  const data = await generateTenantExport();
+  const prisma = await getPrisma();
+  const data = await generateTenantExport(prisma);
   const json = JSON.stringify(data, null, 2);
   const date = new Date().toISOString().split("T")[0];
 

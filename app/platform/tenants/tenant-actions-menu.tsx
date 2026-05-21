@@ -28,26 +28,26 @@ export function TenantActionsMenu({ tenant }: { tenant: TenantRow }) {
         <MoreHorizontal className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-44">
-        <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.id}`)}>
+        <DropdownMenuItem onClick={() => router.push(`/platform/tenants/${tenant.id}`)}>
           View details
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.id}/impersonate`)}>
+        <DropdownMenuItem onClick={() => router.push(`/platform/tenants/${tenant.id}/impersonate`)}>
           Impersonate
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.id}?tab=overview#plan`)}>
+        <DropdownMenuItem onClick={() => router.push(`/platform/tenants/${tenant.id}?tab=overview#plan`)}>
           Change plan
         </DropdownMenuItem>
         {canSuspend && (
           <DropdownMenuItem
             variant="destructive"
-            onClick={() => router.push(`/tenants/${tenant.id}?tab=danger`)}
+            onClick={() => router.push(`/platform/tenants/${tenant.id}?tab=danger`)}
           >
             Suspend
           </DropdownMenuItem>
         )}
         {canReactivate && (
-          <DropdownMenuItem onClick={() => router.push(`/tenants/${tenant.id}?tab=danger`)}>
+          <DropdownMenuItem onClick={() => router.push(`/platform/tenants/${tenant.id}?tab=danger`)}>
             Reactivate
           </DropdownMenuItem>
         )}

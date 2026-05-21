@@ -6,10 +6,12 @@ import type { Caller, DocumentCategory } from "./types";
 const mockFindUnique = mock(
   (): Promise<{ managerId: string | null } | null> => Promise.resolve(null),
 );
+const mockPrismaClient = {
+  employee: { findUnique: mockFindUnique },
+};
+
 mock.module("@/lib/prisma", () => ({
-  prisma: {
-    employee: { findUnique: mockFindUnique },
-  },
+  getPrisma: async () => mockPrismaClient,
 }));
 
 // `@/lib/security/rbac` transitively imports next-auth + env validation,
