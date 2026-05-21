@@ -1,34 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { Eye, EyeOff, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import { useT } from "@/lib/i18n/locale-context";
+
+const MIN_LENGTH = 8;
 
 export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?: boolean }) {
   const t = useT();
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const lengthOk = newPassword.length >= MIN_LENGTH;
+  const matchOk = confirmPassword.length > 0 && newPassword === confirmPassword;
+  const canSubmit = useMemo(
+    () => lengthOk && matchOk && (firstTimeSetup || currentPassword.length > 0) && !isLoading,
+    [lengthOk, matchOk, firstTimeSetup, currentPassword, isLoading],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    if (newPassword.length < 8) {
-      setError(t.password.tooShort);
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError(t.password.mismatch);
-      return;
-    }
+    if (!canSubmit) return;
 
     setIsLoading(true);
     try {
@@ -57,10 +63,9 @@ export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-7" noValidate>
       {!firstTimeSetup && (
-        <div className="space-y-2">
-          <Label htmlFor="currentPassword">{t.password.currentPassword}</Label>
+        <Field id="currentPassword" label={t.password.currentPassword}>
           <Input
             id="currentPassword"
             type="password"
@@ -69,39 +74,159 @@ export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             disabled={isLoading}
+            className="h-11"
           />
+        </Field>
+      )}
+
+      <Field id="newPassword" label={t.password.newPassword}>
+        <PasswordInput
+          id="newPassword"
+          autoComplete="new-password"
+          value={newPassword}
+          onChange={setNewPassword}
+          disabled={isLoading}
+          show={showNew}
+          onToggle={() => setShowNew((v) => !v)}
+        />
+        <Hint active={newPassword.length > 0} satisfied={lengthOk}>
+          {t.password.minLength}
+        </Hint>
+      </Field>
+
+      <Field id="confirmPassword" label={t.password.confirmPassword}>
+        <PasswordInput
+          id="confirmPassword"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={setConfirmPassword}
+          disabled={isLoading}
+          show={showConfirm}
+          onToggle={() => setShowConfirm((v) => !v)}
+        />
+        <Hint active={confirmPassword.length > 0} satisfied={matchOk}>
+          {t.password.matchHint}
+        </Hint>
+      </Field>
+
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg border border-destructive/20 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+        >
+          {error}
         </div>
       )}
-      <div className="space-y-2">
-        <Label htmlFor="newPassword">{t.password.newPassword}</Label>
-        <Input
-          id="newPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-          minLength={8}
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          disabled={isLoading}
-          placeholder={t.password.minLength}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">{t.password.confirmPassword}</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          required
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          disabled={isLoading}
-        />
-      </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? t.password.changing : t.password.changeButton}
+
+      <Button
+        type="submit"
+        className="h-11 w-full text-[15px] font-medium"
+        disabled={!canSubmit}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="size-4 animate-spin" />
+            {t.password.changing}
+          </>
+        ) : (
+          firstTimeSetup ? t.password.setupButton : t.password.changeButton
+        )}
       </Button>
     </form>
+  );
+}
+
+function Field({
+  id,
+  label,
+  children,
+}: {
+  id: string;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id} className="text-[13px] font-medium text-foreground/85">
+        {label}
+      </Label>
+      {children}
+    </div>
+  );
+}
+
+function PasswordInput({
+  id,
+  autoComplete,
+  value,
+  onChange,
+  disabled,
+  show,
+  onToggle,
+}: {
+  id: string;
+  autoComplete: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+  show: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        type={show ? "text" : "password"}
+        autoComplete={autoComplete}
+        required
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        className="h-11 pr-10"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        tabIndex={-1}
+        aria-label={show ? "Hide password" : "Show password"}
+        className="absolute right-0 top-0 grid h-11 w-10 place-items-center text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 rounded-md"
+      >
+        {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+      </button>
+    </div>
+  );
+}
+
+function Hint({
+  active,
+  satisfied,
+  children,
+}: {
+  active: boolean;
+  satisfied: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <p
+      className={cn(
+        "flex items-center gap-1.5 text-[12px] transition-colors duration-200",
+        !active && "text-muted-foreground/70",
+        active && satisfied && "text-emerald-600",
+        active && !satisfied && "text-muted-foreground",
+      )}
+    >
+      <span
+        className={cn(
+          "grid size-3.5 place-items-center rounded-full border transition-colors duration-200",
+          !active && "border-muted-foreground/30",
+          active && satisfied && "border-emerald-600 bg-emerald-600 text-white",
+          active && !satisfied && "border-muted-foreground/40",
+        )}
+        aria-hidden
+      >
+        {active && satisfied && <Check className="size-2.5" strokeWidth={3.5} />}
+      </span>
+      {children}
+    </p>
   );
 }
