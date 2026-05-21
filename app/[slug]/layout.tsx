@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { resolveTenantBySlug } from "@/lib/db/tenant-resolver";
+import { setRequestTenant } from "@/lib/db/tenant-context";
 import { verifyImpersonationToken, IMPERSONATION_COOKIE } from "@/lib/auth/impersonation";
 import { ImpersonationBanner } from "@/components/tenant/impersonation-banner";
 
@@ -15,6 +16,8 @@ export default async function TenantLayout({
   const { slug } = await params;
   const tenant = await resolveTenantBySlug(slug);
   if (!tenant) notFound();
+
+  setRequestTenant({ id: tenant.id, slug: tenant.slug });
 
   if (tenant.status === "SUSPENDED" || tenant.status === "DELETED") {
     redirect(`/${slug}/forbidden?reason=suspended`);

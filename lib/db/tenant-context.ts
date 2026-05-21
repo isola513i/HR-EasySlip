@@ -7,7 +7,24 @@ export const TENANT_COOKIE = "es_tenant";
 
 const tenantOverride = new AsyncLocalStorage<string>();
 
+// Request-scoped mutable registry. React.cache() returns the same object reference
+// for every call within a single request render, so writes from an upstream layout
+// are visible to descendant components, server actions, and any helper called
+// during that render — without depending on middleware request headers (which
+// Turbopack dev does not always forward) or a cookie (which the first response
+// hasn't yet delivered to the browser).
+const requestRegistry = cache((): { tenant: { id: string; slug: string } | null } => ({
+  tenant: null,
+}));
+
+export function setRequestTenant(tenant: { id: string; slug: string }): void {
+  requestRegistry().tenant = tenant;
+}
+
 async function readTenantContext(): Promise<{ id: string; slug: string }> {
+  const registered = requestRegistry().tenant;
+  if (registered) return registered;
+
   const [h, jar] = await Promise.all([headers(), cookies()]);
 
   const headerId = h.get("x-tenant-id");
