@@ -4,8 +4,13 @@ import { pageMetadata } from "@/lib/i18n/page-metadata";
 
 export const generateMetadata = () => pageMetadata("me");
 
-export default async function MePage() {
-  const user = await requireRoles(EMPLOYEE_ROLES);
+export default async function MePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const user = await requireRoles(EMPLOYEE_ROLES, slug);
 
   return (
     <MeScreen

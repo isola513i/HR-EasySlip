@@ -10,10 +10,13 @@ export const viewport: Viewport = {
 
 export default async function HRLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
-  const user = await requireRoles(HR_ROLES);
+  const { slug } = await params;
+  const user = await requireRoles(HR_ROLES, slug);
   await requireConsent("/hr/overview");
 
   const hdrs = await headers();

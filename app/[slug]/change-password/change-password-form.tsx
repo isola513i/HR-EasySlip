@@ -54,7 +54,7 @@ export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?
         return;
       }
 
-      router.push(`/${slug}/dashboard`);
+      router.push("/workspaces");
       router.refresh();
     } catch {
       setError(t.common.genericError);

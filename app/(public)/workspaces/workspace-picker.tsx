@@ -44,7 +44,7 @@ export function WorkspacePicker({ memberships, error, t }: Props) {
 
         <div className="space-y-2">
           {memberships.map((m) => {
-            const landingPath = HR_LANDING_ROLES.has(m.role) ? "dashboard" : "employee/today";
+            const landingPath = HR_LANDING_ROLES.has(m.role) ? "hr/overview" : "employee/today";
             return (
               <Link
                 key={m.tenantId}

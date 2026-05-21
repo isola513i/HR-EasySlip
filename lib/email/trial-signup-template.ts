@@ -78,7 +78,7 @@ export function trialSignupConfirmationHtml(params: TrialSignupEmailParams): str
       style="background-color:${BG};border:1px solid ${BORDER};border-radius:8px;padding:16px;margin-bottom:24px;">
       <tbody>
         ${detailRow("บริษัท / Company", companyName)}
-        ${detailRow("URL ของคุณ", `/${desiredSlug}/dashboard`)}
+        ${detailRow("URL ของคุณ", `/${desiredSlug}`)}
         ${teamSize ? detailRow("ขนาดทีม / Team", teamSize) : ""}
       </tbody>
     </table>
@@ -111,7 +111,7 @@ export function trialSignupNotificationHtml(params: TrialSignupEmailParams): str
         ${detailRow("Company", companyName)}
         ${detailRow("Contact", contactName)}
         ${detailRow("Email", contactEmail)}
-        ${detailRow("Slug", `/${desiredSlug}/dashboard`)}
+        ${detailRow("Slug", `/${desiredSlug}`)}
         ${teamSize ? detailRow("Team size", teamSize) : ""}
         ${detailRow("Received", timestamp)}
       </tbody>

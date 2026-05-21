@@ -21,7 +21,7 @@ export function NewTenantForm() {
     <form action={action} className="space-y-4">
       <Field id="slug" label="Slug *">
         <Input name="slug" required className="font-mono" placeholder="acme" />
-        <p className="text-xs text-muted-foreground mt-1">Will become: /{"{slug}"}/dashboard</p>
+        <p className="text-xs text-muted-foreground mt-1">Will become: /{"{slug}"}</p>
       </Field>
 
       <Field id="companyName" label="Company Name *">

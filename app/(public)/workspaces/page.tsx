@@ -37,7 +37,7 @@ export default async function WorkspacesPage({
   // Single workspace → auto-redirect to appropriate landing
   if (memberships.length === 1) {
     const m = memberships[0];
-    const landingPath = HR_LANDING_ROLES.has(m.role) ? "dashboard" : "employee/today";
+    const landingPath = HR_LANDING_ROLES.has(m.role) ? "hr/overview" : "employee/today";
     redirect(`/${m.tenantSlug}/${landingPath}`);
   }
 

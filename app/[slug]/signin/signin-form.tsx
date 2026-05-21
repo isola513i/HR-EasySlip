@@ -107,12 +107,8 @@ export function SignInForm({ dict, slug: slugProp }: Props) {
         // ignore storage access errors
       }
 
-      if (slug) {
-        if (data.data?.mustChangePassword) {
-          router.push(`/${slug}/change-password`);
-        } else {
-          router.push(`/${slug}/dashboard`);
-        }
+      if (slug && data.data?.mustChangePassword) {
+        router.push(`/${slug}/change-password`);
       } else {
         router.push("/workspaces");
       }

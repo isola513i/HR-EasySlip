@@ -15,7 +15,7 @@ export default async function ImpersonationApprovePage({ params, searchParams }:
   const [{ slug }, { request: requestId, action }] = await Promise.all([params, searchParams]);
 
   // Must be signed in as tenant admin
-  const caller = await requireRoles(TENANT_ADMIN_ROLES).catch(() => null);
+  const caller = await requireRoles(TENANT_ADMIN_ROLES, slug).catch(() => null);
   if (!caller) {
     const callbackUrl = encodeURIComponent(`/${slug}/impersonation/approve?request=${requestId}&action=${action}`);
     redirect(`/${slug}/signin?callbackUrl=${callbackUrl}`);

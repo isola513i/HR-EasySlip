@@ -21,8 +21,13 @@ export type UserRow = {
   } | null;
 };
 
-export default async function UsersPage() {
-  const caller = await requireRoles(TENANT_ADMIN_ROLES);
+export default async function UsersPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const caller = await requireRoles(TENANT_ADMIN_ROLES, slug);
   const locale = await getLocale();
   const t = getDictionary(locale);
   const tu = t.tenantSettings.users;

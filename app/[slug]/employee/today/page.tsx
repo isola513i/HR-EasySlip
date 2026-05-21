@@ -10,8 +10,13 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.employee.todayTitle };
 }
 
-export default async function EmployeeTodayPage() {
-  const user = await requireRoles(EMPLOYEE_ROLES);
+export default async function EmployeeTodayPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const user = await requireRoles(EMPLOYEE_ROLES, slug);
   const locale = await getLocale();
   const t = getDictionary(locale);
 

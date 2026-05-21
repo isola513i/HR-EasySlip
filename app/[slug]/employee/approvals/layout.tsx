@@ -3,10 +3,13 @@ import { requireConsent } from "@/lib/consent/require-consent";
 
 export default async function ApprovalsLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
-  await requireRoles(MANAGER_ROLES);
+  const { slug } = await params;
+  await requireRoles(MANAGER_ROLES, slug);
   await requireConsent("/employee/approvals");
 
   return <>{children}</>;

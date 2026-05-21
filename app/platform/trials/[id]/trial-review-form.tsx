@@ -47,7 +47,7 @@ export function TrialReviewForm({ signupId, desiredSlug, companyName, contactEma
             <div className="space-y-2">
               <Label className="text-sm">Slug</Label>
               <Input name="slug" defaultValue={desiredSlug} required className="font-mono text-sm" placeholder="acme" />
-              <p className="text-xs text-muted-foreground">/{desiredSlug}/dashboard</p>
+              <p className="text-xs text-muted-foreground">/{desiredSlug}</p>
             </div>
             <div className="space-y-2">
               <Label className="text-sm">Company name</Label>

@@ -7,8 +7,27 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getTenantPrisma } from "@/lib/db/tenant";
 import { getTenantId, getTenantSlug } from "@/lib/db/tenant-context";
+import { resolveTenantBySlug } from "@/lib/db/tenant-resolver";
 import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 import type { Role } from "@prisma/client";
+
+async function resolveTenantContext(
+  explicitSlug: string | undefined,
+  session: { user?: { memberships?: { tenantId: string; tenantSlug: string }[] } } | null,
+): Promise<{ id: string; slug: string }> {
+  if (explicitSlug) {
+    const t = await resolveTenantBySlug(explicitSlug);
+    if (t) return { id: t.id, slug: t.slug };
+  }
+  const slug = await getTenantSlug();
+  let id = "";
+  try { id = await getTenantId(); } catch {}
+  if (!id && slug && session?.user?.memberships) {
+    const m = session.user.memberships.find((m) => m.tenantSlug === slug);
+    if (m) id = m.tenantId;
+  }
+  return { id, slug };
+}
 
 export const HR_ROLES: readonly Role[] = [
   "HRMG",
@@ -83,19 +102,13 @@ async function resolveEmployee(tenantId: string, employeeRecordId: string) {
  */
 export async function requireRoles(
   allowedRoles: readonly Role[],
+  slug?: string,
 ): Promise<AuthResult> {
-  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
-  let tenantId = "";
-  try { tenantId = await getTenantId(); } catch {}
-
+  const session = await auth();
   if (!session?.user?.id) {
-    redirect(tenantSlug ? `/${tenantSlug}/signin` : "/workspaces");
+    redirect(slug ? `/${slug}/signin` : "/workspaces");
   }
-
-  if (!tenantId && session.user.memberships) {
-    const m = session.user.memberships.find((m) => m.tenantSlug === tenantSlug);
-    if (m) tenantId = m.tenantId;
-  }
+  const { id: tenantId, slug: tenantSlug } = await resolveTenantContext(slug, session);
 
   const membership = session.user.memberships?.find(
     (m) => m.tenantId === tenantId,
@@ -144,16 +157,11 @@ export async function requireRoles(
  */
 export async function checkRoles(
   allowedRoles: readonly Role[],
+  slug?: string,
 ): Promise<AuthResult | null> {
-  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
+  const session = await auth();
   if (!session?.user?.id) return null;
-
-  let tenantId = "";
-  try { tenantId = await getTenantId(); } catch {}
-  if (!tenantId) {
-    const m = session.user.memberships?.find((m) => m.tenantSlug === tenantSlug);
-    if (m) tenantId = m.tenantId;
-  }
+  const { id: tenantId } = await resolveTenantContext(slug, session);
   const membership = session.user.memberships?.find(
     (m) => m.tenantId === tenantId,
   );
@@ -182,22 +190,16 @@ export async function checkRoles(
  */
 export async function requireApiRoles(
   allowedRoles: readonly Role[],
+  slug?: string,
 ): Promise<AuthResult | NextResponse> {
-  const [session, tenantSlug] = await Promise.all([auth(), getTenantSlug()]);
-
+  const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json(
       { ok: false, error: "ต้องเข้าสู่ระบบก่อน", code: "UNAUTHENTICATED", message: "Authentication required" },
       { status: 401 },
     );
   }
-
-  let tenantId = "";
-  try { tenantId = await getTenantId(); } catch {}
-  if (!tenantId) {
-    const m = session.user.memberships?.find((m) => m.tenantSlug === tenantSlug);
-    if (m) tenantId = m.tenantId;
-  }
+  const { id: tenantId } = await resolveTenantContext(slug, session);
   if (!tenantId) {
     return NextResponse.json(
       { ok: false, error: "ไม่พบบริบทของบริษัท กรุณารีเฟรชหน้าเว็บแล้วลองใหม่", code: "TENANT_CONTEXT_MISSING" },
@@ -253,8 +255,9 @@ export type EmployeeAuthResult = AuthResult & { employeeId: string };
  */
 export async function requireApiEmployee(
   allowedRoles: readonly Role[],
+  slug?: string,
 ): Promise<EmployeeAuthResult | NextResponse> {
-  const result = await requireApiRoles(allowedRoles);
+  const result = await requireApiRoles(allowedRoles, slug);
   if (result instanceof NextResponse) return result;
   if (!result.employeeId) {
     return NextResponse.json(

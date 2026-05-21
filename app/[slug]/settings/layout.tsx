@@ -6,10 +6,13 @@ export const metadata: Metadata = { title: "Settings — EasySlip" };
 
 export default async function SettingsLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
-  const user = await requireRoles(TENANT_ADMIN_ROLES);
+  const { slug } = await params;
+  const user = await requireRoles(TENANT_ADMIN_ROLES, slug);
 
   const name = `${user.firstNameTh ?? ""} ${user.lastNameTh ?? ""}`.trim();
 

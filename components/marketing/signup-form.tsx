@@ -188,7 +188,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
           <p className="text-xs text-muted-foreground">
             {d.slugHint}{" "}
             <span className="font-mono font-medium">
-              {slug ? `/${slug}/dashboard` : `/your-team/dashboard`}
+              {slug ? `/${slug}` : `/your-team`}
             </span>
           </p>
           {!errors.slug && slugHintText && (

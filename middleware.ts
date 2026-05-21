@@ -27,7 +27,7 @@ const TENANT_PUBLIC_PATHS = new Set([
 ]);
 
 // Rest-paths (after /{slug}) that DO require a session
-const TENANT_PROTECTED_RE = /^\/(hr|employee|manager|change-password|dashboard)(\/|$)/;
+const TENANT_PROTECTED_RE = /^\/(hr|employee|manager|change-password|settings)(\/|$)/;
 
 export default async function middleware(req: NextRequest): Promise<NextResponse> {
   const { pathname } = req.nextUrl;

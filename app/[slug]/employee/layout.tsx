@@ -15,10 +15,13 @@ export const viewport: Viewport = {
 
 export default async function EmployeeLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ slug: string }>;
 }) {
-  const user = await requireRoles(EMPLOYEE_ROLES);
+  const { slug } = await params;
+  const user = await requireRoles(EMPLOYEE_ROLES, slug);
   await requireConsent("/employee/today");
 
   const isManager = user.roles.some((r) => (MANAGER_ROLES as readonly Role[]).includes(r));
