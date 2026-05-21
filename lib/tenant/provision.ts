@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import { PrismaClient as CpPrismaClient } from "@/lib/db/generated/control-plane";
+import { withConnectionRetry } from "@/lib/db/retry";
 import { hashPassword, generateTempPassword } from "@/lib/auth/password-utils";
 
 const execAsync = promisify(exec);
@@ -52,7 +53,7 @@ export async function provisionTenantDb(opts: {
     const cpUrl = process.env.CONTROL_PLANE_DATABASE_URL;
     let cpUserId: string | null = null;
     if (cpUrl) {
-      const cp = new CpPrismaClient({ datasources: { db: { url: cpUrl } } });
+      const cp = withConnectionRetry(new CpPrismaClient({ datasources: { db: { url: cpUrl } } }), "cp") as CpPrismaClient;
       try {
         const existing = await cp.user.findUnique({
           where: { email: adminEmail },
@@ -112,7 +113,7 @@ export async function provisionTenantDb(opts: {
 
     // Create TenantMembership in CP if we have the tenantId
     if (cpUserId && tenantId && cpUrl) {
-      const cp = new CpPrismaClient({ datasources: { db: { url: cpUrl } } });
+      const cp = withConnectionRetry(new CpPrismaClient({ datasources: { db: { url: cpUrl } } }), "cp") as CpPrismaClient;
       try {
         await cp.tenantMembership.upsert({
           where: { userId_tenantId: { userId: cpUserId, tenantId } },

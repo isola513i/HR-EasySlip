@@ -9,6 +9,7 @@
 // silently falling back to an unexpected code path.
 
 import { PrismaClient } from "@/lib/db/generated/control-plane";
+import { withConnectionRetry } from "./retry";
 
 let _client: PrismaClient | null = null;
 
@@ -19,10 +20,11 @@ export function getControlPlane(): PrismaClient {
     );
   }
   if (!_client) {
-    _client = new PrismaClient({
+    const base = new PrismaClient({
       datasources: { db: { url: process.env.CONTROL_PLANE_DATABASE_URL } },
       log: ["warn", "error"],
     });
+    _client = withConnectionRetry(base, "cp") as PrismaClient;
   }
   return _client;
 }

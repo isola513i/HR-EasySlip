@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { getControlPlane } from "./control-plane";
 import { decryptUrl } from "./url-encryption";
+import { withConnectionRetry } from "./retry";
 
 interface CachedClient {
   client: PrismaClient;
@@ -74,10 +75,11 @@ export async function getTenantPrisma(tenantId: string): Promise<PrismaClient> {
   evict();
 
   const url = decryptUrl(tenant.databaseUrlEnc);
-  const client = new PrismaClient({
+  const base = new PrismaClient({
     datasources: { db: { url } },
     log: ["warn", "error"],
   });
+  const client = withConnectionRetry(base, `tenant:${tenantId.slice(0, 8)}`) as PrismaClient;
   clientCache.set(tenantId, { client, lastUsed: Date.now() });
   return client;
 }
