@@ -227,7 +227,7 @@ export function SignInForm({ dict, slug: slugProp }: Props) {
           </div>
           <Link
             href={slug ? `/${slug}/signin/forgot-password` : "/signin/forgot-password"}
-            className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            className="text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap"
           >
             {dict.forgotPassword}
           </Link>
