@@ -20,6 +20,7 @@ const TABS = [
 ];
 
 const SELF_SERVICE_STATUSES = ["PENDING_EMAIL", "EMAIL_VERIFIED", "PROVISIONING"] as const;
+type SelfServiceStatus = (typeof SELF_SERVICE_STATUSES)[number];
 
 interface Props {
   searchParams: Promise<{ q?: string; tab?: string }>;
@@ -40,7 +41,7 @@ export default async function TrialsPage({ searchParams }: Props) {
 
   const statusFilter =
     tab === "SELF_SERVICE"
-      ? { status: { in: [...SELF_SERVICE_STATUSES] as ("PENDING_EMAIL" | "EMAIL_VERIFIED" | "PROVISIONING")[] } }
+      ? { status: { in: [...SELF_SERVICE_STATUSES] as SelfServiceStatus[] } }
       : tab === "READY"
       ? { status: "READY" as const, tenantId: { not: null } }
       : { status: tab as "PENDING" | "APPROVED" | "REJECTED" };
@@ -51,7 +52,7 @@ export default async function TrialsPage({ searchParams }: Props) {
     cp.trialSignup.findMany({ where, orderBy: { createdAt: "desc" }, take: 100 }),
     Promise.all([
       cp.trialSignup.count({ where: { status: "PENDING" } }),
-      cp.trialSignup.count({ where: { status: { in: [...SELF_SERVICE_STATUSES] as ("PENDING_EMAIL" | "EMAIL_VERIFIED" | "PROVISIONING")[] } } }),
+      cp.trialSignup.count({ where: { status: { in: [...SELF_SERVICE_STATUSES] as SelfServiceStatus[] } } }),
       cp.trialSignup.count({ where: { status: "READY", tenantId: { not: null } } }),
       cp.trialSignup.count({ where: { status: "APPROVED" } }),
       cp.trialSignup.count({ where: { status: "REJECTED" } }),

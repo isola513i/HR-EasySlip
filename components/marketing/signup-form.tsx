@@ -56,6 +56,11 @@ function Field({
   )
 }
 
+function getTeamSizeLabel(d: SignupDict, value: string): string {
+  const map: Record<string, string> = { size1: d.size1, size2: d.size2, size3: d.size3, size4: d.size4 }
+  return map[value] ?? value
+}
+
 const SLUG_STATUS_STYLE: Record<SlugStatus, { color: string; text: (d: SignupDict) => string | null }> = {
   idle:      { color: "text-muted-foreground", text: () => null },
   checking:  { color: "text-muted-foreground", text: (d) => d.slugChecking },
@@ -80,7 +85,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const emailRef = useRef<HTMLInputElement | null>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!slug) { setSlugStatus("idle"); return }
@@ -257,7 +262,7 @@ export function SignupForm({ dict: d, rootDomain }: SignupFormProps) {
         >
           <SelectTrigger id="teamSize" className={cn("w-full", errors.teamSize ? "border-destructive" : "")}>
             <SelectValue placeholder={d.teamSizePlaceholder}>
-              {teamSize ? ({ size1: d.size1, size2: d.size2, size3: d.size3, size4: d.size4 }[teamSize] ?? teamSize) : d.teamSizePlaceholder}
+              {teamSize ? getTeamSizeLabel(d, teamSize) : d.teamSizePlaceholder}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>

@@ -170,14 +170,17 @@ export function DangerZone({ tenantId, companyName, slug, status }: Props) {
 
         {canSuspend && (
           <div className="flex items-start justify-between gap-4 p-5">
-            <div>
-              <p className="text-sm font-medium text-foreground">Suspend tenant</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Prevents all users of <span className="font-medium">{companyName}</span> from accessing the system.
-              </p>
-              {suspendState?.error && (
-                <p className="text-xs text-rose-400 mt-1">{suspendState.error}</p>
-              )}
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="size-4 text-rose-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Suspend tenant</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Prevents all users of <span className="font-medium">{companyName}</span> from accessing the system.
+                </p>
+                {suspendState?.error && (
+                  <p className="text-xs text-rose-400 mt-1">{suspendState.error}</p>
+                )}
+              </div>
             </div>
             <AlertDialog>
               <AlertDialogTrigger className={cn(buttonVariants({ variant: "outline", size: "sm" }), "shrink-0 border-rose-500/30 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300")}>
