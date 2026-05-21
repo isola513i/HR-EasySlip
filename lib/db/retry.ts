@@ -1,6 +1,7 @@
 const RETRYABLE_PRISMA_CODES = new Set(["P1001", "P1002", "P1008", "P1017"]);
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
 const BASE_DELAY_MS = 500;
+const MAX_DELAY_MS = 8000;
 
 export function isRetryableConnectionError(err: unknown): boolean {
   if (!err || typeof err !== "object") return false;
@@ -37,7 +38,7 @@ export function withConnectionRetry<T extends ExtendableClient>(client: T, label
           } catch (err) {
             if (attempt < MAX_RETRIES && isRetryableConnectionError(err)) {
               attempt++;
-              const delay = BASE_DELAY_MS * 2 ** (attempt - 1);
+              const delay = Math.min(BASE_DELAY_MS * 2 ** (attempt - 1), MAX_DELAY_MS);
               const target = model ? `${model}.${operation}` : operation;
               console.warn(`[${label} retry] ${target} attempt ${attempt}/${MAX_RETRIES} after ${delay}ms`);
               await sleep(delay);
