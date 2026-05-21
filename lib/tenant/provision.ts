@@ -49,19 +49,30 @@ export async function provisionTenantDb(opts: {
     const [firstName, ...rest] = adminName.trim().split(" ");
     const lastNameTh = rest.join(" ") || "-";
 
-    // Create CP user (global auth identity)
     const cpUrl = process.env.CONTROL_PLANE_DATABASE_URL;
     let cpUserId: string | null = null;
     if (cpUrl) {
       const cp = new CpPrismaClient({ datasources: { db: { url: cpUrl } } });
       try {
-        const cpUser = await cp.user.upsert({
+        const existing = await cp.user.findUnique({
           where: { email: adminEmail },
-          create: { email: adminEmail, emailVerified: new Date(), passwordHash, mustChangePassword: true },
-          update: {},
-          select: { id: true },
+          select: { id: true, passwordHash: true },
         });
-        cpUserId = cpUser.id;
+        if (existing) {
+          if (!existing.passwordHash) {
+            await cp.user.update({
+              where: { id: existing.id },
+              data: { passwordHash, mustChangePassword: true, emailVerified: new Date() },
+            });
+          }
+          cpUserId = existing.id;
+        } else {
+          const created = await cp.user.create({
+            data: { email: adminEmail, emailVerified: new Date(), passwordHash, mustChangePassword: true },
+            select: { id: true },
+          });
+          cpUserId = created.id;
+        }
       } finally {
         await cp.$disconnect();
       }
