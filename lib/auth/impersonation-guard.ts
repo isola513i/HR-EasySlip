@@ -50,7 +50,7 @@ export async function requireApiMutable(): Promise<NextResponse | null> {
   const impersonating = await isImpersonating();
   if (impersonating) {
     return NextResponse.json(
-      { error: "Forbidden", code: "READ_ONLY_IMPERSONATION_SESSION", message: "Read-only support session" },
+      { ok: false, error: "เซสชันนี้เป็นโหมดอ่านอย่างเดียว (impersonation) ไม่สามารถแก้ไขข้อมูลได้", code: "READ_ONLY_IMPERSONATION_SESSION" },
       { status: 403 },
     );
   }

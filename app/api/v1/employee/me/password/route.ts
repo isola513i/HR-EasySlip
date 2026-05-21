@@ -10,7 +10,7 @@ import { writeAuditLog } from "@/lib/audit/logger";
 import { requireApiMutable } from "@/lib/auth/impersonation-guard";
 
 const ChangePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "กรุณากรอกรหัสผ่านปัจจุบัน"),
+  currentPassword: z.string().optional(),
   newPassword: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"),
 });
 
@@ -26,16 +26,26 @@ export const PUT = withApiHandler(async (req, ctx) => {
 
   const user = await cp.user.findUnique({
     where: { id: caller.userId },
-    select: { passwordHash: true },
+    select: { passwordHash: true, mustChangePassword: true },
   });
 
-  if (!user?.passwordHash) {
-    return apiError("NO_PASSWORD", "บัญชีนี้ไม่มีรหัสผ่าน ใช้ Magic Link แทน", 400);
-  }
+  if (!user) return apiError("USER_NOT_FOUND", "ไม่พบบัญชีผู้ใช้", 404);
 
-  const valid = await verifyPassword(currentPassword, user.passwordHash);
-  if (!valid) {
-    return apiError("INVALID_PASSWORD", "รหัสผ่านปัจจุบันไม่ถูกต้อง", 401);
+  // First-time password setup: passwordHash is null AND mustChangePassword is true →
+  // allow setting a new password without requiring the current one
+  const isFirstTimeSetup = !user.passwordHash && user.mustChangePassword;
+
+  if (!isFirstTimeSetup) {
+    if (!user.passwordHash) {
+      return apiError("NO_PASSWORD", "บัญชีนี้ยังไม่ได้ตั้งรหัสผ่าน กรุณาเข้าสู่ระบบด้วย Magic Link", 400);
+    }
+    if (!currentPassword) {
+      return apiError("MISSING_CURRENT_PASSWORD", "กรุณากรอกรหัสผ่านปัจจุบัน", 400);
+    }
+    const valid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!valid) {
+      return apiError("INVALID_PASSWORD", "รหัสผ่านปัจจุบันไม่ถูกต้อง", 401);
+    }
   }
 
   const newHash = await hashPassword(newPassword);

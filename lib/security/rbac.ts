@@ -187,7 +187,7 @@ export async function requireApiRoles(
 
   if (!session?.user?.id) {
     return NextResponse.json(
-      { error: "Unauthorized", message: "Authentication required" },
+      { ok: false, error: "ต้องเข้าสู่ระบบก่อน", code: "UNAUTHENTICATED", message: "Authentication required" },
       { status: 401 },
     );
   }
@@ -198,19 +198,23 @@ export async function requireApiRoles(
     const m = session.user.memberships?.find((m) => m.tenantSlug === tenantSlug);
     if (m) tenantId = m.tenantId;
   }
-  const membership = session.user.memberships?.find(
-    (m) => m.tenantId === tenantId,
-  );
+  if (!tenantId) {
+    return NextResponse.json(
+      { ok: false, error: "ไม่พบบริบทของบริษัท กรุณารีเฟรชหน้าเว็บแล้วลองใหม่", code: "TENANT_CONTEXT_MISSING" },
+      { status: 403 },
+    );
+  }
+  const membership = session.user.memberships?.find((m) => m.tenantId === tenantId);
   if (!membership || membership.status !== "ACTIVE") {
     return NextResponse.json(
-      { error: "Forbidden", message: "No active membership in this workspace" },
+      { ok: false, error: "บัญชีของคุณไม่มีสิทธิ์ในบริษัทนี้", code: "NO_MEMBERSHIP" },
       { status: 403 },
     );
   }
 
   if (!membership.employeeRecordId) {
     return NextResponse.json(
-      { error: "Forbidden", message: "No employee record" },
+      { ok: false, error: "บัญชีของคุณไม่มีข้อมูลพนักงานในบริษัทนี้ กรุณาติดต่อ HR", code: "NO_EMPLOYEE_RECORD" },
       { status: 403 },
     );
   }
@@ -218,7 +222,7 @@ export async function requireApiRoles(
   const emp = await resolveEmployee(tenantId, membership.employeeRecordId);
   if (!emp) {
     return NextResponse.json(
-      { error: "Forbidden", message: "Employee record not found" },
+      { ok: false, error: "ไม่พบข้อมูลพนักงานในระบบ กรุณาติดต่อ HR", code: "EMPLOYEE_NOT_FOUND" },
       { status: 403 },
     );
   }
@@ -226,7 +230,7 @@ export async function requireApiRoles(
   const roles = emp.roles as Role[];
   if (!roles.some((r) => allowedRoles.includes(r))) {
     return NextResponse.json(
-      { error: "Forbidden", message: "Insufficient permissions" },
+      { ok: false, error: "บัญชีของคุณไม่มีสิทธิ์เข้าถึงฟีเจอร์นี้", code: "INSUFFICIENT_ROLE", details: { yourRoles: roles, requiredAnyOf: allowedRoles } },
       { status: 403 },
     );
   }
@@ -254,7 +258,7 @@ export async function requireApiEmployee(
   if (result instanceof NextResponse) return result;
   if (!result.employeeId) {
     return NextResponse.json(
-      { ok: false, error: "Forbidden", code: "NO_EMPLOYEE_RECORD" },
+      { ok: false, error: "บัญชีของคุณไม่มีข้อมูลพนักงานในบริษัทนี้ กรุณาติดต่อ HR", code: "NO_EMPLOYEE_RECORD" },
       { status: 403 },
     );
   }

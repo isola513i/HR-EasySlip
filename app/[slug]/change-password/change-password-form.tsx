@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useT } from "@/lib/i18n/locale-context";
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ firstTimeSetup = false }: { firstTimeSetup?: boolean }) {
   const t = useT();
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
@@ -32,10 +32,13 @@ export function ChangePasswordForm() {
 
     setIsLoading(true);
     try {
+      const body: Record<string, string> = { newPassword };
+      if (!firstTimeSetup) body.currentPassword = currentPassword;
+
       const res = await fetch("/api/v1/employee/me/password", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify(body),
       });
 
       const data = await res.json();
@@ -55,18 +58,20 @@ export function ChangePasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="currentPassword">{t.password.currentPassword}</Label>
-        <Input
-          id="currentPassword"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          disabled={isLoading}
-        />
-      </div>
+      {!firstTimeSetup && (
+        <div className="space-y-2">
+          <Label htmlFor="currentPassword">{t.password.currentPassword}</Label>
+          <Input
+            id="currentPassword"
+            type="password"
+            autoComplete="current-password"
+            required
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            disabled={isLoading}
+          />
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="newPassword">{t.password.newPassword}</Label>
         <Input

@@ -1,5 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Image from "next/image";
+import { auth } from "@/lib/auth";
+import { getControlPlane } from "@/lib/db/control-plane";
 import { getDict } from "@/lib/i18n/get-dict";
 import { ChangePasswordForm } from "./change-password-form";
 
@@ -9,7 +11,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ChangePasswordPage() {
-  const { t } = await getDict();
+  const [{ t }, session] = await Promise.all([getDict(), auth()]);
+
+  let hasExistingPassword = true;
+  if (session?.user?.id) {
+    const u = await getControlPlane().user.findUnique({
+      where: { id: session.user.id },
+      select: { passwordHash: true },
+    });
+    hasExistingPassword = Boolean(u?.passwordHash);
+  }
+
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="w-full max-w-sm space-y-6">
@@ -29,7 +41,7 @@ export default async function ChangePasswordPage() {
         </div>
 
         <div className="rounded-xl border bg-card p-6 shadow-(--es-shadow-sm)">
-          <ChangePasswordForm />
+          <ChangePasswordForm firstTimeSetup={!hasExistingPassword} />
         </div>
       </div>
     </main>
