@@ -217,14 +217,10 @@ export async function deleteTenant(
     },
   });
 
-  await cp.tenant.delete({ where: { id: tenantId } });
-
-  // Nullify the tenantId reference in associated TrialSignup records so they
-  // don't appear as "live" after the tenant is gone.
-  await cp.trialSignup.updateMany({
-    where: { tenantId },
-    data: { tenantId: null },
-  });
+  await cp.$transaction([
+    cp.trialSignup.updateMany({ where: { tenantId }, data: { tenantId: null } }),
+    cp.tenant.delete({ where: { id: tenantId } }),
+  ]);
 
   if (tenant.neonBranchId) {
     deleteBranch(tenant.neonBranchId).catch((e) => {

@@ -19,6 +19,9 @@ function checkIpLimit(ip: string): boolean {
   if (hits.length >= RATE_LIMIT_MAX) return false;
   hits.push(now);
   ipStore.set(ip, hits);
+  if (ipStore.size > 5_000) {
+    for (const [k, v] of ipStore) if (v.every((t) => t <= windowStart)) ipStore.delete(k);
+  }
   return true;
 }
 
