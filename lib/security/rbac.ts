@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getTenantPrisma } from "@/lib/db/tenant";
-import { getTenantId, getTenantSlug } from "@/lib/db/tenant-context";
+import { getTenantId, getTenantSlug, setRequestTenant } from "@/lib/db/tenant-context";
 import { resolveTenantBySlug } from "@/lib/db/tenant-resolver";
 import { BLOCKED_EMPLOYMENT_STATUSES } from "@/lib/auth/password-utils";
 import type { Role } from "@prisma/client";
@@ -17,7 +17,12 @@ async function resolveTenantContext(
 ): Promise<{ id: string; slug: string }> {
   if (explicitSlug) {
     const t = await resolveTenantBySlug(explicitSlug);
-    if (t) return { id: t.id, slug: t.slug };
+    if (t) {
+      // Register so downstream getPrisma/getTenantId calls work without
+      // having to thread slug through every helper.
+      await setRequestTenant({ id: t.id, slug: t.slug });
+      return { id: t.id, slug: t.slug };
+    }
   }
   const slug = await getTenantSlug();
   let id = "";

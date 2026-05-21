@@ -17,7 +17,7 @@ export default async function TenantLayout({
   const tenant = await resolveTenantBySlug(slug);
   if (!tenant) notFound();
 
-  setRequestTenant({ id: tenant.id, slug: tenant.slug });
+  await setRequestTenant({ id: tenant.id, slug: tenant.slug });
 
   if (tenant.status === "SUSPENDED" || tenant.status === "DELETED") {
     redirect(`/${slug}/forbidden?reason=suspended`);

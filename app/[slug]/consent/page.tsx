@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
+import { ensureTenantContext } from "@/lib/db/tenant-context";
 import { hasActiveConsent } from "@/lib/consent/consent-service";
 import { getDict } from "@/lib/i18n/get-dict";
 import { AuthLayout } from "@/components/shared/auth-layout";
@@ -17,6 +18,8 @@ export default async function ConsentPage({
 }) {
   const [{ slug }, session, params] = await Promise.all([routeParams, auth(), searchParams]);
   if (!session?.user?.id) redirect(`/${slug}/signin`);
+
+  await ensureTenantContext(slug);
 
   const raw = params.callbackUrl ?? "/employee/today";
   const callbackUrl =
